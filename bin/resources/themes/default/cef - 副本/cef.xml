@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Window size="800,600" caption="0,0,0,35" shadowattached="true">
+<Window size="800,600" caption="0,0,0,35" shadowattached="false">
   <VBox bkcolor="bk_wnd_darkcolor">
-    <HBox width="stretch" height="35" bkcolor="gray">
-      <Control width="auto" height="auto" bkimage="logo_18x18.png" valign="center" margin="8"/>
-      <Control />
-      <Control width="auto" height="auto" valign="center" margin="8"/>
-      <Label text="随便取个标题" valign="center" margin="8" normaltextcolor="whiteTest"/>
+    <HBox width="stretch" height="35" bkcolor="bk_wnd_lightcolor">
       <Control />
       <Button name="btn_dev_tool" width="auto" height="auto" valign="center" tooltiptext="开发者工具" bkimage="btn_dev_tool.png" margin="4"/>
       <Button class="btn_wnd_min" name="minbtn" margin="4,6,0,0"/>

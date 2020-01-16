@@ -107,15 +107,27 @@ LRESULT WindowImplBase::OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 
 LRESULT WindowImplBase::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	/*if (!::IsZoomed(GetHWND()))
+	Control* pMaxButton = (Control*)FindControl(L"maxbtn");
+	Control* pRestoreButton = (Control*)FindControl(L"restorebtn");
+	if (!::IsZoomed(GetHWND()))
 	{
 		SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+
+		if (pMaxButton && pRestoreButton)
+		{
+			pMaxButton->SetVisible(false);
+			pRestoreButton->SetVisible(true);
+		}
 	}
 	else
 	{
 		SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
-	}*/
-
+		if (pMaxButton && pRestoreButton)
+		{
+			pMaxButton->SetVisible(true);
+			pRestoreButton->SetVisible(false);
+		}
+	}
 	return 0;
 }
 
@@ -133,27 +145,33 @@ LRESULT WindowImplBase::OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 		UiRect rcSizeBox = GetSizeBox();
 		if( pt.y < rcClient.top + rcSizeBox.top ) {
 			if (pt.y >= rcClient.top) {
-				if (pt.x < (rcClient.left + rcSizeBox.left) && pt.x >= rcClient.left) return HTTOPLEFT;
-				else if (pt.x >(rcClient.right - rcSizeBox.right) && pt.x <= rcClient.right) return HTTOPRIGHT;
+				if (pt.x < (rcClient.left + rcSizeBox.left) && pt.x >= rcClient.left) 
+					return HTTOPLEFT;
+				else if (pt.x >(rcClient.right - rcSizeBox.right) && pt.x <= rcClient.right) 
+					return HTTOPRIGHT;
 				else return HTTOP;
 			}
 			else return HTCLIENT;
 		}
 		else if( pt.y > rcClient.bottom - rcSizeBox.bottom ) {
 			if (pt.y <= rcClient.bottom) {
-				if (pt.x < (rcClient.left + rcSizeBox.left) && pt.x >= rcClient.left) return HTBOTTOMLEFT;
-				else if (pt.x > (rcClient.right - rcSizeBox.right) && pt.x <= rcClient.right) return HTBOTTOMRIGHT;
+				if (pt.x < (rcClient.left + rcSizeBox.left) && pt.x >= rcClient.left) 
+					return HTBOTTOMLEFT;
+				else if (pt.x > (rcClient.right - rcSizeBox.right) && pt.x <= rcClient.right) 
+					return HTBOTTOMRIGHT;
 				else return HTBOTTOM;
 			}
 			else return HTCLIENT;
 		}
 
 		if (pt.x < rcClient.left + rcSizeBox.left) {
-			if (pt.x >= rcClient.left) return HTLEFT;
+			if (pt.x >= rcClient.left)
+				return HTLEFT;
 			else return HTCLIENT;
 		}
 		if (pt.x > rcClient.right - rcSizeBox.right) {
-			if (pt.x <= rcClient.right) return HTRIGHT;
+			if (pt.x <= rcClient.right)
+				return HTRIGHT;
 			else return HTCLIENT;
 		}
 	}
@@ -253,6 +271,35 @@ LRESULT WindowImplBase::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 		HRGN hRgn = ::CreateRoundRectRgn(rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, szRoundCorner.cx, szRoundCorner.cy);
 		::SetWindowRgn(GetHWND(), hRgn, TRUE);
 		::DeleteObject(hRgn);
+	}
+	if (m_pRoot)
+	{
+		Control* pMaxButton = (Control*)FindControl(L"maxbtn");
+		Control* pRestoreButton = (Control*)FindControl(L"restorebtn");
+		if (!::IsZoomed(GetHWND()))
+		{
+			if (pMaxButton && pRestoreButton)
+			{
+				if (!pMaxButton->IsVisible())
+				{
+					pMaxButton->SetVisible(true);
+					pRestoreButton->SetVisible(false);
+					UpdateWindow(GetHWND());
+				}
+			}
+		}
+		else
+		{
+			if (pMaxButton && pRestoreButton)
+			{
+				if (!pRestoreButton->IsVisible())
+				{
+					pMaxButton->SetVisible(false);
+					pRestoreButton->SetVisible(true);
+					UpdateWindow(GetHWND());
+				}
+			}
+		}
 	}
 
 	bHandled = FALSE;

@@ -33,6 +33,7 @@
     <Font id="system_underline_22" name="system" size="22" underline="true"/>
 
     <!--一些常规固定颜色-->
+  <TextColor name="whiteTest" value="#ffffffff"/>
     <TextColor name="white" value="#ffffffff"/>
     <TextColor name="black" value="#ff000000"/>
     <TextColor name="darkcolor" value="#ff333333"/>
@@ -54,6 +55,7 @@
     <TextColor name="bk_main_wnd_search" value="#ff1e7ad7"/>
     <TextColor name="bk_wnd_darkcolor" value="#fff0f2f5"/>
     <TextColor name="bk_wnd_lightcolor" value="#ffffffff"/>
+    <TextColor name="gray" value="#ff333333"/>
     <TextColor name="bk_menuitem_hovered" value="#ffe1e6eb"/>
     <TextColor name="bk_menuitem_selected" value="#ffced4db"/>
     <TextColor name="bk_listitem_hovered" value="#fff0f2f5"/>
