@@ -5,6 +5,8 @@
 #include "main.h"
 #include "cef_form.h"
 
+HINSTANCE gHInstance;
+
 enum ThreadId
 {
 	kThreadUI
@@ -19,7 +21,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
-
+	gHInstance = hInstance;
 	// 将 bin\\cef 目录添加到环境变量，这样可以将所有 CEF 相关文件放到该目录下，方便管理
 	// 在项目属性->连接器->输入，延迟加载 nim_libcef.dll
 	nim_comp::CefManager::GetInstance()->AddCefDllToPath();
@@ -62,7 +64,7 @@ void MainThread::Init()
 
 	// 创建一个默认带有阴影的居中窗口
 	CefForm* window = new CefForm();
-	window->Create(NULL, CefForm::kClassName.c_str(), WS_EX_ACCEPTFILES|WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 0, nim_comp::CefManager::GetInstance()->IsEnableOffsetRender());
+	window->Create(NULL, CefForm::kClassName.c_str(), WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 0, nim_comp::CefManager::GetInstance()->IsEnableOffsetRender());
 	window->CenterWindow();
 	window->ShowWindow();
 }

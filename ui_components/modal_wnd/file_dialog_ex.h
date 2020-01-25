@@ -35,6 +35,7 @@ public:
 	void SetParentWnd(HWND hParentWnd);
 	void SetTitle(LPCTSTR lpszTitle);
 	void SetFileNameBufferSize(DWORD dwSize);
+	void SetFileDialogType(FileDialogType ty);
 
 	void AyncShowOpenFileDlg(FileDialogCallback2 file_dialog_callback1);
 	void AyncShowSaveFileDlg(FileDialogCallback2 file_dialog_callback2);

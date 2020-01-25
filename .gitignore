@@ -342,3 +342,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database 
 healthchecksdb
+/examples/MFCLibrary1
+/examples/MFCApplication1
+/examples/MFCApp

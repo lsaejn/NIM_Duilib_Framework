@@ -1,5 +1,9 @@
 #include "stdafx.h"
 #include "cef_form.h"
+#include "resource.h"
+
+INT_PTR CALLBACK DialogProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+void DisplayModelDialog(HWND hParent);
 
 const std::wstring CefForm::kClassName = L"CEF_Control_Example";
 
@@ -80,6 +84,7 @@ void CefForm::InitWindow()
 	style |= WS_EX_ACCEPTFILES;//更改样式
 	hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
 	::SetWindowLongW(hwnd, GWL_EXSTYLE, style);//重新设置窗体样式
+	SetSizeBox({ 5,5,5,5 });
 }
 
 LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -170,6 +175,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
 
+//这个什么时候调用?
 bool CefForm::OnDbClicked(ui::EventArgs* msg)
 {
 	std::wstring name = msg->pSender->GetName();
@@ -199,6 +205,137 @@ void CefForm::OnLoadEnd(int httpStatusCode)
 	// 注册一个方法提供前端调用
 	cef_control_->RegisterCppFunc(L"ShowMessageBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
+		//MessageBox(m_hWnd, L"fuck", L"fuck", 1);
+		DisplayModelDialog(m_hWnd);
+		//nim_comp::CFileDialogEx cf;
+		//cf.SetFileDialogType(nim_comp::CFileDialogEx::FileDialogType::FDT_OpenFile);
+		//cf.SyncShowModal();
+		//auto path=cf.GetFolderPath();
 		callback(false, R"({ "message": "Success." })");
 	}));
 }
+
+
+#include "commctrl.h"
+HANDLE quitEvent = CreateEvent(NULL, TRUE, FALSE, L"fuck");
+bool quit = false;
+#pragma comment(lib,"comctl32.lib") 
+extern HINSTANCE gHInstance;
+HWND hwndOfDir;
+
+void DisplayModelDialog(HWND hParent) 
+{
+	EnableWindow(hParent, FALSE);
+	HWND hDlg=CreateDialogW(NULL, MAKEINTRESOURCE(IDD_DIALOG1), NULL, DialogProc);
+
+	ShowWindow(hDlg, SW_SHOW);
+	UpdateWindow(hDlg);
+
+	MSG msg;
+	
+	int rc = -1;
+	//我们改为单线程,就别MsgWait了
+	while (!quit)
+	{
+		//rc = MsgWaitForMultipleObjects(1, &quitEvent, TRUE, 0, 0);
+		//if (WAIT_OBJECT_0 !=rc )
+		if(true)
+		{
+			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	EnableWindow(hParent, TRUE);
+	SetForegroundWindow(hParent);
+}
+
+HTREEITEM hNode[50];
+void TVImageLoad(HWND hwndTV);
+INT_PTR CALLBACK DialogProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_CREATE:
+
+	case WM_INITDIALOG:
+	{
+		InitCommonControls();
+		RECT rc;
+		GetClientRect(hwnd, &rc);
+		//HWND hWndTree = CreateWindow(
+		//	L"SysTreeView32", nullptr,
+		//	WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASLINES | TVS_HASBUTTONS | TVS_NOSCROLL,
+		//	0, 0, rc.right, rc.bottom,
+		//	hwnd, (HMENU)IDC_TREE1, gHInstance, NULL);
+		//ShowWindow(hWndTree, SW_NORMAL);
+		HWND hWndTree = GetDlgItem(hwnd, IDC_TREE1);
+		TVImageLoad(hWndTree);
+		//Root... 		
+		TVINSERTSTRUCT tvInst;
+		tvInst.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+		tvInst.item.iImage = 0;
+		tvInst.item.iSelectedImage = 2;
+		tvInst.hInsertAfter = TVI_LAST;
+		tvInst.hParent = NULL;
+
+		for (int i = 0; i < 10; i++)
+		{
+			tvInst.item.pszText = TEXT("房间");
+			hNode[i] = (HTREEITEM)SendMessage(hWndTree, TVM_INSERTITEM, 0, (LPARAM)&tvInst);
+			//	game = game->pnext;
+		}
+
+		tvInst.item.pszText = TEXT("正在下载房间列表");
+		tvInst.item.iImage = 0;
+		tvInst.item.iSelectedImage = 2;
+		tvInst.hParent = hNode[1];
+		hNode[3] = (HTREEITEM)SendMessage(hWndTree, TVM_INSERTITEM, 0, (LPARAM)&tvInst);
+		return (INT_PTR)TRUE;
+	}
+	
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hwnd, LOWORD(wParam));
+			quit=true;
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+void TVImageLoad(HWND hwndTV)
+{
+	HIMAGELIST himl;  // handle to image list 
+	HICON	  hIcon;
+	if ((himl = ImageList_Create(16, 16,
+		FALSE, 3, 0)) == NULL)
+		return;
+
+	hIcon = LoadIcon(gHInstance, L"C:\\Users\\lsaejn\\Downloads\\MyTree\\icon1.ico");
+	int g_nOpen = ImageList_AddIcon(himl, hIcon);
+	DeleteObject(hIcon);
+
+	hIcon = LoadIcon(gHInstance, L"C:\\Users\\lsaejn\\Downloads\\MyTree\\icon1.ico");
+	int g_nClosed = ImageList_AddIcon(himl, hIcon);
+	DeleteObject(hIcon);
+
+	hIcon = LoadIcon(gHInstance, L"C:\\Users\\lsaejn\\Downloads\\MyTree\\icon1.ico");
+	int g_nDocument = ImageList_AddIcon(himl, hIcon);
+	DeleteObject(hIcon);
+
+	if (ImageList_GetImageCount(himl) < 3)
+		return;
+
+	TreeView_SetImageList(hwndTV, himl, TVSIL_NORMAL);
+}
+

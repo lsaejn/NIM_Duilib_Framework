@@ -146,6 +146,11 @@ void CFileDialogEx::SetFileNameBufferSize(DWORD dwSize)
 	}
 }
 
+void CFileDialogEx::SetFileDialogType(FileDialogType ty)
+{
+	file_dialog_type_ = ty;
+}
+
 void CFileDialogEx::AyncShowOpenFileDlg(FileDialogCallback2 file_dialog_callback2)
 {
 	file_dialog_callback2_ = file_dialog_callback2;
