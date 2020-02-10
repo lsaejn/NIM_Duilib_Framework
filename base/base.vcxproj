@@ -23,8 +23,11 @@
     <ClInclude Include="..\build\winsdk_config.h" />
     <ClInclude Include="..\build\xp_style_manifest_win.h" />
     <ClInclude Include="base.h" />
+    <ClInclude Include="base_config.h" />
+    <ClInclude Include="base_export.h" />
     <ClInclude Include="base_types.h" />
     <ClInclude Include="callback\callback.h" />
+    <ClInclude Include="compiler_specific.h" />
     <ClInclude Include="encrypt\des.h" />
     <ClInclude Include="encrypt\encrypt.h" />
     <ClInclude Include="encrypt\encrypt_impl.h" />
@@ -209,6 +212,7 @@
       <AdditionalIncludeDirectories>.\;..\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4100;4127;4244;4245;4310;4355;4505;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -219,6 +223,9 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalOptions>/IGNORE:4006,4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

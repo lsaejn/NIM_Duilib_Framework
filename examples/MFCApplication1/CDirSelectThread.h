@@ -10,7 +10,7 @@ public:
     virtual BOOL InitInstance();
     virtual int Run();
     virtual int  ExitInstance();
-    void SetQuitEvent(HANDLE );
+    void SetQuitEvent(HANDLE);
     void Notify();
 protected:
     CDirSelectThread();

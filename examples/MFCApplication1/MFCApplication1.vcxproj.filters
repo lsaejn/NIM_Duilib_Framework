@@ -42,6 +42,12 @@
     <ClInclude Include="MessageLoop.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DataHandler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundedQueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCApplication1.cpp">
@@ -60,6 +66,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MessageLoop.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DataHandler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

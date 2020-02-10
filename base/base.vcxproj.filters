@@ -244,6 +244,15 @@
     <ClInclude Include="base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="base_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base_export.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compiler_specific.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="file\file_util.cpp">

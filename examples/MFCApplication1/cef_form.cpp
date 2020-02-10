@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "cef_form.h"
 #include "CDirSelectThread.h"
+//#include "CppFuncRegister.h"
 
 const std::wstring CefForm::kClassName = L"CEF_Control_Example";
 
@@ -61,14 +62,9 @@ void CefForm::InitWindow()
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
 
-	// 打开开发者工具
 	cef_control_->AttachDevTools(cef_control_dev_);
-	// 加载皮肤目录下的 html 文件
-	//cef_control_->LoadURL(nbase::win32::GetCurrentModuleDirectory() + L"resources\\themes\\default\\cef\\cef.html");
-	cef_control_->RegisterCppFunc(L"ShowMessageBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
-		callback(false, R"({ "message": "Success." })");
-		}));
+	RegisterCppFuncs();
+
 	cef_control_->LoadURL(L"C:\\Users\\lsaejn\\Desktop\\HtmlDialog\\HtmlRes\\index.html");
 
 	if (!nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
@@ -82,6 +78,7 @@ void CefForm::InitWindow()
 	::SetWindowLongW(hwnd, GWL_EXSTYLE, style);//重新设置窗体样式
 	SetSizeBox({ 5,5,5,5 });
 }
+
 
 LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
@@ -242,6 +239,15 @@ void CefForm::OnLoadEnd(int httpStatusCode)
 		callback(false, R"({ "message": "Success." })");
 	}));	
 	cef_control_->RegisterCppFunc(L"ShowDirBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
+		callback(false, R"({ "message": "Success." })");
+		}));
+}
+
+
+void CefForm::RegisterCppFuncs()
+{
+	cef_control_->RegisterCppFunc(L"ShowMessageBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
 		callback(false, R"({ "message": "Success." })");
 		}));

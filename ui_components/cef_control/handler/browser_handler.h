@@ -307,6 +307,26 @@ public:
 		int selected_accept_filter,
 		CefRefPtr<CefFileDialogCallback> callback) OVERRIDE;
 
+	//virtual bool OnDragEnter(CefRefPtr<CefBrowser> browser,
+	//	CefRefPtr<CefDragData> dragData,
+	//	cef_drag_operations_mask_t mask) {
+	//	return true;
+	//}
+
+	//virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
+	//	const CefKeyEvent& event,
+	//	CefEventHandle os_event) {
+	//	return false;
+	//}
+
+	//virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,
+	//	const CefKeyEvent& event,
+	//	CefEventHandle os_event,
+	//	bool* is_keyboard_shortcut) {
+	//	*is_keyboard_shortcut = true;
+	//	return false;
+	//}
+
 protected:
 	CefRefPtr<CefBrowser>	browser_;
 	std::vector<CefRefPtr<CefBrowser>> browser_list_;
