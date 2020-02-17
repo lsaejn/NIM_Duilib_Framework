@@ -1,14 +1,29 @@
-<html>
+﻿<html>
 <head>
 <meta charset="UTF-8" />
 <script>
-  const showMessage = () => {
-    const message = document.getElementById('message_input').value
-    // 调用一个 C++ 注册过的方法
-    NimCefWebInstance.call('ShowMessageBox', { message }, (error, result) => {
-      console.log(result)
-    })
-  }
+    				var start = (new Date()).getTime();
+				while ((new Date()).getTime() - start < 500) {
+					continue;
+				}
+    var str = 'hello';
+    const showMessage = () => {
+        const message = 'hello'; //= document.getElementById('message_input').value
+        // 调用一个 C++ 注册过的方法
+        NimCefWebInstance.call('ShowMessageBox', { message }, (error, result) => {
+        console.log(result);
+        console.log('line12=  ' + JSON.stringify(result));
+        str = JSON.stringify(result); 
+        console.log('str1',str);//当此行打印值等于result，可以拿到c++返回值
+        })
+    };
+    showMessage();
+        				var start = (new Date()).getTime();
+				while ((new Date()).getTime() - start < 500) {
+					continue;
+				}
+    console.log(str);//将会打印hello
+
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>

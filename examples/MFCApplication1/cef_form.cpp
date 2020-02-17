@@ -1,12 +1,42 @@
 #include "pch.h"
 #include "cef_form.h"
 #include "CDirSelectThread.h"
+
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <tchar.h>
+#include <io.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+//#include "xml2json.h"
+#include "rapidjson/prettywriter.h"
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/memorystream.h"
+using rapidjson::Document;
+using rapidjson::StringBuffer;
+using rapidjson::Writer;
+using namespace rapidjson;
 //#include "CppFuncRegister.h"
+
+namespace //which will write to configFile
+{
+	//exe为起点
+	const std::wstring RelativePathForHtmlRes = L"Ribbon\\HtmlRes\\index.html";
+}
+
 
 const std::wstring CefForm::kClassName = L"CEF_Control_Example";
 
 CefForm::CefForm()
+	:maxPrjNum(6),prjPaths_(maxPrjNum)
 {
+	webDataReader_.init();
+	ReadWorkPathFromFile("CFG/pkpm.ini");
 }
 
 CefForm::~CefForm()
@@ -46,7 +76,6 @@ void CefForm::InitWindow()
 {
 	// 监听鼠标单击事件
 	m_pRoot->AttachBubbledEvent(ui::kEventClick, nbase::Bind(&CefForm::OnClicked, this, std::placeholders::_1));
-	//m_pRoot->Setwi
 	//m_pRoot->AttachBubbledEvent(ui::kEventMouseDoubleClick, nbase::Bind(&CefForm::OnDbClicked, this, std::placeholders::_1));
 	//m_pRoot->AttachAllEvents(nbase::Bind(&CefForm::OnDbClicked, this, std::placeholders::_1));
 	// 从 XML 中查找指定控件
@@ -60,13 +89,14 @@ void CefForm::InitWindow()
 	edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
 
 	// 监听页面加载完毕通知
+	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
 
 	cef_control_->AttachDevTools(cef_control_dev_);
-	RegisterCppFuncs();
 
-	cef_control_->LoadURL(L"C:\\Users\\lsaejn\\Desktop\\HtmlDialog\\HtmlRes\\index.html");
-
+	auto path= nbase::win32::GetCurrentModuleDirectory()+ RelativePathForHtmlRes;
+	//cef_control_->LoadURL(L"file:///D:/works/NimDuilibFramework/bin/Ribbon/HtmlRes/index.html");
+	cef_control_->LoadURL(path);
 	if (!nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
 		cef_control_dev_->SetVisible(false);
 
@@ -94,42 +124,40 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	if (name == L"btn_dev_tool")
 	{
 		//我们启动一个模态/非模态对话框,嗯...模态比较简单一些
-		CWinThread* m_pThrd;
-		//启动
-		m_pThrd = AfxBeginThread(RUNTIME_CLASS(CDirSelectThread),THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED,0);
-		CDirSelectThread* workThread = dynamic_cast<CDirSelectThread*>(m_pThrd);
-		HANDLE event = CreateEvent(NULL, TRUE, FALSE, L"Quit");
-		workThread->SetQuitEvent(event);
-		workThread->ResumeThread();
-		HANDLE hp = m_pThrd->m_hThread;
-		if (hp)
-		{
-			while (WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &event, FALSE, 0, QS_ALLINPUT))
-			{
-				MSG msg;
-				if (::PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
-				{
-					if (msg.message == WM_LBUTTONDOWN)
-					{
-						MessageBox(NULL,L"fuck",L"ananann",1);
-					}
-					else
-					{
-						continue;
-					}
-					/*
-						::TranslateMessage(&msg);
-						::DispatchMessage(&msg);
-					*/
-				}
-			}
-			
-			CloseHandle(event);
-		}else//实在看不清楚代码了
-		{
-
-		}
-		
+		/**/
+		//CWinThread* m_pThrd;
+		////启动
+		//m_pThrd = AfxBeginThread(RUNTIME_CLASS(CDirSelectThread),THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED,0);
+		//CDirSelectThread* workThread = dynamic_cast<CDirSelectThread*>(m_pThrd);
+		//HANDLE event = CreateEvent(NULL, TRUE, FALSE, L"Quit");
+		//workThread->SetQuitEvent(event);
+		//workThread->ResumeThread();
+		//HANDLE hp = m_pThrd->m_hThread;
+		//if (hp)
+		//{
+		//	while (WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &event, FALSE, 0, QS_ALLINPUT))
+		//	{
+		//		MSG msg;
+		//		if (::PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+		//		{
+		//			if (msg.message == WM_LBUTTONDOWN)
+		//			{
+		//				MessageBox(NULL,L"fuck",L"ananann",1);
+		//			}
+		//			else
+		//			{
+		//				continue;
+		//			}
+		//			/*
+		//				::TranslateMessage(&msg);
+		//				::DispatchMessage(&msg);
+		//			*/
+		//		}
+		//	}
+		//	
+		//	CloseHandle(event);
+		//}
+		//
 		if (cef_control_->IsAttachedDevTools())
 		{
 			cef_control_->DettachDevTools();
@@ -195,7 +223,8 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			if (0x80 == (0x80 & GetKeyState(VK_CONTROL)))
 			{
-				OutputDebugString(L"fuck WM_KEYDOWN");			OutputDebugString(L"fuck WM_KEYDOWN");
+				//OutputDebugString(L"fuck WM_KEYDOWN");
+				//OutputDebugString(L"fuck WM_KEYDOWN");
 			}
 		}
 	}
@@ -232,23 +261,142 @@ void CefForm::OnLoadEnd(int httpStatusCode)
 {
 	FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
 	FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
-
-	// 注册一个方法提供前端调用
-	cef_control_->RegisterCppFunc(L"ShowMessageBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
-		callback(false, R"({ "message": "Success." })");
-	}));	
-	cef_control_->RegisterCppFunc(L"ShowDirBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
-		callback(false, R"({ "message": "Success." })");
-		}));
 }
 
 
 void CefForm::RegisterCppFuncs()
 {
-	cef_control_->RegisterCppFunc(L"ShowMessageBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
-		callback(false, R"({ "message": "Success." })");
-		}));
+	cef_control_->RegisterCppFunc(L"ShowMessageBox", 
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
+			callback(false, R"({ "message": "Success0." })");
+		})
+	);
+
+	cef_control_->RegisterCppFunc(L"CONFIGFILES",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			rapidjson::StringStream input(params.c_str());
+			rapidjson::Document document;
+			document.ParseStream(input);
+			std::string filePath=document["filePath"].GetString();
+			auto re = webDataReader_.readSpecific(filePath);
+			callback(true, re);
+			return;
+			}
+		)
+	);
+
+	cef_control_->RegisterCppFunc(L"READWORKPATHS",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			rapidjson::StringStream input(params.c_str());
+			rapidjson::Document document;
+			document.ParseStream(input);
+			std::string pkpmIniPath = document["pkpmIniPath"].GetString();
+			auto re=ReadWorkPathFromFile(pkpmIniPath);
+			callback(true, re);
+			return;
+			}
+		)
+	);
+
+}
+
+//fileName一般就是CFG/PKPM.ini了
+std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
+{
+	prjPaths_.clear();
+	const std::string fullpath = nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()) + filename.c_str();
+
+	//拼字符串给网页
+	rapidjson::Document doc;
+	doc.SetObject();
+	rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+	Value array(kArrayType);//< 创建一个数组对象
+	std::vector<std::string> vec;
+	char prjPathStr[256] = { 0 };
+	for (int i = 0; i < maxPrjNum; ++i)
+	{
+		auto workPathId = "WorkPath" + std::to_string((ULONGLONG)i);
+		memset(prjPathStr, 0, 256);
+		auto nRead = GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", prjPathStr, 256, fullpath.c_str());
+		if (!strcmp("error", prjPathStr))
+		{
+			//prjPathStr=="error"表明用户手动修改了配置文件!
+			continue;//or continue?
+		}
+		else if (prjPathStr[nRead - 1] != '\\')
+		{
+			//用户改了配置文件，但又没改对
+			continue;
+		}
+		std::string timeStamp;
+		auto ret = getPrjInfo(prjPathStr, timeStamp);
+		rapidjson::Value obj(rapidjson::kObjectType);//每一个数组里面是一个json格式
+		if (ret)
+		{
+			vec.emplace_back(prjPathStr);
+			Value key(kStringType);
+			key.SetString(workPathId.c_str(), allocator);
+			Value value(kStringType);
+			value.SetString(prjPathStr, allocator);
+			obj.AddMember("WorkPath", value, allocator);
+
+			value.SetString(timeStamp.c_str(), allocator);
+			obj.AddMember("Date", value, allocator);
+
+			std::string bmpPath = prjPathStr;
+			bmpPath += "BuildUp.bmp";
+			if (isSnapShotExist(bmpPath))
+			{
+				bmpPath = "file://" + bmpPath;//网页需要增加这个前缀
+				value.SetString(bmpPath.c_str(), allocator);
+				obj.AddMember("ImgPath", value, allocator);
+			}
+			else
+			{
+				value.SetString(bmpPath.c_str(), allocator);
+				obj.AddMember("ImgPath", "error", allocator);
+			}
+			array.PushBack(obj, allocator);
+		}
+	}
+	prjPaths_.put(vec.rbegin(), vec.rend());
+	doc.AddMember("Data", array, allocator);
+	rapidjson::StringBuffer s;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+	doc.Accept(writer);
+	std::string result= s.GetString();
+	return nbase::AnsiToUtf8(result);
+}
+
+
+bool CefForm::getPrjInfo(const std::string& pathStr, std::string& timestamp,
+	const char* surfix)
+{
+	auto index = pathStr.find_last_not_of("/\\");
+	std::string path = pathStr.substr(0, index + 1);
+	if (ENOENT == _access(path.c_str(), 0))
+		return false;
+	struct stat statbuf;
+	if (stat(path.c_str(), &statbuf) == 0)
+	{
+		if ((_S_IFMT & statbuf.st_mode) == _S_IFDIR)
+		{
+			auto seconds = statbuf.st_mtime;
+			auto tm_time = *localtime(&seconds);
+			char buf[64];
+			sprintf(buf, "%4d年%02d月%02d日 %02d:%02d",
+				tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
+				tm_time.tm_hour, tm_time.tm_min);
+			timestamp.assign(buf);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CefForm::isSnapShotExist(const std::string& path)
+{
+	ASSERT(!PathIsDirectoryA(path.c_str()));
+	return static_cast<bool>(PathFileExistsA(path.c_str()));
 }

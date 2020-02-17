@@ -55,6 +55,8 @@ void CefForm::InitWindow()
 	edit_url_->SetSelAllOnFocus(true);
 	edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
 
+	//RegisterCppFuncs();
+	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
 
@@ -130,9 +132,19 @@ void CefForm::OnLoadEnd(int httpStatusCode)
 	FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
 	FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
 
+	//RegisterCppFuncs();
+}
+
+void CefForm::RegisterCppFuncs()
+{
 	// 注册一个方法提供前端调用
-	cef_control_->RegisterCppFunc(L"ShowMessageBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
-		callback(false, R"({ "message": "Success." })");
-	}));
+	//
+	OutputDebugString(L"\n only register one time!\n");
+	bool ok=cef_control_->RegisterCppFunc(L"ShowMessageBox", ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback)
+		{
+		nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());//params就是js发的数据,callback是js传的回调
+		callback(false, R"({ "message": "C++ says : Success." })");//c++在这里调用js的回调函数
+		}));
+	if(!ok)
+		OutputDebugString(L"\n fuck \n");
 }

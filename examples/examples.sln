@@ -35,7 +35,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCApp", "MFCApp\MFCApp.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCLibrary1", "MFCLibrary1\MFCLibrary1.vcxproj", "{E0DF5D50-183F-4213-93B3-B7C1BD42202D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCApplication1", "MFCApplication1\MFCApplication1.vcxproj", "{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PkpmV5", "MFCApplication1\MFCApplication1.vcxproj", "{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dui", "DUI\dui.vcxproj", "{5BF948F2-A76F-4070-87A1-9A103151BE5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,6 +165,14 @@ Global
 		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|Win32.Build.0 = Release|Win32
 		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.ActiveCfg = Release|x64
 		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.Build.0 = Release|x64
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Debug|Win32.Build.0 = Debug|Win32
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Debug|x64.ActiveCfg = Debug|x64
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Debug|x64.Build.0 = Debug|x64
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Release|Win32.ActiveCfg = Release|Win32
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Release|Win32.Build.0 = Release|Win32
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Release|x64.ActiveCfg = Release|x64
+		{5BF948F2-A76F-4070-87A1-9A103151BE5E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

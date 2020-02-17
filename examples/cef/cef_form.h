@@ -37,6 +37,7 @@ private:
 	bool OnClicked(ui::EventArgs* msg);
 	bool OnNavigate(ui::EventArgs* msg);
 	void OnLoadEnd(int httpStatusCode);
+	void RegisterCppFuncs();
 
 private:
 	nim_comp::CefControlBase* cef_control_;

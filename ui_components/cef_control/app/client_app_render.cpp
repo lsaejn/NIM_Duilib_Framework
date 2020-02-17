@@ -86,7 +86,18 @@ bool ClientApp::OnBeforeNavigation(
 
 void ClientApp::OnContextCreated(CefRefPtr<CefBrowser> browser,	CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context) 
 {
+	{
+		//CefRefPtr<CefV8Accessor> accessor = …;
+		//CefRefPtr<CefV8Value> obj = CefV8Value::CreateObject(accessor);
+		  // Retrieve the context's window object.
+		CefRefPtr<CefV8Value> object = context->GetGlobal();
 
+		// Create a new V8 string value. See the "Basic JS Types" section below.
+		CefRefPtr<CefV8Value> str = CefV8Value::CreateString("My Value!");
+
+		// Add the string to the window object as "window.myval". See the "JS Objects" section below.
+		object->SetValue("myval", str, V8_PROPERTY_ATTRIBUTE_NONE);
+	}
 }
 
 void ClientApp::OnContextReleased(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,	CefRefPtr<CefV8Context> context) 
@@ -129,14 +140,26 @@ bool ClientApp::OnProcessMessageReceived(
 	ASSERT(source_process == PID_BROWSER);
 	// 收到 browser 的消息回复
 	const CefString& message_name = message->GetName();
+	//cj
 	if (message_name == kExecuteJsCallbackMessage)
 	{
 		int			callback_id	= message->GetArgumentList()->GetInt(0);
 		bool		has_error	= message->GetArgumentList()->GetBool(1);
 		CefString	json_string = message->GetArgumentList()->GetString(2);
 
+
+		int64 frame_id = message->GetArgumentList()->GetInt(3);
+		auto frame = browser->GetMainFrame();
+		CefRefPtr<CefV8Value> str = CefV8Value::CreateString(json_string);
+		//frame->GetV8Context()->GetGlobal()->SetValue("myval", str, V8_PROPERTY_ATTRIBUTE_NONE);
+		frame->GetV8Context()->Enter();
+		frame->GetV8Context()->GetGlobal()->DeleteValue("myval");
+		frame->GetV8Context()->GetGlobal()->SetValue("myval", str, V8_PROPERTY_ATTRIBUTE_NONE);
+		frame->GetV8Context()->Exit();
 		// 将收到的参数通过管理器传递给调用时传递的回调函数
 		render_js_bridge_->ExecuteJSCallbackFunc(callback_id, has_error, json_string);
+
+
 	}
 	else if (message_name == kCallJsFunctionMessage)
 	{

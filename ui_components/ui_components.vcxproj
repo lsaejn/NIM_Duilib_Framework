@@ -187,6 +187,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="cef_control\handler\MyResourceHandler.h" />
+    <ClInclude Include="cef_control\handler\MySchemeHandlerFactory.h" />
     <ClInclude Include="cef_control\util\auto_unregister.h" />
     <ClInclude Include="public_define.h" />
     <ClInclude Include="ui_cef_control.h" />
@@ -228,6 +230,8 @@
     <ClCompile Include="cef_control\control\cef_control_ui.cpp" />
     <ClCompile Include="cef_control\control\cef_native_control.cpp" />
     <ClCompile Include="cef_control\handler\browser_handler.cpp" />
+    <ClCompile Include="cef_control\handler\MyResourceHandler.cpp" />
+    <ClCompile Include="cef_control\handler\MySchemeHandlerFactory.cpp" />
     <ClCompile Include="cef_control\manager\cef_manager.cpp" />
     <ClCompile Include="cef_control\util\memory_dc.cpp" />
     <ClCompile Include="menu\ui_menu.cpp" />

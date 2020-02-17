@@ -70,6 +70,10 @@ BASE_EXPORT std::string UTF32ToUTF8(const std::basic_string<UTF32Char> &utf32);
 BASE_EXPORT std::basic_string<UTF32Char> UTF16ToUTF32(const std::wstring &utf16);
 BASE_EXPORT std::wstring UTF32ToUTF16(const std::basic_string<UTF32Char> &utf32);
 
+BASE_EXPORT std::string AnsiToUtf8(const std::string&);
+BASE_EXPORT std::wstring	 AnsiToUnicode(const std::string&);
+BASE_EXPORT std::string UnicodeToAnsi(const std::wstring& wstr);
+
 // the following functions are used to validate encoded streamings, such as utf-8, gbk, big5, etc.
 BASE_EXPORT void UTF8CreateLengthTable(unsigned table[256]);
 BASE_EXPORT bool ValidateUTF8Stream(const void* stream, unsigned length);

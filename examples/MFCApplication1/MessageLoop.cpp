@@ -11,7 +11,7 @@ void MainThread::Init()
 	// 如需修改请指定 Startup 最后两个参数
 	std::wstring theme_dir = nbase::win32::GetCurrentModuleDirectory();
 	ui::GlobalManager::Startup(theme_dir + L"resources\\", ui::CreateControlCallback(), false);
-	f_();
+	SpecificInit();
 }
 
 void MainThread::Cleanup()
@@ -23,5 +23,11 @@ void MainThread::Cleanup()
 
 void MainThread::SpecificInit()
 {
+	//比如使用网络功能
 	f_();
+}
+
+void MainThread::setFunc(const Func& func)
+{
+	f_ = func;
 }
