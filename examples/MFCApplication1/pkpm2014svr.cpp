@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "pch.h"
 #include "pkpm2014svr.h"
 #include <direct.h>
 #include <tchar.h>

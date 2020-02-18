@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "pch.h"
 #include "svr.h"
 #include "resource.h"
 #include <direct.h>
@@ -113,11 +113,11 @@ bool svr::GetAssignCFGPath(CString& strCFG,bool bMarchine)
 typedef   BOOL   (WINAPI   *SHCreateDirectory2)   (HWND   hwnd, LPCWSTR   pszPath);
 bool svr::CreateDirtory(const char*path)
 {
-	HMODULE   hmodShell   =   LoadLibrary( "shell32.dll ");
+	HMODULE hmodShell=LoadLibraryA("shell32.dll");
 	if(hmodShell)
 	{
 		BOOL ok=false;
-		SHCreateDirectory2   shcd   =   (SHCreateDirectory2)GetProcAddress(hmodShell,   "SHCreateDirectory");
+		SHCreateDirectory2 shcd=(SHCreateDirectory2)GetProcAddress(hmodShell, "SHCreateDirectory");
 		if(shcd)
 		{
 			wchar_t wpath[MAX_PATH];
@@ -179,7 +179,7 @@ bool svr::SaveWorkPathToFile_CFGPATH(const CString&path)
 	}
 	if(!ok)
 	{
-		arrItems.push_back("WORK");
+		arrItems.push_back(L"WORK");
 		CString ss=path;
 		//ss+="\\";
 		FixPathStr(ss);
@@ -193,7 +193,7 @@ bool svr::SaveWorkPathToFile_CFGPATH(const CString&path)
 		for(int i=0;i<num;++i)
 		{
 			file2.WriteString(arrItems[i]);
-			file2.WriteString("\n");
+			file2.WriteString(L"\n");
 		}
 		file2.Close();
 	}

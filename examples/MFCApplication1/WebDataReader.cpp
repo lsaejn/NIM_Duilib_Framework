@@ -15,7 +15,7 @@ void WebDataReader::init()
 	load();
 }
 
-const std::string& WebDataReader::readAll() const
+const std::string WebDataReader::readAll() const
 {
 	return{};
 }

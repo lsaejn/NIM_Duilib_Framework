@@ -135,12 +135,6 @@
     <ClInclude Include="public_define.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cef_control\handler\MySchemeHandlerFactory.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="cef_control\handler\MyResourceHandler.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -211,12 +205,6 @@
     </ClCompile>
     <ClCompile Include="cef_control\util\memory_dc.cpp">
       <Filter>cef_control\util</Filter>
-    </ClCompile>
-    <ClCompile Include="cef_control\handler\MyResourceHandler.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="cef_control\handler\MySchemeHandlerFactory.cpp">
-      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

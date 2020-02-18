@@ -168,6 +168,24 @@
     <ClInclude Include="ShortCutHandler.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="svr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pkpm2014svr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlInfo\SlimXml.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlInfo\InfoItem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\json-forwards.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="json\json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCApplication1.cpp">
@@ -189,6 +207,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ShortCutHandler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="svr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pkpm2014svr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlInfo\SlimXml.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlInfo\InfoItem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="json\jsoncpp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

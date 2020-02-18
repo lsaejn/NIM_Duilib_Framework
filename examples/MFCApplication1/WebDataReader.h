@@ -9,7 +9,7 @@ class WebDataReader
 {
 public:
 	void init();
-	const std::string& readAll() const;
+	const std::string readAll() const;
 	//不返回引用
 	const std::string readSpecific(const std::string& filePath) const;
 	//<fileName,content in u8>
