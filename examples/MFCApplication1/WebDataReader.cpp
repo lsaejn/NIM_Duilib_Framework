@@ -22,8 +22,8 @@ const std::string& WebDataReader::readAll() const
 
 const std::string WebDataReader::readSpecific(const std::string& filePath) const
 {
-    auto iter = xmlDatd_.find(filePath);
-    if (iter != xmlDatd_.end())
+    auto iter = xmlData_.find(filePath);
+    if (iter != xmlData_.end())
         return iter->second;
     else
         return {};
@@ -48,7 +48,7 @@ void WebDataReader::load()
 		ASSERT(succ);
         std::string u8fileName = p.path().filename().generic_u8string();
         u8fileName = kRelativePathForPkpmAppMenuAnsi + u8fileName;
-        xmlDatd_[u8fileName] = xml2json(nbase::AnsiToUtf8(content).c_str());
+        xmlData_[u8fileName] = xml2json(nbase::AnsiToUtf8(content).c_str());
         //std::string ansi_json = xml2json(xmlStr.c_str());
     }
 

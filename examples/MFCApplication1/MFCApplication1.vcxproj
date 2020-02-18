@@ -32,7 +32,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -238,6 +238,7 @@
     <ClInclude Include="rapidxml\rapidxml_iterators.hpp" />
     <ClInclude Include="rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="ShortCutHandler.h" />
     <ClInclude Include="WebDataReader.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MessageLoop.h" />
@@ -250,6 +251,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cef_form.cpp" />
+    <ClCompile Include="ShortCutHandler.cpp" />
     <ClCompile Include="WebDataReader.cpp" />
     <ClCompile Include="MessageLoop.cpp" />
     <ClCompile Include="MFCApplication1.cpp" />

@@ -12,9 +12,10 @@ public:
 	const std::string& readAll() const;
 	//不返回引用
 	const std::string readSpecific(const std::string& filePath) const;
+	//<fileName,content in u8>
 	typedef std::unordered_map<std::string, std::string> XmlDataPair;
 private:
 	void load();
-	XmlDataPair xmlDatd_;
+	XmlDataPair xmlData_;
 };
 

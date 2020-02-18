@@ -74,6 +74,7 @@ ui::Control* CefForm::CreateControl(const std::wstring& pstrClass)
 
 void CefForm::InitWindow()
 {
+	SetIcon(128);
 	// 监听鼠标单击事件
 	m_pRoot->AttachBubbledEvent(ui::kEventClick, nbase::Bind(&CefForm::OnClicked, this, std::placeholders::_1));
 	//m_pRoot->AttachBubbledEvent(ui::kEventMouseDoubleClick, nbase::Bind(&CefForm::OnDbClicked, this, std::placeholders::_1));
@@ -83,6 +84,7 @@ void CefForm::InitWindow()
 	cef_control_dev_	= dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control_dev"));
 	btn_dev_tool_		= dynamic_cast<ui::Button*>(FindControl(L"btn_dev_tool"));
 	edit_url_			= dynamic_cast<ui::RichEdit*>(FindControl(L"edit_url"));
+	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
 
 	// 设置输入框样式
 	edit_url_->SetSelAllOnFocus(true);
@@ -107,6 +109,9 @@ void CefForm::InitWindow()
 	hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
 	::SetWindowLongW(hwnd, GWL_EXSTYLE, style);//重新设置窗体样式
 	SetSizeBox({ 5,5,5,5 });
+
+	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
+	SetCaption("hello fucker");
 }
 
 
@@ -299,6 +304,24 @@ void CefForm::RegisterCppFuncs()
 		)
 	);
 
+	cef_control_->RegisterCppFunc(L"OnSetCaption",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			rapidjson::StringStream input(params.c_str());
+			rapidjson::Document document;
+			document.ParseStream(input);
+			const char* captionName = document["Caption"].GetString();
+			SetCaption(captionName);
+#ifdef DEBUG
+			std::string debugStr = R"({ "SetCaption": "Success." })";
+			callback(true, debugStr);
+#endif // DEBUG
+			return;
+			}
+		)
+	);
+
+
+
 }
 
 //fileName一般就是CFG/PKPM.ini了
@@ -330,7 +353,7 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 			continue;
 		}
 		std::string timeStamp;
-		auto ret = getPrjInfo(prjPathStr, timeStamp);
+		auto ret = GetPrjInfo(prjPathStr, timeStamp);
 		rapidjson::Value obj(rapidjson::kObjectType);//每一个数组里面是一个json格式
 		if (ret)
 		{
@@ -346,7 +369,7 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 
 			std::string bmpPath = prjPathStr;
 			bmpPath += "BuildUp.bmp";
-			if (isSnapShotExist(bmpPath))
+			if (IsSnapShotExist(bmpPath))
 			{
 				bmpPath = "file://" + bmpPath;//网页需要增加这个前缀
 				value.SetString(bmpPath.c_str(), allocator);
@@ -370,7 +393,7 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 }
 
 
-bool CefForm::getPrjInfo(const std::string& pathStr, std::string& timestamp,
+bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 	const char* surfix)
 {
 	auto index = pathStr.find_last_not_of("/\\");
@@ -395,8 +418,13 @@ bool CefForm::getPrjInfo(const std::string& pathStr, std::string& timestamp,
 	return false;
 }
 
-bool CefForm::isSnapShotExist(const std::string& path)
+bool CefForm::IsSnapShotExist(const std::string& path)
 {
 	ASSERT(!PathIsDirectoryA(path.c_str()));
 	return static_cast<bool>(PathFileExistsA(path.c_str()));
+}
+
+void CefForm::SetCaption(const std::string& name)
+{
+	label_->SetText(nbase::UTF8ToUTF16(name));
 }

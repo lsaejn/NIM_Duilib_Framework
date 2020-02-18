@@ -5,7 +5,7 @@
       <Control width="auto" height="auto" bkimage="logo_18x18.png" valign="center" margin="8"/>
       <Control />
       <Control width="auto" height="auto" valign="center" margin="8"/>
-      <Label text="随便取个标题" valign="center" margin="8" normaltextcolor="white"/>
+      <Label name="projectName" text="随便取个标题" valign="center" margin="8" normaltextcolor="white"/>
       <Control />
       <Button name="btn_dev_tool" width="auto" height="auto" valign="center" tooltiptext="开发者工具" bkimage="btn_dev_tool.png" margin="4"/>
       <Button class="btn_wnd_min" name="minbtn" margin="4,6,0,0"/>

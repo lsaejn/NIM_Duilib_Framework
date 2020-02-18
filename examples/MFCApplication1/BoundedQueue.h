@@ -21,6 +21,7 @@ public:
 };
 
 #define CHECK_ERROR(CONDITION, MESSAGE_STRING) do{if(!(CONDITION))throw Error(MESSAGE_STRING);}while(0)
+
 namespace collection_utility
 {
 	template<typename T, typename VecTy=std::deque<T>>
@@ -114,7 +115,6 @@ namespace collection_utility
 	private:
 		void rangeNoError(const int index)
 		{
-
 			CHECK_ERROR( (index>=0) && (static_cast<size_t>(index)<queue_.size()),"index not in range.");
 		}
 
