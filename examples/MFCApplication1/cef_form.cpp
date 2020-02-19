@@ -528,25 +528,26 @@ void CefForm::DataFormatTransfer(const std::string& module_app_name)
 	}
 	try
 	{
-		cef_control_->CallJSFunction(L"MenuSelectionOnHtml", L"", ToWeakCallback([this, module_app_name](const std::string& json_result) {
+		cef_control_->CallJSFunction(L"MenuSelectionOnHtml", L"", 
+			ToWeakCallback([this, module_app_name](const std::string& json_result){
 				//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(json_result), 3000, GetHWND());
-			std::string str_Ret = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(module_app_name));
-			auto vec = nbase::StringTokenize(str_Ret.c_str(), ",");
-			auto iter = vec.begin();
-			ShowWindow(SW_HIDE);
-			char oldWorkPath[256] = { 0 };
-			GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
-			int prjSelected = -1;
-			BOOL ret = SetCurrentDirectoryA(prjPaths_[prjSelected].c_str());
-			if (!ret)
-			{
-				MessageBoxA(NULL, "工作目录错误或者没有权限", "PKPMV51", 1);
-			}
-			//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
-			SetCurrentDirectoryA(oldWorkPath);
-			//在这里通知网页更新工程
-			//SaveMenuSelection();
-			ShowWindow(SW_SHOW);
+				std::string str_Ret = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(module_app_name));
+				auto vec = nbase::StringTokenize(str_Ret.c_str(), ",");
+				auto iter = vec.begin();
+				ShowWindow(SW_HIDE);
+				char oldWorkPath[256] = { 0 };
+				GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
+				int prjSelected = -1;
+				BOOL ret = SetCurrentDirectoryA(prjPaths_[prjSelected].c_str());
+				if (!ret)
+				{
+					MessageBoxA(NULL, "工作目录错误或者没有权限", "PKPMV51", 1);
+				}
+				//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
+				SetCurrentDirectoryA(oldWorkPath);
+				//在这里通知网页更新工程
+				//SaveMenuSelection();
+				ShowWindow(SW_SHOW);
 			}
 		));
 	}
@@ -554,4 +555,63 @@ void CefForm::DataFormatTransfer(const std::string& module_app_name)
 	{
 		std::abort();
 	}
+}
+
+void CefForm::OnDbClickProject(const std::vector<std::string>& args)
+{
+	if(args.size()!=5)
+		::AfxMessageBox(L"严重错误");
+	if (!prjPaths_.size())
+	{//不应该再出现这个错误
+		::AfxMessageBox(L"工作目录不存在");
+		return;
+	}
+	std::string path(args[0]);
+	{
+		ShowWindow(SW_HIDE);
+		char oldWorkPath[256] = { 0 };
+		GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
+		auto ret = SetCurrentDirectoryA(path.c_str());
+		if (!ret)
+		{
+			::AfxMessageBox(L"工作目录错误或者没有权限");
+			//return;
+		}
+		//run_cmd(OLE2T(secMenu), OLE2T(trdMenu), "");
+		SetCurrentDirectoryA(oldWorkPath);
+		//SaveMenuSelection();
+		ShowWindow(SW_SHOW);
+	}
+}
+
+void CefForm::OnListMenu(const std::vector<std::string>& args)
+{
+	//坑爹啊
+	if (!prjPaths_.size())
+	{
+		AfxMessageBox(L"没有选择工作目录");
+		return;
+	}
+	//auto prjSelected = std::stoi(MenuSelectionOnHtml().back().second);
+	OnDbClickProject(args);
+}
+
+void CefForm::OnOpenDocument(const std::string& rootInRibbon, const std::string& filename)
+{
+
+	std::string FullPath(nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()) + "\\" + "Ribbon\\");
+	FullPath += rootInRibbon;
+	FullPath += filename;
+
+	SHELLEXECUTEINFO ShExecInfo;
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = _T("open");
+	ShExecInfo.lpFile = nbase::AnsiToUnicode(FullPath.c_str()).c_str();
+	ShExecInfo.lpParameters = _T("");
+	ShExecInfo.lpDirectory = NULL;
+	ShExecInfo.nShow = SW_SHOW;
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
 }

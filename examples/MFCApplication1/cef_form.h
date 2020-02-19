@@ -37,8 +37,6 @@ private:
 	
 	//前端读取菜单
 	WEBINTERFACE std::string ReadWorkPathFromFile(const std::string& iniFileName);
-	//读取工程信息
-	WEBINTERFACE bool GetPrjInfo(const std::string& path, std::string& timestamp, const char* surfix = "buildUp.bmp");
 	//修改标题栏
 	WEBINTERFACE void SetCaption(const std::string& name);
 	//获取菜单选择
@@ -52,6 +50,12 @@ private:
 	//数据转换
 	WEBINTERFACE void DataFormatTransfer(const std::string& module_app_name);
 
+	WEBINTERFACE void OnDbClickProject(const std::vector<std::string>& args);
+	WEBINTERFACE void OnListMenu(const std::vector<std::string>& args);
+	WEBINTERFACE void OnOpenDocument(const std::string& RootInRibbon, const std::string& filePath);
+
+	//读取工程信息
+	bool GetPrjInfo(const std::string& path, std::string& timestamp, const char* surfix = "buildUp.bmp");
 	//inner function
 	void RegisterCppFuncs();
 	bool IsSnapShotExist(const std::string& path);
