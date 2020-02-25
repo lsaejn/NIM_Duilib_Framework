@@ -141,7 +141,7 @@ void CefForm::InitWindow()
 	SetSizeBox({ 5,5,5,5 });
 
 	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
-	SetCaption("hello fucker");
+	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    调用接口OnSetCaption修改软件");
 }
 
 

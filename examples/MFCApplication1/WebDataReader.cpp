@@ -3,8 +3,6 @@
 #include "xml2json.h"
 
 #include <filesystem>
-#include <iostream>
-#include <string_view>
 
 
 const std::wstring kRelativePathForPkpmAppMenu = L"CFG\\PKPMAPPMENU\\";

@@ -80,8 +80,9 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;$(IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.24.28314\atlmfc\include;./</IncludePath>
-    <LibraryPath>..\..\libs\;D:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.24.28314\atlmfc\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;./;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
+    <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -105,8 +106,9 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>D:\works\NimDuilibFramework\libs\base_d.lib;D:\works\NimDuilibFramework\libs\duilib_d.lib;D:\works\NimDuilibFramework\libs\ui_components.lib;D:\works\NimDuilibFramework\libs\libcef_dll_wrapper_d.lib;nim_libcef_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>base_d.lib;duilib_d.lib;ui_components.lib;libcef_dll_wrapper_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>nim_libcef.dll</DelayLoadDLLs>
+      <AdditionalLibraryDirectories>../../libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -121,6 +123,9 @@
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
+    <PostBuildEvent>
+      <Command>copy D:\works\NimDuilibFramework\bin\PkpmV5_d.exe D:\PKPMDIR\bin\PkpmV5_d.exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

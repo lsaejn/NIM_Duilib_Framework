@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "pch.h"
 #include "AppDllAdaptor.h"
 #include <tchar.h>
 #include <io.h>
