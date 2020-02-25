@@ -344,4 +344,5 @@ ASALocalRun/
 healthchecksdb
 /examples/MFCLibrary1
 /examples/MFCApp
-/bin
+/bin/*
+*.bsc
