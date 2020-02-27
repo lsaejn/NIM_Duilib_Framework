@@ -81,37 +81,37 @@ void CGjColorPropertyPage::OnColorBtnEndSelectPgcellcolorctrl(short nRow, short 
 void CGjColorPropertyPage::InitIDName()
 {
 	m_gjname.RemoveAll();
-	m_gjname.Add("烧结砖墙");      //1
-	m_gjname.Add("混凝土墙");
-	m_gjname.Add("蒸压砖墙");
-	m_gjname.Add("空心砌块墙");
-	m_gjname.Add("轻骨料墙");
-	m_gjname.Add("砌体柱");
-	m_gjname.Add("钢柱");
-	m_gjname.Add("混凝土柱");
-	m_gjname.Add("刚性杆柱");
-	m_gjname.Add("轻骨料柱");       //10
-	m_gjname.Add("钢主梁");
-	m_gjname.Add("混凝土主梁");
-	m_gjname.Add("刚性杆主梁");
-	m_gjname.Add("轻骨料主梁");
-	m_gjname.Add("门窗洞口");
-	m_gjname.Add("楼板");
-	m_gjname.Add("楼板洞口");
-	m_gjname.Add("钢斜杆");
-	m_gjname.Add("混凝土斜杆");
-	m_gjname.Add("刚性杆斜杆");     //20
-	m_gjname.Add("轻骨料斜杆");
-	m_gjname.Add("钢次梁");
-	m_gjname.Add("混凝土次梁");
-	m_gjname.Add("刚性杆次梁");
-	m_gjname.Add("轻骨料次梁");
-	m_gjname.Add("楼梯示意");
-	m_gjname.Add("混凝土圈梁");
-	m_gjname.Add("钢圈梁");
-	m_gjname.Add("地面");
-	m_gjname.Add("悬挑板");
-	m_gjname.Add("层间板");
+	m_gjname.Add(L"烧结砖墙");      //1
+	m_gjname.Add(L"混凝土墙");
+	m_gjname.Add(L"蒸压砖墙");
+	m_gjname.Add(L"空心砌块墙");
+	m_gjname.Add(L"轻骨料墙");
+	m_gjname.Add(L"砌体柱");
+	m_gjname.Add(L"钢柱");
+	m_gjname.Add(L"混凝土柱");
+	m_gjname.Add(L"刚性杆柱");
+	m_gjname.Add(L"轻骨料柱");       //10
+	m_gjname.Add(L"钢主梁");
+	m_gjname.Add(L"混凝土主梁");
+	m_gjname.Add(L"刚性杆主梁");
+	m_gjname.Add(L"轻骨料主梁");
+	m_gjname.Add(L"门窗洞口");
+	m_gjname.Add(L"楼板");
+	m_gjname.Add(L"楼板洞口");
+	m_gjname.Add(L"钢斜杆");
+	m_gjname.Add(L"混凝土斜杆");
+	m_gjname.Add(L"刚性杆斜杆");     //20
+	m_gjname.Add(L"轻骨料斜杆");
+	m_gjname.Add(L"钢次梁");
+	m_gjname.Add(L"混凝土次梁");
+	m_gjname.Add(L"刚性杆次梁");
+	m_gjname.Add(L"轻骨料次梁");
+	m_gjname.Add(L"楼梯示意");
+	m_gjname.Add(L"混凝土圈梁");
+	m_gjname.Add(L"钢圈梁");
+	m_gjname.Add(L"地面");
+	m_gjname.Add(L"悬挑板");
+	m_gjname.Add(L"层间板");
 }
 void CGjColorPropertyPage::GetGjColor()
 {
@@ -125,38 +125,38 @@ void CGjColorPropertyPage::GetGjColor()
 		GetDefautColor();
 		SetGjColor();
 	}
-	m_ncolor=GetPrivateProfileInt("color","ncnt",0,strColorfilename);
-	m_Solution=GetPrivateProfileInt("solution","solution",0,strColorfilename);
+	m_ncolor=GetPrivateProfileInt(_T("color"),_T("ncnt"),0,strColorfilename);
+	m_Solution=GetPrivateProfileInt(_T("solution"),_T("solution"),0,strColorfilename);
 	if (m_Solution==0)
 	{
 		for(int i=0;i<m_ncolor&&i<m_gjname.GetSize();i++){
 			strName = m_gjname.ElementAt(i);
-			m_color[i] = GetPrivateProfileInt("color0",strName,0,strColorfilename);
-			m_KPASTE[i] = GetPrivateProfileInt("transparence0",strName,0,strColorfilename);
+			m_color[i] = GetPrivateProfileInt(_T("color0"),strName,0,strColorfilename);
+			m_KPASTE[i] = GetPrivateProfileInt(_T("transparence0"),strName,0,strColorfilename);
 		}
 	}
 	else if(m_Solution==1)
 	{
 		for(int i=0;i<m_ncolor&&i<m_gjname.GetSize();i++){
 			strName = m_gjname.ElementAt(i);
-			m_color[i] = GetPrivateProfileInt("color1",strName,0,strColorfilename);
-			m_KPASTE[i] = GetPrivateProfileInt("transparence1",strName,0,strColorfilename);
+			m_color[i] = GetPrivateProfileInt(_T("color1"),strName,0,strColorfilename);
+			m_KPASTE[i] = GetPrivateProfileInt(_T("transparence1"),strName,0,strColorfilename);
 		}
 	}
 	else if(m_Solution==2)
 	{
 		for(int i=0;i<m_ncolor&&i<m_gjname.GetSize();i++){
 			strName = m_gjname.ElementAt(i);
-			m_color[i] = GetPrivateProfileInt("colorUser1",strName,0,strColorfilename);
-			m_KPASTE[i] = GetPrivateProfileInt("transparenceUser1",strName,0,strColorfilename);
+			m_color[i] = GetPrivateProfileInt(_T("colorUser1"),strName,0,strColorfilename);
+			m_KPASTE[i] = GetPrivateProfileInt(_T("transparenceUser1"),strName,0,strColorfilename);
 		}
 	}
 	else if(m_Solution==3)
 	{
 		for(int i=0;i<m_ncolor&&i<m_gjname.GetSize();i++){
 			strName = m_gjname.ElementAt(i);
-			m_color[i] = GetPrivateProfileInt("colorUser2",strName,0,strColorfilename);
-			m_KPASTE[i] = GetPrivateProfileInt("transparenceUser2",strName,0,strColorfilename);
+			m_color[i] = GetPrivateProfileInt(_T("colorUser2"),strName,0,strColorfilename);
+			m_KPASTE[i] = GetPrivateProfileInt(_T("transparenceUser2"),strName,0,strColorfilename);
 		}
 	}
 
@@ -569,55 +569,55 @@ void CGjColorPropertyPage::SetGjColor()
 
 	strColorfilename = GetColorFileName();
 
-	strTmp.Format("%d",m_ncolor);
-	::WritePrivateProfileString("color","ncnt",strTmp,strColorfilename);
+	strTmp.Format(L"%d",m_ncolor);
+	::WritePrivateProfileString(L"color",L"ncnt",strTmp,strColorfilename);
 	for(int i=0;i<m_ncolor;i++){
 		strName = m_gjname.ElementAt(i);
-		strTmp.Format("%d",m_color[i]);
-		::WritePrivateProfileString("color",strName,strTmp,strColorfilename);
-		strTmp.Format("%d",m_KPASTE[i]);
-		::WritePrivateProfileString("transparence",strName,strTmp,strColorfilename);
+		strTmp.Format(L"%d",m_color[i]);
+		::WritePrivateProfileString(L"color",strName,strTmp,strColorfilename);
+		strTmp.Format(L"%d",m_KPASTE[i]);
+		::WritePrivateProfileString(L"transparence",strName,strTmp,strColorfilename);
 	}
-	strTmp.Format("%d",m_Solution);
-	::WritePrivateProfileString("solution","solution",strTmp,strColorfilename);
+	strTmp.Format(L"%d",m_Solution);
+	::WritePrivateProfileString(L"solution",L"solution",strTmp,strColorfilename);
 	if (m_Solution==0)
 	{
 		for(int i=0;i<m_ncolor;i++){
 			strName = m_gjname.ElementAt(i);
-			strTmp.Format("%d",m_color[i]);
-			::WritePrivateProfileString("color0",strName,strTmp,strColorfilename);
-			strTmp.Format("%d",m_KPASTE[i]);
-			::WritePrivateProfileString("transparence0",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_color[i]);
+			::WritePrivateProfileString(L"color0",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_KPASTE[i]);
+			::WritePrivateProfileString(L"transparence0",strName,strTmp,strColorfilename);
 		}
 	}
 	else if(m_Solution==1)
 	{
 		for(int i=0;i<m_ncolor;i++){
 			strName = m_gjname.ElementAt(i);
-			strTmp.Format("%d",m_color[i]);
-			::WritePrivateProfileString("color1",strName,strTmp,strColorfilename);
-			strTmp.Format("%d",m_KPASTE[i]);
-			::WritePrivateProfileString("transparence1",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_color[i]);
+			::WritePrivateProfileString(L"color1",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_KPASTE[i]);
+			::WritePrivateProfileString(L"transparence1",strName,strTmp,strColorfilename);
 		}
 	}
 	else if(m_Solution==2)
 	{
 		for(int i=0;i<m_ncolor;i++){
 			strName = m_gjname.ElementAt(i);
-			strTmp.Format("%d",m_color[i]);
-			::WritePrivateProfileString("colorUser1",strName,strTmp,strColorfilename);
-			strTmp.Format("%d",m_KPASTE[i]);
-			::WritePrivateProfileString("transparenceUser1",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_color[i]);
+			::WritePrivateProfileString(L"colorUser1",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_KPASTE[i]);
+			::WritePrivateProfileString(L"transparenceUser1",strName,strTmp,strColorfilename);
 		}
 	}
 	else if(m_Solution==3)
 	{
 		for(int i=0;i<m_ncolor;i++){
 			strName = m_gjname.ElementAt(i);
-			strTmp.Format("%d",m_color[i]);
-			::WritePrivateProfileString("colorUser2",strName,strTmp,strColorfilename);
-			strTmp.Format("%d",m_KPASTE[i]);
-			::WritePrivateProfileString("transparenceUser2",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_color[i]);
+			::WritePrivateProfileString(L"colorUser2",strName,strTmp,strColorfilename);
+			strTmp.Format(L"%d",m_KPASTE[i]);
+			::WritePrivateProfileString(L"transparenceUser2",strName,strTmp,strColorfilename);
 		}
 	}
 }
@@ -639,9 +639,9 @@ void CGjColorPropertyPage::OnBnClickedDefault()
 		m_Grid.SetCellType(i+1,2,7);
 		m_Grid.SetItemBkColour(i+1,2,m_color[i]);
 		m_Grid.SetItemText(i+1,1,m_gjname.ElementAt(i));
-		strTmp.Format("%d",i+1);
+		strTmp.Format(L"%d",i+1);
 		m_Grid.SetItemText(i+1,0,strTmp);
-		strTmp.Format("%d",m_KPASTE[i]);
+		strTmp.Format(L"%d",m_KPASTE[i]);
 		m_Grid.SetItemText(i+1,3,strTmp);
 	}
 	UpdateData(FALSE);
@@ -670,18 +670,18 @@ BOOL CGjColorPropertyPage::OnInitDialog()
 	//	m_Grid.SetColWidth(2,(short)(rect.Width()*0.3-12));
 	//	m_Grid.SetColWidth(3,(short)(rect.Width()*0.2));
 
-	m_Grid.SetItemText(0,0,"序号");
-	m_Grid.SetItemText(0,1,"类别");
-	m_Grid.SetItemText(0,2,"颜色");
-	m_Grid.SetItemText(0,3,"透明度");
+	m_Grid.SetItemText(0,0,L"序号");
+	m_Grid.SetItemText(0,1,L"类别");
+	m_Grid.SetItemText(0,2,L"颜色");
+	m_Grid.SetItemText(0,3,L"透明度");
 
 	for(int i=0;i<m_ncolor;i++){
 		m_Grid.SetCellType(i+1,2,7);
 		m_Grid.SetItemBkColour(i+1,2,m_color[i]);
 		m_Grid.SetItemText(i+1,1,m_gjname.ElementAt(i));
-		strTmp.Format("%d",i+1);
+		strTmp.Format(L"%d",i+1);
 		m_Grid.SetItemText(i+1,0,strTmp);
-		strTmp.Format("%d",m_KPASTE[i]);
+		strTmp.Format(L"%d",m_KPASTE[i]);
 		m_Grid.SetItemText(i+1,3,strTmp);
 		//m_Grid.SetReadOnly(TRUE);
 	}
@@ -689,7 +689,7 @@ BOOL CGjColorPropertyPage::OnInitDialog()
 	if(m_Solution<0 || m_Solution>3)
 	m_Solution=0;
 	CString pkpminipath=GetPKPMFileName();
-	int tmpint=GetPrivateProfileInt("PKPMMENU","配色方案",-1,pkpminipath);
+	int tmpint=GetPrivateProfileInt(L"PKPMMENU",L"配色方案",-1,pkpminipath);
 	if (tmpint>=0)
 	{
 		m_ToolbarColorSchem=tmpint;
@@ -709,15 +709,15 @@ void CGjColorPropertyPage::OnOK()
 	for(int i=0;i<m_ncolor&&i<m_Grid.GetRowCount()+1;i++){
 		m_color[i] = m_Grid.GetItemBkColour(i+1,2);
 		strTmp=m_Grid.GetCellString(i+1,3);
-		ntemp=atoi(strTmp);
+		ntemp= _tstoi(strTmp);
 		if(ntemp>100 || ntemp<0) ntemp=0;
 		m_KPASTE[i] = ntemp;
 	}
 	SetGjColor();
 	CString pkpminipath=GetPKPMFileName();
 	CString tmp;
-	tmp.Format("%d",m_ToolbarColorSchem);
-	::WritePrivateProfileString("PKPMMENU","配色方案",tmp,pkpminipath);
+	tmp.Format(L"%d",m_ToolbarColorSchem);
+	::WritePrivateProfileString(L"PKPMMENU",L"配色方案",tmp,pkpminipath);
 	UpdateData(FALSE);
 	CPropertyPage::OnOK();
 }
@@ -740,9 +740,9 @@ void CGjColorPropertyPage::OnCbnSelchangeCombocolor()
 				m_Grid.SetCellType(i+1,2,7);
 				m_Grid.SetItemBkColour(i+1,2,m_color[i]);
 				m_Grid.SetItemText(i+1,1,m_gjname.ElementAt(i));
-				strTmp.Format("%d",i+1);
+				strTmp.Format(L"%d",i+1);
 				m_Grid.SetItemText(i+1,0,strTmp);
-				strTmp.Format("%d",m_KPASTE[i]);
+				strTmp.Format(L"%d",m_KPASTE[i]);
 				m_Grid.SetItemText(i+1,3,strTmp);
 			}
 		}

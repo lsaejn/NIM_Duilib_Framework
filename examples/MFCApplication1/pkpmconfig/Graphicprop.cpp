@@ -78,28 +78,28 @@ bool CGraphicprop::OnInitVerComb()
 
 	m_dwgSelOption.RemoveAll();
 	//m_dwgSelOption.Add("Acad R10");
-	m_dwgSelOption.Add("Acad R12");
-	m_dwgSelOption.Add("Acad R13");
-	m_dwgSelOption.Add("Acad R14");
+	m_dwgSelOption.Add(L"Acad R12");
+	m_dwgSelOption.Add(L"Acad R13");
+	m_dwgSelOption.Add(L"Acad R14");
 
-	m_dwgSelOption.Add("Acad2000");
-	m_dwgSelOption.Add("Acad2004");
-	m_dwgSelOption.Add("Acad2007");
-	m_dwgSelOption.Add("Acad2010");
-	m_dwgSelOption.Add("Acad2013");
+	m_dwgSelOption.Add(L"Acad2000");
+	m_dwgSelOption.Add(L"Acad2004");
+	m_dwgSelOption.Add(L"Acad2007");
+	m_dwgSelOption.Add(L"Acad2010");
+	m_dwgSelOption.Add(L"Acad2013");
 
 
 
 	m_dwgSelUI.RemoveAll();
-	m_dwgSelUI.Add("Acad R12(Acad R12)");
-	m_dwgSelUI.Add("Acad R13(Acad R13)");
-	m_dwgSelUI.Add("Acad R14(Acad R14)");
+	m_dwgSelUI.Add(L"Acad R12(Acad R12)");
+	m_dwgSelUI.Add(L"Acad R13(Acad R13)");
+	m_dwgSelUI.Add(L"Acad R14(Acad R14)");
 
-	m_dwgSelUI.Add("Acad2000(Acad2000-2002)");
-	m_dwgSelUI.Add("Acad2004(Acad2004-2006)");
-	m_dwgSelUI.Add("Acad2007(Acad2007-2009)");
-	m_dwgSelUI.Add("Acad2010(Acad2010-2012)");
-	m_dwgSelUI.Add("Acad2013(Acad2013-2017)");
+	m_dwgSelUI.Add(L"Acad2000(Acad2000-2002)");
+	m_dwgSelUI.Add(L"Acad2004(Acad2004-2006)");
+	m_dwgSelUI.Add(L"Acad2007(Acad2007-2009)");
+	m_dwgSelUI.Add(L"Acad2010(Acad2010-2012)");
+	m_dwgSelUI.Add(L"Acad2013(Acad2013-2017)");
 
 	for (int i=0;i<m_dwgSelUI.GetSize();i++)
 	{
@@ -116,15 +116,15 @@ BOOL CGraphicprop::OnInitDialog()
 	//PkpmmainConfigJson::Get().Load();
 
 
-	const char* MARKER_NOWTODWG =  "NOWTODWG";
-	const char* MARKER_STS_NEWDWGTRANS= "STS_NEWDWGTRANS_2";  
-	const char* MARKER_DWGTRANSNAME_APPENDIX=  "DWGTRANSNAME_APPENDIX";
-	const char* MARKER_DWG_VERSION = "DWG_VERSION_2";
+	const wchar_t* MARKER_NOWTODWG =  L"NOWTODWG";
+	const wchar_t* MARKER_STS_NEWDWGTRANS= L"STS_NEWDWGTRANS_2";
+	const wchar_t* MARKER_DWGTRANSNAME_APPENDIX=  L"DWGTRANSNAME_APPENDIX";
+	const wchar_t* MARKER_DWG_VERSION = L"DWG_VERSION_2";
 
 	// TODO:  在此添加额外的初始化
 	CString pkpminipath=GetPKPMFileName();
 	CString tmp;
-	GetPrivateProfileString("输出控制","AUTOCAD_字型","0",tmp.GetBuffer(500),500,pkpminipath);
+	GetPrivateProfileString(L"输出控制",L"AUTOCAD_字型",L"0",tmp.GetBuffer(500),500,pkpminipath);
 	m_Fontstyle=0;
 	if (tmp!="0")
 	{
@@ -137,7 +137,7 @@ BOOL CGraphicprop::OnInitDialog()
 		
 	}
 	int tmpint;
-	tmpint=GetPrivateProfileInt("输出控制","AUTOCAD_Dim",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(L"输出控制",L"AUTOCAD_Dim",-1,pkpminipath);
 	m_ifsavedimstyle=0;
 	if (tmpint!=-1)
 	{
@@ -149,7 +149,7 @@ BOOL CGraphicprop::OnInitDialog()
 			m_ifsavedimstyle=1;
 	}
 	m_iftriangle=0;
-	tmpint=GetPrivateProfileInt("输出控制","AUTOCAD_FILL3",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(L"输出控制",L"AUTOCAD_FILL3",-1,pkpminipath);
 	m_iftriangle=0;
 	if (tmpint!=-1)
 	{
@@ -162,10 +162,10 @@ BOOL CGraphicprop::OnInitDialog()
 	}
 
 	//CString tmp;
-	GetPrivateProfileString(MARKER_NOWTODWG,MARKER_STS_NEWDWGTRANS,"1",tmp.GetBuffer(500),500,pkpminipath);
+	GetPrivateProfileString(MARKER_NOWTODWG,MARKER_STS_NEWDWGTRANS,L"1",tmp.GetBuffer(500),500,pkpminipath);
 	tmp.ReleaseBuffer();
 	tmp.Trim();
-	if (0==tmp.CompareNoCase("0"))//0=false  1=true
+	if (0==tmp.CompareNoCase(L"0"))//0=false  1=true
 	{
 		m_nSTS_T2Dwg = 0;
 	}
@@ -174,7 +174,7 @@ BOOL CGraphicprop::OnInitDialog()
 		m_nSTS_T2Dwg = 1;
 	}
 	 
-	GetPrivateProfileString(MARKER_NOWTODWG,MARKER_DWG_VERSION,"0",tmp.GetBuffer(500),500,pkpminipath);
+	GetPrivateProfileString(MARKER_NOWTODWG,MARKER_DWG_VERSION,L"0",tmp.GetBuffer(500),500,pkpminipath);
 	tmp.ReleaseBuffer();
 	tmp.Trim();
 	bool bFind = false;
@@ -230,10 +230,10 @@ BOOL CGraphicprop::OnInitDialog()
 
 void CGraphicprop::OnOK()
 {
-	const char* MARKER_NOWTODWG =  "NOWTODWG";
-	const char* MARKER_STS_NEWDWGTRANS= "STS_NEWDWGTRANS_2"; //总开关
-	const char* MARKER_DWGTRANSNAME_APPENDIX=  "DWGTRANSNAME_APPENDIX";
-	const char* MARKER_DWG_VERSION = "DWG_VERSION_2";
+	const wchar_t* MARKER_NOWTODWG =  L"NOWTODWG";
+	const wchar_t* MARKER_STS_NEWDWGTRANS= L"STS_NEWDWGTRANS_2"; //总开关
+	const wchar_t* MARKER_DWGTRANSNAME_APPENDIX=  L"DWGTRANSNAME_APPENDIX";
+	const wchar_t* MARKER_DWG_VERSION = L"DWG_VERSION_2";
 
 
 	// TODO: 在此添加专用代码和/或调用基类
@@ -245,11 +245,11 @@ void CGraphicprop::OnOK()
 	{
 		tmp="DOS";
 	}
-	::WritePrivateProfileString("输出控制","AUTOCAD_字型",tmp,pkpminipath);
-	tmp.Format("%d",m_ifsavedimstyle?1:0);
-	::WritePrivateProfileString("输出控制","AUTOCAD_Dim",tmp,pkpminipath);
-	tmp.Format("%d",m_iftriangle?1:0);
-	::WritePrivateProfileString("输出控制","AUTOCAD_FILL3",tmp,pkpminipath);
+	::WritePrivateProfileString(L"输出控制",L"AUTOCAD_字型",tmp,pkpminipath);
+	tmp.Format(L"%d",m_ifsavedimstyle?1:0);
+	::WritePrivateProfileString(L"输出控制",L"AUTOCAD_Dim",tmp,pkpminipath);
+	tmp.Format(L"%d",m_iftriangle?1:0);
+	::WritePrivateProfileString(L"输出控制",L"AUTOCAD_FILL3",tmp,pkpminipath);
 /*
 	//if (m_nSTS_T2Dwg==0)
 	{
@@ -264,9 +264,9 @@ void CGraphicprop::OnOK()
 	//PkpmmainConfigJson::Get().SetDwgVersion(str);
 	//PkpmmainConfigJson::Get().save();
 
-	tmp.Format("%d",m_nSTS_T2Dwg);//0=false  1=true
-	::WritePrivateProfileString("NOWTODWG",MARKER_STS_NEWDWGTRANS,tmp,pkpminipath);
-	::WritePrivateProfileString("NOWTODWG",MARKER_DWG_VERSION,str,pkpminipath);
+	tmp.Format(L"%d",m_nSTS_T2Dwg);//0=false  1=true
+	::WritePrivateProfileString(L"NOWTODWG",MARKER_STS_NEWDWGTRANS,tmp,pkpminipath);
+	::WritePrivateProfileString(L"NOWTODWG",MARKER_DWG_VERSION,str,pkpminipath);
 
 	CPropertyPage::OnOK();
 }

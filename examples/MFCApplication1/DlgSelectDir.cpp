@@ -8,6 +8,7 @@
 #include "tchar.h"
 #include "MultLanguageStringMgr.h"
 #include "pkpm2014svr.h"
+#include "string_utility.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -124,10 +125,10 @@ bool DlgSelectDir::DrawPreviewPic(CString strPath,bool bRedraw)
 	CString strName;
 	//这里加载不上，不要怪我~~~
 	//strName = g_stringMgr.LoadString(IDS_PICVIEW_NAME);
-	strName="BuildUp.bmp";
+	strName=L"BuildUp.bmp";
 	CString picFileName = strPath + strName;
 
-	m_folderHasPic = m_bmpPreview.Load(picFileName,CXIMAGE_FORMAT_BMP);
+	m_folderHasPic = m_bmpPreview.Load(string_utility::WStringToString(picFileName.GetBuffer()).c_str(),CXIMAGE_FORMAT_BMP);
 	if (m_folderHasPic)
 	{
 		m_picSize.SetSize(m_bmpPreview.GetWidth(),m_bmpPreview.GetHeight()); 
@@ -174,7 +175,7 @@ void DlgSelectDir::OnOK()
 		}
 		else
 		{
-			CString strCreateDir = "是否需要创建文件夹";
+			CString strCreateDir =_T("是否需要创建文件夹");
 			if(IDOK != MessageBox(strCreateDir,_T(""),MB_OKCANCEL))
 			{
 				m_sCurPath = strTmp;
@@ -182,13 +183,13 @@ void DlgSelectDir::OnOK()
 				m_treeAd.SelectPath(m_sCurPath);
 				return ;
 			}
-			if(svr::CreateDirtory(m_sCurPath))
+			if(svr::CreateDirtory(string_utility::WStringToString(m_sCurPath.GetBuffer()).c_str()))
 			{
 				DlgResize::OnOK();
 			}
 			else
 			{
-				MessageBox("ERROR WORKPATH");
+				MessageBox(L"ERROR WORKPATH");
 
 				m_sCurPath = strTmp;
 				UpdateData(FALSE);
@@ -199,7 +200,7 @@ void DlgSelectDir::OnOK()
 	}
 	else
 	{
-		CString str = "ERROR WORKPATH";
+		CString str = L"ERROR WORKPATH";
 		MessageBox(str);
 	}
 }
@@ -251,12 +252,11 @@ void DlgSelectDir::OnPaintNoView(CDC* pDC)
 	pDC->FillRect(&rcView,&br);
 
 	CString strNoView;
-	strNoView = "无预览";
+	strNoView = L"无预览";
 	
 	if (NULL == m_viewfont.GetSafeHandle())
 	{
-		CString fntName;
-		fntName = "微软雅黑";
+		CString fntName=L"微软雅黑";
 		int height = 25;
 		int weight = 330;
 

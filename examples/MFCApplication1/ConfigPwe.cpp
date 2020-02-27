@@ -5,10 +5,10 @@
 //#include "pkpm2010_vc6.h"
 #include "Resource.h"
 #include "ConfigPwe.h"
-#include "afxdialogex.h"
-#include <winbase.h>
+//#include "afxdialogex.h"
+//#include <winbase.h>
 #include "svr.h"
-#include <shlwapi.h>
+//#include <shlwapi.h>
 
 // CConfigPwe ¶Ô»°¿ò
 CString _COLDLG_INI_FILE_NAME = _T("PKPMBentleyCollabModuleConfig.ini");

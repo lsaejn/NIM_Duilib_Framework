@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "ShortCutHandler.h"
+#include "DlgRegRunAsHint.h"
+#include "MFCApplication1Dlg.h"
 #include "svr.h"
+#include "pkpm2014svr.h"
 
 const wchar_t* separator = L"\\";
 const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112";
@@ -11,17 +14,50 @@ const char* defaultAdvertise = "{data:[ \
 "{\"key\":\"官方论坛: www.pkpm.cn/bbs\",\"value\":\"www.pkpm.cn/bbs\"}"
 "]}";
 
-CString cfg_key_str;
+extern HWND mainWnd;
+TCHAR* m_ini_file = _T("PKPM2010V51.ini");
+
+
+std::wstring GetCfgPath_Inner()
+{
+	static std::wstring cfgPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
+	if (!PathFileExists(cfgPath.c_str()))
+	{
+		AfxMessageBox(L"安装目录下没有CFG文件夹");
+		std::abort();
+	}
+	return cfgPath;
+}
+
 
 CString get_cfg_path_reg_key()
 {
-	return cfg_key_str;
+	return GetCfgPath_Inner().c_str();
 }
 
 
 class ShortCutHandlerImpl
 {
 public:
+	CString m_strNameOfIntegrity;
+	CString m_strNameOfPManager;
+
+	ShortCutHandlerImpl()
+	{
+		TCHAR filename_Integrity[128] = { 0 };
+		GetPrivateProfileString(_T("CONFIG"), _T("INTEGRITYCHECK"), _T("PkpmIntegrityCheck.exe"),
+			filename_Integrity, sizeof(filename_Integrity) - 1, m_ini_file);
+		m_strNameOfIntegrity = filename_Integrity;
+		m_strNameOfIntegrity.Trim();
+
+		TCHAR filename_PManager[128];
+		GetPrivateProfileString(_T("CONFIG"), _T("PMANAGER"), _T("PMANAGER.exe"), 
+			filename_PManager, sizeof(filename_PManager), m_ini_file);
+		m_strNameOfPManager = filename_PManager;
+		m_strNameOfPManager.Trim();
+	}
+
+
 	void OnAboutPkpm()
 	{
 		::ShellExecute(NULL, L"open", urlAboutPkpm, NULL, NULL, SW_SHOWDEFAULT);
@@ -40,12 +76,16 @@ public:
 
 	void OnRegiser()
 	{
-		//CDlgRegRunAsHint dlg;
-		//dlg.DoModal();
-		//CString cfgpa = svr::GetRegCFGPath() + _T("RegPKPMCtrl.exe");
-		//CString cmdline;
-		//cmdline.Format(L"/n,/select,%s", cfgpa);
-		//::ShellExecute(NULL, L"open", L"explorer.exe", cmdline, NULL, SW_SHOWNORMAL);
+		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
+		path += L"PKPM2010V511.dll";
+		auto hDll = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
+		typedef void (*pExport)(void);
+		pExport func = (pExport)GetProcAddress(hDll, "RegCheck");
+		func();
+		std::wstring cfgpa = nbase::win32::GetCurrentModuleDirectory()+L"CFG\\"+ _T("RegPKPMCtrl.exe");
+		CString cmdline;
+		cmdline.Format(L"/n,/select,%s", cfgpa.c_str());
+		::ShellExecute(NULL, L"open", L"explorer.exe", cmdline, NULL, SW_SHOWNORMAL);
 	}
 
 	void OnContactUs()
@@ -55,22 +95,19 @@ public:
 
 	void OnIntegrityCheck()
 	{
-		//你有一个函数，但不代表你每次都要调用它
-//粘过来是因为我打算改cfg目录
-		//CString regcmd = svr::GetRegCFGPath() + m_strNameOfIntegrity;
-		//CFile fi;
-		//if (fi.Open(regcmd, CFile::readOnly, NULL, NULL))
-		//{
-		//	fi.Close();
-		//	HINSTANCE hi = ShellExecute(NULL, "open", regcmd, NULL, NULL, SW_NORMAL);
-		//	WaitForSingleObject(hi, INFINITE);
-		//}
-		//else
-		//{
-		//	CString strHint;
-		//	strHint.Format("无法找到或启动程序 %s", regcmd);
-		//	MessageBox(strHint, "错误提示");
-		//}
+		CString regcmd = svr::GetRegCFGPath() + m_strNameOfIntegrity;
+		CFile fi;
+		if (fi.Open(regcmd, CFile::readOnly, NULL, NULL))
+		{
+			fi.Close();
+			ShellExecute(NULL, _T("open"), regcmd, NULL, NULL, SW_NORMAL);
+		}
+		else
+		{
+			CString strHint;
+			strHint.Format(L"无法找到程序或者您已经在运行程序 %s", regcmd);
+			AfxMessageBox(strHint);
+		}
 	}
 
 	void OnParameterSettings()
@@ -106,7 +143,36 @@ public:
 
 	void OnSwitchToNetVersion()
 	{
-		/*OnBnClickedBtnSetLock();*/
+		CString cfgpath = GetCfgPath_Inner().c_str();
+
+		CString exePathName = cfgpath + _T("PKPMAuthorize.exe");
+		if (-1 == _taccess(exePathName, 0))
+		{
+			CString strHint;
+			strHint += _T("File belowed is not existed.\n");
+			strHint += exePathName;
+			MessageBox(NULL,strHint, _T("lockconfig"),1);
+			return;
+		}
+
+		TCHAR STRPATH[MAX_PATH];
+		ZeroMemory(STRPATH, sizeof(TCHAR) * MAX_PATH);
+		_tcscpy_s(STRPATH, MAX_PATH, exePathName.GetBuffer());
+		STARTUPINFO info = { 0 };
+		info.cb = sizeof(STARTUPINFO);
+		PROCESS_INFORMATION prinfo;
+
+		CRect rc;
+		GetWindowRect(mainWnd, rc);
+		ShowWindow(mainWnd, SW_HIDE);
+		CreateProcess(NULL, STRPATH, NULL, NULL, FALSE, 0, NULL, NULL, &info, &prinfo);
+		WaitForSingleObject(prinfo.hProcess, -1);
+		//ShowWindow(SW_SHOWNORMAL);
+		MoveWindow(mainWnd,rc.left, rc.top, rc.Width(), rc.Height(), 0);
+		::ShowWindow(mainWnd, SW_SHOW);
+		//::SetWindowPos(this->m_hWnd,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
+		CloseHandle(prinfo.hThread);
+		CloseHandle(prinfo.hProcess);
 	}
 
 	void OnUserManual()
@@ -122,53 +188,61 @@ public:
 
 	void OnBnClickedBtnFileMgr()
 	{
-		//CArray<MODULE_PATH> modPaths;
-		//CString strPatTDGL;
-		//if (svr::getModulePath(modPaths))
-		//{
-		//	for (int i = 0; i != modPaths.GetSize(); ++i)
-		//	{
-		//		if (!modPaths[i].m_name.CompareNoCase("TDGL"))
-		//		{
-		//			strPatTDGL = modPaths[i].m_path;
-		//			toolsvr::FixPathStr(strPatTDGL);
-		//			break;
-		//		}
-		//	}
-		//}
+		CArray<MODULE_PATH> modPaths;
+		CString strPatTDGL;
+		if (svr::getModulePath(modPaths))
+		{
+			for (int i = 0; i != modPaths.GetSize(); ++i)
+			{
+				if (!modPaths[i].m_name.CompareNoCase(L"TDGL"))
+				{
+					strPatTDGL = modPaths[i].m_path;
+					toolsvr::FixPathStr(strPatTDGL);
+					break;
+				}
+			}
+		}
 
-		//if (strPatTDGL.IsEmpty())
-		//{
-		//	CString strHint;
-		//	strHint.Format("无法找到安装目录TDGL");
-		//	MessageBox(strHint, "错误提示");
-		//	return;
-		//}
+		if (strPatTDGL.IsEmpty())
+		{
+			CString strHint;
+			strHint.Format(L"无法找到安装目录TDGL");
+			MessageBox(NULL, strHint, L"错误提示", 1);
+			return;
+		}
 
-		//CString strCfgPa;
-		//GetAppPathByCFGPATHMarker(get_cfg_path_reg_key(), strCfgPa);
-		//toolsvr::FixPathStr(strCfgPa);
+		
+		CString strCfgPa;
+		cfgpathsvr::GetAppPathByCFGPATHMarker(get_cfg_path_reg_key(), strCfgPa);
+		toolsvr::FixPathStr(strCfgPa);
 
-		//CString regcmd = strPatTDGL + m_strNameOfPManager;
-		//CString cmdParm = "-f ";
-		//cmdParm += "\"" + strCfgPa + "pkpm.ini\"";
-		//CFile fi;
-		//if (fi.Open(regcmd, CFile::readOnly, NULL, NULL))
-		//{
-		//	fi.Close();
-		//	HINSTANCE hi = ShellExecute(NULL, "open", regcmd, cmdParm, NULL, SW_NORMAL);
-		//	WaitForSingleObject(hi, INFINITE);//wtf
-		//}
-		//else
-		//{
-		//	CString strHint;
-		//	strHint.Format("无法找到或启动程序 %s %s", regcmd, cmdParm);
-		//	MessageBox(strHint, "错误提示");
-		//}
+		CString regcmd = strPatTDGL + m_strNameOfPManager;
+		if (!PathFileExists(regcmd))
+		{
+			regcmd = (nbase::win32::GetCurrentModuleDirectory() + L"TDGL\\").c_str() + m_strNameOfPManager;
+			CString cmdParm = L"-f ";
+			cmdParm += (L"\"" + GetCfgPath_Inner() + L"pkpm.ini\"").c_str();
+			ShellExecute(NULL, L"open", regcmd, cmdParm, NULL, SW_NORMAL);
+			return;
+		}
+
+		CString cmdParm = L"-f ";
+		cmdParm += L"\"" + strCfgPa + L"pkpm.ini\"";
+		CFile fi;
+		if (fi.Open(regcmd, CFile::readOnly, NULL, NULL))
+		{
+			fi.Close();
+			HINSTANCE hi = ShellExecute(NULL, L"open", regcmd, cmdParm, NULL, SW_NORMAL);
+		}
+		else
+		{
+			CString strHint;
+			strHint.Format(L"无法找到或启动程序或已打开 %s %s", regcmd, cmdParm);
+			MessageBox(NULL, strHint, L"错误提示", 1);
+		}
 	}
-
-
 };
+
 
 //我删掉了了旧代码里的宏，以避免以后维护者的不适
 #define SHORTCUTFUNCS(className,JsName,InnerFuncs) \

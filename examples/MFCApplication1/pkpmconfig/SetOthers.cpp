@@ -52,15 +52,15 @@ void CSetOthers::OnOK()
 	UpdateData(TRUE);
 	CString pkpminipath=GetPKPMFileName();
 	CString tmp;
-	tmp.Format("%d",m_ifchange02to10?1:0);
-	::WritePrivateProfileString("PM控制参数","changePM2load",tmp,pkpminipath);
-	tmp.Format("%d",m_ifPMCADopenSTS?1:0);
-	::WritePrivateProfileString("PM控制参数","readalljws",tmp,pkpminipath);
-	tmp.Format("%d",m_ifShowFullPath?1:0);
-	::WritePrivateProfileString("PM控制参数","btnShowFullPath",tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_ifchange02to10?1:0);
+	::WritePrivateProfileString(L"PM控制参数",L"changePM2load",tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_ifPMCADopenSTS?1:0);
+	::WritePrivateProfileString(L"PM控制参数",L"readalljws",tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_ifShowFullPath?1:0);
+	::WritePrivateProfileString(L"PM控制参数",L"btnShowFullPath",tmp,pkpminipath);
 
-	const CString MAKER_HELP_TYPE = "HELP_TYPE";
-	const CString MARKER_F1 = "MARKER_F1";
+	const CString MAKER_HELP_TYPE = L"HELP_TYPE";
+	const CString MARKER_F1 = L"MARKER_F1";
 	CString strTmp;
 	if (0==m_nSelF1)
 	{
@@ -83,21 +83,21 @@ BOOL CSetOthers::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 	CString pkpminipath=GetPKPMFileName();
-	int tmpint=GetPrivateProfileInt("PM控制参数","changePM2load",-1,pkpminipath);
+	int tmpint=GetPrivateProfileInt(_T("PM控制参数"), _T("changePM2load"),-1,pkpminipath);
 	m_ifchange02to10=0;
 	if (tmpint>=0)
 	{
 		m_ifchange02to10=tmpint;
 	}
 
-	tmpint=GetPrivateProfileInt("PM控制参数","readalljws",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("PM控制参数"),_T("readalljws"),-1,pkpminipath);
 	if (tmpint>=0)
 	{
 		m_ifPMCADopenSTS=tmpint;
 	}
 
 
-	tmpint=GetPrivateProfileInt("PM控制参数","btnShowFullPath",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("PM控制参数"),_T("btnShowFullPath"),-1,pkpminipath);
 	if (tmpint>=0)
 	{
 		m_ifShowFullPath=tmpint;
@@ -127,22 +127,22 @@ BOOL CSetOthers::OnInitDialog()
 		GetDlgItem(ID_CHECK_BTN_SHOWFULLPATH)->EnableWindow(FALSE);
 	}
 	//chenjian end
-	const CString MAKER_HELP_TYPE = "HELP_TYPE";
-	const CString MAKER_F1 = "MAKER_F1";
+	const CString MAKER_HELP_TYPE = _T("HELP_TYPE");
+	const CString MAKER_F1 = _T("MAKER_F1");
 
 	CString strTmp;
-	::GetPrivateProfileString(MAKER_HELP_TYPE,MAKER_F1,"UNKNOWN",strTmp.GetBuffer(20),20,pkpminipath);
+	::GetPrivateProfileString(MAKER_HELP_TYPE,MAKER_F1,_T("UNKNOWN"),strTmp.GetBuffer(20),20,pkpminipath);
 	strTmp.ReleaseBuffer();
 	strTmp.Trim();
-	if (0==strTmp.CompareNoCase("UNKNOWN"))
+	if (0==strTmp.CompareNoCase(_T("UNKNOWN")))
 	{
 		m_nSelF1 = 0;
 	}
-	else if (0==strTmp.CompareNoCase("ONLINE"))
+	else if (0==strTmp.CompareNoCase(_T("ONLINE")))
 	{
 		m_nSelF1 = 1;
 	}
-	else if(0==strTmp.CompareNoCase("LOCAL"))
+	else if(0==strTmp.CompareNoCase(_T("LOCAL")))
 	{
 		m_nSelF1 = 2;
 	}

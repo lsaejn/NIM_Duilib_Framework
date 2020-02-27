@@ -21,9 +21,11 @@ public:
 };
 
 #define CHECK_ERROR(CONDITION, MESSAGE_STRING) do{if(!(CONDITION))throw Error(MESSAGE_STRING);}while(0)
-
 namespace collection_utility
 {
+	/*
+		这群人太厉害了，活活把一个有限队列改成了vector
+	*/
 	template<typename T, typename VecTy=std::deque<T>>
 	class BoundedQueue
 	{
@@ -36,6 +38,7 @@ namespace collection_utility
 		template<typename Iter>
 		void put(const Iter start, const Iter end)
 		{
+			//static_assert(std::is_same_v<Iter::iterator_category, random_access_iterator_tag>, "bad param");
 			for (auto It_copy = start; It_copy != end; ++It_copy)
 				put(*It_copy);
 		}
@@ -115,6 +118,7 @@ namespace collection_utility
 	private:
 		void rangeNoError(const int index)
 		{
+
 			CHECK_ERROR( (index>=0) && (static_cast<size_t>(index)<queue_.size()),"index not in range.");
 		}
 

@@ -47,10 +47,10 @@ void CUpdateCheck::OnOK()
 	UpdateData(TRUE);
 	CString pkpminipath=GetPKPMFileName();
 	CString tmp;
-	tmp.Format("%d",m_ifupdate?1:0);
-	::WritePrivateProfileString("自动更新","是否检测自动更新",tmp,pkpminipath);
-	tmp.Format("%d",m_updateinterval);
-	::WritePrivateProfileString("自动更新","检测更新的间隔",tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_ifupdate?1:0);
+	::WritePrivateProfileString(_T("自动更新"),_T("是否检测自动更新"),tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_updateinterval);
+	::WritePrivateProfileString(_T("自动更新"),_T("检测更新的间隔"),tmp,pkpminipath);
 	CPropertyPage::OnOK();
 }
 
@@ -64,14 +64,14 @@ BOOL CUpdateCheck::OnInitDialog()
 	// TODO:  在此添加额外的初始化
 	CString pkpminipath=GetPKPMFileName();
 	int tmpint;
-	tmpint=GetPrivateProfileInt("自动更新","是否检测自动更新",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("自动更新"),_T("是否检测自动更新"),-1,pkpminipath);
 	m_ifupdate=0;
 	if (tmpint>=0)
 	{
 		m_ifupdate=tmpint;
 	}
 
-	tmpint=GetPrivateProfileInt("自动更新","检测更新的间隔",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("自动更新"),_T("检测更新的间隔"),-1,pkpminipath);
 	m_updateinterval=0;
 	if (tmpint>=0 && tmpint<10000)
 	{

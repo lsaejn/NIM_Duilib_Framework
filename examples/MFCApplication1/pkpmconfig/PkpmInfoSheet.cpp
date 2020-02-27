@@ -85,8 +85,8 @@ BOOL CPkpmInfoSheet::OnInitDialog()
 		rcIn.left = rcOut.right + 6;
 		rcIn.right = rcIn.left+wid;
 
-		m_WriteOut.Create("导出",BS_PUSHBUTTON|WS_CHILD|WS_VISIBLE|WS_TABSTOP,rcOut,this,IDC_BT_WRITE_OUT);
-		m_LoadIn.Create("导入",BS_PUSHBUTTON|WS_CHILD|WS_VISIBLE|WS_TABSTOP,rcIn,this,IDC_BT_LOAD_IN);
+		m_WriteOut.Create(_T("导出"),BS_PUSHBUTTON|WS_CHILD|WS_VISIBLE|WS_TABSTOP,rcOut,this,IDC_BT_WRITE_OUT);
+		m_LoadIn.Create(_T("导入"),BS_PUSHBUTTON|WS_CHILD|WS_VISIBLE|WS_TABSTOP,rcIn,this,IDC_BT_LOAD_IN);
 
 		m_WriteOut.SetFont(pBt->GetFont());
 		m_LoadIn.SetFont(pBt->GetFont());
@@ -106,8 +106,8 @@ void CPkpmInfoSheet::OnBnClickedBtnWriteOut()
 	auto f_SaveAsDlg = [](CString& zfname)->bool
 	{
 		CString defaultDir;
-		svr::getPathByMaker("CFG",defaultDir);
-		CString fileN  = "PkpmV2010";
+		svr::getPathByMaker(_T("CFG"),defaultDir);
+		CString fileN  = _T("PkpmV2010");
 		BOOL isOpen =FALSE;
 		CString filter;
 		filter = "配置文件(*.config )|*.config||";
@@ -154,18 +154,18 @@ void CPkpmInfoSheet::OnBnClickedBtnWriteOut()
 			{
 				CString strLoop;
 
-				strAll.Add("----PKPM.INI----");
+				strAll.Add(_T("----PKPM.INI----"));
 				while(f1.ReadString(strLoop))
 				{
 					strAll.Add(strLoop);
 				}
 
-				strAll.Add("----CLICFG6.INI----");
+				strAll.Add(_T("----CLICFG6.INI----"));
 				while(f2.ReadString(strLoop))
 				{
 					strAll.Add(strLoop);
 				}
-				strAll.Add("----END----");
+				strAll.Add(_T("----END----"));
 
 				f1.Close();
 				f2.Close();
@@ -181,14 +181,14 @@ void CPkpmInfoSheet::OnBnClickedBtnWriteOut()
 				}
 				else
 				{
-					MessageBox("无法保存配置文件. ");
+					MessageBox(_T("无法保存配置文件. "));
 					return;
 				}
 				
 			}
 			else
 			{
-				MessageBox("无法打开配置文件 pkpm.ini 和/或 Clicfg6.ini ");
+				MessageBox(_T("无法打开配置文件 pkpm.ini 和/或 Clicfg6.ini "));
 				return;
 			}
 
@@ -196,7 +196,7 @@ void CPkpmInfoSheet::OnBnClickedBtnWriteOut()
 		}
 		else
 		{
-			MessageBox("无法找到配置文件 pkpm.ini 和/或 Clicfg6.ini.请确认文件存在或重新安装.");
+			MessageBox(_T("无法找到配置文件 pkpm.ini 和/或 Clicfg6.ini.请确认文件存在或重新安装."));
 			return;
 		}
 	}
@@ -210,7 +210,7 @@ void CPkpmInfoSheet::OnBnClickedBtnLoadIn()
 	{
 		BOOL isOpen=TRUE;
 		CString defaultDir = sjx::GetModuleFolder(); 
-		CString fileN = "";
+		CString fileN = _T("");
 
 		const int nMaxFiles = 300;
 		const int nMaxPathBuffer = (nMaxFiles*(MAX_PATH+1))+1;
@@ -227,7 +227,7 @@ void CPkpmInfoSheet::OnBnClickedBtnLoadIn()
 			openFileDlg.GetOFN().nMaxFile = nMaxPathBuffer;
 
 			openFileDlg.GetOFN().lpstrInitialDir = defaultDir;
-			openFileDlg.GetOFN().lpstrTitle = "请选择配置文件";
+			openFileDlg.GetOFN().lpstrTitle = _T("请选择配置文件");
 			INT_PTR resu = openFileDlg.DoModal();
 			if (IDOK == resu)
 			{
@@ -252,9 +252,9 @@ void CPkpmInfoSheet::OnBnClickedBtnLoadIn()
 			CString strTmp;
 			if (f3.ReadString(strTmp))
 			{
-				if (0!=strTmp.CompareNoCase("----PKPM.INI----"))
+				if (0!=strTmp.CompareNoCase(_T("----PKPM.INI----")))
 				{
-					MessageBox("无法打开配置文件. ");
+					MessageBox(_T("无法打开配置文件. "));
 					return;
 				}
 
@@ -263,7 +263,7 @@ void CPkpmInfoSheet::OnBnClickedBtnLoadIn()
 				{
 					if(f3.ReadString(strTmp))
 					{
-						if (0==strTmp.CompareNoCase("----CLICFG6.INI----"))
+						if (0==strTmp.CompareNoCase(_T("----CLICFG6.INI----")))
 						{ 
 							bcontinue=false;
 							break;;
@@ -278,7 +278,7 @@ void CPkpmInfoSheet::OnBnClickedBtnLoadIn()
 				{
 					if(f3.ReadString(strTmp))
 					{
-						if (0==strTmp.CompareNoCase("----END----"))
+						if (0==strTmp.CompareNoCase(_T("----END----")))
 						{ 
 							bcontinue=false;
 							break;;
@@ -312,13 +312,13 @@ void CPkpmInfoSheet::OnBnClickedBtnLoadIn()
 
 				if (b1==true&&b2==true)
 				{
-					MessageBox("导入成功! 请重新启动程序");
+					MessageBox(_T("导入成功! 请重新启动程序"));
 
 					EndDialog(CONFIG_SHEET_LOAD_IN);//
 				}
 				else
 				{
-					MessageBox("导入失败 ");
+					MessageBox(_T("导入失败 "));
 
 					EndDialog(IDCANCEL);
 				}
@@ -327,7 +327,7 @@ void CPkpmInfoSheet::OnBnClickedBtnLoadIn()
 		}
 		else
 		{
-			MessageBox("无法打开配置文件. ");
+			MessageBox(_T("无法打开配置文件. "));
 		}
 	}
 	

@@ -205,6 +205,8 @@
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
+    <ClInclude Include="Console.h" />
+    <ClInclude Include="DlgRegRunAsHint.h" />
     <ClInclude Include="json\json-forwards.h" />
     <ClInclude Include="json\json.h" />
     <ClInclude Include="pkpm2014svr.h" />
@@ -264,6 +266,8 @@
   <ItemGroup>
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
+    <ClCompile Include="Console.cpp" />
+    <ClCompile Include="DlgRegRunAsHint.cpp" />
     <ClCompile Include="json\jsoncpp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -295,7 +299,12 @@
     <None Include="res\MFCApplication1.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\bitmap1.bmp" />
+    <Image Include="res\bitmap2.bmp" />
     <Image Include="res\MFCApplication1.ico" />
+    <Image Include="res\PkpmV51.ico" />
+    <Image Include="res\RegRunAs.bmp" />
+    <Image Include="res\V5\RegRunAs.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

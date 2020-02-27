@@ -1,9 +1,8 @@
 // DlgRegRunAsHint.cpp : 实现文件
 //
 
-#include "stdafx.h"
+#include "pch.h"
 #include "DlgRegRunAsHint.h"
-#include "afxdialogex.h"
 
 
 // CDlgRegRunAsHint 对话框

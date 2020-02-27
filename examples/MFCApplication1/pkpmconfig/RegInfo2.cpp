@@ -2,7 +2,8 @@
 #include "../stdafx.h"
 #include "string.h"
 #include "stdlib.h"
-#include <afxwin.h>         // MFC core and standard components
+//#include <afxwin.h>         // MFC core and standard components
+#include "../string_utility.h"
 
 bool Fix_Path_Str2(CString &strPath);
 bool Get_AssignRegCFGpath2(CString& strPath,CString &StrReg,const HKEY &hPos);
@@ -27,8 +28,8 @@ extern "C" void __stdcall GET_PKPM_REGISTRY_PATH( char pathname[])
 			HMODULE hModule=NULL;
 			char Filename[_MAX_PATH]; 
 			DWORD nSize=_MAX_PATH;
-			DWORD LPath=GetModuleFileName( hModule, Filename, nSize);
-			CString StrExeFile=Filename;
+			DWORD LPath=GetModuleFileNameA( hModule, Filename, nSize);
+			CStringA StrExeFile=Filename;
 			int iSize=StrExeFile.ReverseFind('\\');
 			StrExeFile=StrExeFile.Right(StrExeFile.GetLength()-(iSize+1));
 		}
@@ -37,7 +38,7 @@ extern "C" void __stdcall GET_PKPM_REGISTRY_PATH( char pathname[])
 	Fix_Path_Str2(CFGpath);
 
 	int LenStr=CFGpath.GetLength();
-	strcpy(pathname,CFGpath);
+	strcpy(pathname,string_utility::WStringToString(CFGpath.GetBuffer()).c_str());
 	pathname[LenStr]=char(0);
 
 }
@@ -63,16 +64,16 @@ bool Get_AssignRegCFGpath2(CString& strPath,CString &StrReg,const HKEY &hPos)
 #endif
 
 	bool bFind=false;
-	if(RegOpenKey(hPos, SoftKeyName, &hkRoot)==ERROR_SUCCESS)
+	if(RegOpenKeyA(hPos, SoftKeyName, &hkRoot)==ERROR_SUCCESS)
 	{
 		cb = sizeof(SoftValue);
 		cs = sizeof(szValue);
 
 		LPBYTE pSoftValue = LPBYTE(SoftValue);
 		//先搜索给定注册名称
-		for(i=0;RegEnumValue(hkRoot,i,szValue,&cs,NULL,NULL,pSoftValue,&cb)==ERROR_SUCCESS;++i)
+		for(i=0;RegEnumValueA(hkRoot,i,szValue,&cs,NULL,NULL,pSoftValue,&cb)==ERROR_SUCCESS;++i)
 		{
-			if( !strcmp(szValue,StrReg) )
+			if( !strcmp(szValue, string_utility::WStringToString(StrReg.GetBuffer()).c_str()))
 			{
 				CFGpath=SoftValue;
 				bFind=true;

@@ -64,33 +64,33 @@ BOOL CSetPMPara::OnInitDialog()
 	// TODO:  在此添加额外的初始化
 	CString pkpminipath=GetPKPMFileName();
 	int tmpint;
-	tmpint=GetPrivateProfileInt("PM控制参数","地震分组",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("PM控制参数"),_T("地震分组"),-1,pkpminipath);
 	m_earthgroup=0;
 	if (tmpint>=0 && tmpint<=2)
 	{
 		m_earthgroup=tmpint;
 	}
-	tmpint=GetPrivateProfileInt("PM控制参数","地震烈度",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("PM控制参数"),_T("地震烈度"),-1,pkpminipath);
 	m_earthintense=0;
 	if (tmpint>=0 && tmpint<=6)
 	{
 		m_earthintense=tmpint;
 	}
-	tmpint=GetPrivateProfileInt("PM控制参数","场地土类别",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("PM控制参数"),_T("场地土类别"),-1,pkpminipath);
 	m_groudlevel=0;
 	if (tmpint>=0 && tmpint<=5)
 	{
 		m_groudlevel=tmpint;
 	}
 	CString tmp;
-	GetPrivateProfileString("PM控制参数","基本风压","-1",tmp.GetBuffer(500),500,pkpminipath);
+	GetPrivateProfileString(_T("PM控制参数"),_T("基本风压"),_T("-1"),tmp.GetBuffer(500),500,pkpminipath);
 	m_windpressure=0.5;
 	if (tmp!="-1")
 	{
-		m_windpressure=atof(tmp.GetBuffer(500));
+		m_windpressure= _tstof(tmp.GetBuffer(500));
 	}
 	int diameter[15]={6,8,10,12,14,16,18,20,22,25,28,32,36,40,50};
-	tmpint=GetPrivateProfileInt("PM控制参数","双偏压角筋最大直径",-1,pkpminipath);
+	tmpint=GetPrivateProfileInt(_T("PM控制参数"),_T("双偏压角筋最大直径"),-1,pkpminipath);
 	for (int i=0;i<15;i++)
 	{
 		if (diameter[i]==tmpint)
@@ -111,17 +111,17 @@ void CSetPMPara::OnOK()
 	UpdateData(TRUE);
 	CString pkpminipath=GetPKPMFileName();
 	CString tmp;
-	tmp.Format("%d",m_earthgroup);
-	::WritePrivateProfileString("PM控制参数","地震分组",tmp,pkpminipath);
-	tmp.Format("%d",m_earthintense);
-	::WritePrivateProfileString("PM控制参数","地震烈度",tmp,pkpminipath);
-	tmp.Format("%d",m_groudlevel);
-	::WritePrivateProfileString("PM控制参数","场地土类别",tmp,pkpminipath);
-	tmp.Format("%.2f",m_windpressure);
-	::WritePrivateProfileString("PM控制参数","基本风压",tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_earthgroup);
+	::WritePrivateProfileString(_T("PM控制参数"),_T("地震分组"),tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_earthintense);
+	::WritePrivateProfileString(_T("PM控制参数"),_T("地震烈度"),tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_groudlevel);
+	::WritePrivateProfileString(_T("PM控制参数"),_T("场地土类别"),tmp,pkpminipath);
+	tmp.Format(_T("%d"),m_windpressure);
+	::WritePrivateProfileString(_T("PM控制参数"),_T("基本风压"),tmp,pkpminipath);
 	int diameter[15]={6,8,10,12,14,16,18,20,22,25,28,32,36,40,50};
-	tmp.Format("%d",diameter[m_maxcornerdiameter]);
-	::WritePrivateProfileString("PM控制参数","双偏压角筋最大直径",tmp,pkpminipath);
+	tmp.Format(_T("%d"),diameter[m_maxcornerdiameter]);
+	::WritePrivateProfileString(_T("PM控制参数"),_T("双偏压角筋最大直径"),tmp,pkpminipath);
 	CPropertyPage::OnOK();
 }
 

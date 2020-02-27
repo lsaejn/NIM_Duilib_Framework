@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "cef_form.h"
 #include "CDirSelectThread.h"
+#include "Console.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -10,7 +11,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-//#include "xml2json.h"
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
@@ -23,7 +23,7 @@ using rapidjson::Writer;
 using namespace rapidjson;
 //#include "CppFuncRegister.h"
 
-
+HWND mainWnd=NULL;
 //details
 namespace //which will write to configFile
 {
@@ -61,14 +61,45 @@ namespace //which will write to configFile
 }
 
 
-const std::wstring CefForm::kClassName = L"CEF_Control_Example";
+const std::wstring CefForm::kClassName = L"PKPM V5.1.1启动界面";
 
 CefForm::CefForm()
-	:maxPrjNum(6),prjPaths_(maxPrjNum)
+	:maxPrjNum(6),
+	prjPaths_(maxPrjNum)
 {
 	webDataReader_.init();
 	shortCutHandler_.Init();
 	ReadWorkPathFromFile("CFG/pkpm.ini");
+	//Alime::Console::CreateConsole();
+	//Alime::Console::SetTitle(L"Alime");
+	//std::thread t([this]() {
+	//	while (1)
+	//	{
+	//		auto str = Alime::Console::ReadLine();
+	//		if (str.find(L"SetCaption") != std::wstring::npos)
+	//		{
+	//			auto result = str.substr(10);
+	//			SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    " + nbase::UTF16ToUTF8(result));
+	//		}
+	//		else if (str.find(L"Clear") != std::wstring::npos)
+	//		{
+	//			Alime::Console::Clear();
+	//		}
+	//		else if (str.find(L"XmlFile") != std::wstring::npos)
+	//		{
+	//			//readSpecific
+	//			auto result = str.substr(8);
+	//			auto str = webDataReader_.readSpecific(nbase::UnicodeToAnsi(result));
+	//			Alime::Console::Write(nbase::UTF8ToUTF16(str));
+	//		}
+	//		else {
+	//			Alime::Console::SetColor(1, 0, 0, 0);
+	//			Alime::Console::WriteLine(L"没有这个接口");
+	//			Alime::Console::SetColor(0, 0, 0, 1);
+	//		}
+	//	}
+	//	});
+	//t.detach();
 }
 
 CefForm::~CefForm()
@@ -100,7 +131,6 @@ ui::Control* CefForm::CreateControl(const std::wstring& pstrClass)
 		else
 			return new nim_comp::CefNativeControl;
 	}
-
 	return NULL;
 }
 
@@ -119,8 +149,8 @@ void CefForm::InitWindow()
 	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
 
 	// 设置输入框样式
-	edit_url_->SetSelAllOnFocus(true);
-	edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
+	//edit_url_->SetSelAllOnFocus(true);
+	//edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
 
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
@@ -133,6 +163,7 @@ void CefForm::InitWindow()
 		cef_control_dev_->SetVisible(false);
 
 	auto hwnd = GetHWND();
+	mainWnd = hwnd;
 	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);//获取原窗体的样式
 	auto hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
 	style |= WS_EX_ACCEPTFILES;//更改样式
@@ -296,8 +327,8 @@ bool CefForm::OnNavigate(ui::EventArgs* msg)
 
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
-	FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
-	FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
+	//FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
+	//FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
 }
 
 
@@ -347,6 +378,23 @@ void CefForm::RegisterCppFuncs()
 			std::string debugStr = R"({ "SetCaption": "Success." })";
 			callback(true, debugStr);
 #endif // DEBUG
+			return;
+			}
+		)
+	);
+
+	cef_control_->RegisterCppFunc(L"SHORTCUT",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			rapidjson::StringStream input(params.c_str());
+			rapidjson::Document document;
+			document.ParseStream(input);
+			std::string shortcutName = document["shortcutName"].GetString();
+#ifdef DEBUG
+			std::string debugStr = R"({ "SetCaption": "Success." })";
+			callback(true, debugStr);
+#endif // DEBUG
+			shortcutName = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(shortcutName)).c_str();
+			OnShortCut(shortcutName.c_str());
 			return;
 			}
 		)

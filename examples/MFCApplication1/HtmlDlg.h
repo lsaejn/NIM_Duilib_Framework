@@ -40,7 +40,7 @@ public:
 	/// <summary>
 	/// open URL
 	/// </summary>
-	void NavigateTo(LPCTSTR pszUrl);
+	void NavigateTo(const char* pszUrl);
 	/// <summary>
 	/// makes the page call func like this :window.external.cppFunc()
 	/// </summary>
@@ -125,7 +125,7 @@ public:
 	/// 快捷键响应函数
 	/// </summary>
 	/// <param name="menuName">菜单名</param>
-	void OnShortCut(const char* menuName);
+	void OnShortCut(BSTR menuName);
 	/// <summary>
 	/// "数据转换"响应函数
 	/// </summary>
@@ -176,14 +176,14 @@ public:
 	/// 没时间写
 	/// </summary>
 	///<remarks>should be private</remarks>
-	bool CommandFliter(CString path,CString core, CString secMenu, CString trdMenu);
+	bool CommandFliter(CStringA path,CStringA core, CStringA secMenu, CStringA trdMenu);
 	void OnClickedResume();
 	void SwitchSrcOfZoomAll(bool maxFlag);
 	std::string GetIdByPos(const CPoint cp);
 	bool VersionPage();
 	BSTR TellMeNewVersionExistOrNot();
 	BSTR TellMeAdvertisement();
-
+	BSTR isAdvertisementOpen();
 	//快捷键响应函数
 	void OnBnClickedRadSingle();
 	void OnBnClickedRadNet();
@@ -200,9 +200,8 @@ public:
 	void OnUpdateOnline();
 
 private:
-	int parseHtmlText();
 	void OnInit_gMultLangStrings();
-	void run_cmd( const CString&moduleName,const CString&appName1,const CString&appName2 );
+	void run_cmd( const CStringA&moduleName,const CStringA&appName1,const CStringA&appName2 );
 	void append_work_path(const CString&path);
 	bool SetCfgPmEnv();
 	bool ModifyRegistry();//to make IE9&Above happy
@@ -216,12 +215,17 @@ private:
 	void getLatestVersion(std::vector<std::string> &result, int& major_version, int&minor_version, int&sub_version);
 	void MaxBrowser();
 	void OnResume();
+	void CloseAdvertisement();
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnDestroy();
 	afx_msg LRESULT OnNcHitTest(CPoint );
 	afx_msg void OnNcLButtonDown(UINT nHitTest, CPoint point);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
+	//增加工程成功/打开exe后，我需要保存菜单选择，然后刷新网页(重读配置文件),以便让当前被选工程提到第一位
+	//关键在于当前加亮工程是网页传过来的
+	//这就麻烦了，对于增加工程，比如说现在index是2
+	//如果正常保存，我们就会把index=2的项目提前，所以，我们需要先拿到网页的菜单选择，然后设置index=0
 	void SaveMenuSelection(bool savePrjIndex=true);
 	BOOL JavaScriptFuncInvoker(const CString strFunc, _variant_t* pVarResult);
 	BOOL JavaScriptFuncInvoker(const CString strFunc, const CString strArg1, _variant_t* pVarResult);
@@ -257,4 +261,5 @@ private:
 	CRect rectForActive;
 	CString m_coreWithPara;
 	CString m_pathOfCore;
+	std::string adOpen;
 };

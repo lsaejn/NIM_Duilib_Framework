@@ -11,7 +11,7 @@
 #include "BoundedQueue.h"
 #include "DlgRegRunAsHint.h"
 #include "pkpmconfig/PkpmInfoSheet.h"
-#include "ProcessInfo.h"
+//#include "ProcessInfo.h"
 #include "HttpUtil.h"
 
 #include <stdlib.h>
@@ -40,8 +40,8 @@
 
 #ifdef OLE2T
 #undef OLE2T
-#define OLE2T(x) string_utility::WStringToString(x).c_str()
 #endif
+#define OLE2T(x) string_utility::WStringToString(x).c_str()
 
 using rapidjson::Document;
 using rapidjson::StringBuffer;
@@ -68,16 +68,16 @@ const char* defaultAdvertise="{data:[ \
 
 std::string GetExePath()
 {
-	CString strExeFileName;
-	GetModuleFileName(NULL, strExeFileName.GetBuffer(MAX_PATH), MAX_PATH);//本程序就是exe
+	CStringA strExeFileName;
+	GetModuleFileNameA(NULL, strExeFileName.GetBuffer(MAX_PATH), MAX_PATH);//本程序就是exe
 	strExeFileName.ReleaseBuffer(-1);
 	int nsp = strExeFileName.ReverseFind('\\');
 	return strExeFileName.Left(nsp).GetBuffer();
 }
 
-CString FullPathOfPkpmIni()
+CStringA FullPathOfPkpmIni()
 {
-	static CString re=GetAppPath() + "cfg/pkpm.ini";
+	static CStringA re=GetAppPath() + "cfg/pkpm.ini";
 	return re;
 }
 
@@ -99,18 +99,19 @@ IMPLEMENT_DYNCREATE(CHtmlDlg, CDHtmlDialog)
 
 CHtmlDlg::CHtmlDlg(CWnd* pParent /*=NULL*/)
 	: CDHtmlDialog(IDD_HTMLDLG),
-	miniCx_(GetPrivateProfileInt(_T("Html"), _T("Default_cx"), UINT_MAX, FullPathOfPkpmIni())),
-	miniCy_(GetPrivateProfileInt(_T("Html"), _T("Default_cy"), UINT_MAX, FullPathOfPkpmIni())),
-	maxPrjNum(GetPrivateProfileInt(_T("WorkPath"), _T("MaxPathName"), UINT_MAX, FullPathOfPkpmIni())),
+	miniCx_(GetPrivateProfileIntA(("Html"), ("Default_cx"), UINT_MAX, FullPathOfPkpmIni())),
+	miniCy_(GetPrivateProfileIntA(("Html"), ("Default_cy"), UINT_MAX, FullPathOfPkpmIni())),
+	maxPrjNum(GetPrivateProfileIntA(("WorkPath"), ("MaxPathName"), UINT_MAX, FullPathOfPkpmIni())),
 	prjPaths_(maxPrjNum),
 	documentLoaded(false),
 	m_introductionUrl(urlAboutPkpm),
-	PageInfo()
+	PageInfo(),
+	adOpen("true")
 {
 	m_bNetEdition = true;
 	if (miniCx_ ==-1 || miniCy_ ==-1 || maxPrjNum ==-1)
 	{
-		MessageBox("check pkpm.ini", "error");
+		MessageBox(L"check pkpm.ini", L"error");
 		std::terminate();
 	}
 	CheckProjectName();
@@ -135,15 +136,15 @@ void CHtmlDlg::CheckProjectName()
 	{
 		auto workPathId = "WorkPath" + std::to_string(i);
 		memset(prjPathStr, 0, 256);
-		GetPrivateProfileString("WorkPath", workPathId.c_str(), "error", prjPathStr, string_utility::ArraySize(prjPathStr), FullPathOfPkpmIni().GetBuffer());
+		GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", prjPathStr, string_utility::ArraySize(prjPathStr), FullPathOfPkpmIni().GetBuffer());
 		if(string_utility::StringPiece(prjPathStr)!="error")
 		{
-			if(PathFileExists(prjPathStr)&&PathIsDirectory(prjPathStr))
+			if(PathFileExistsA(prjPathStr)&&PathIsDirectoryA(prjPathStr))
 			{
 				char longPath[MAX_PATH+1];
 				char shortPath[MAX_PATH+1];
-				if(GetShortPathName(prjPathStr,shortPath,MAX_PATH)>0)
-					if(GetLongPathName(shortPath,longPath,MAX_PATH)>0)
+				if(GetShortPathNameA(prjPathStr,shortPath,MAX_PATH)>0)
+					if(GetLongPathNameA(shortPath,longPath,MAX_PATH)>0)
 					{
 						if(std::islower(longPath[0])&&longPath[1]==':')
 							longPath[0]=std::toupper(longPath[0]);
@@ -170,9 +171,9 @@ void CHtmlDlg::CheckProjectName()
 	{
 		std::string workPathId = std::string("WorkPath") + std::to_string(i);
 		if (static_cast<size_t>(i) < vec.size())
-			WritePrivateProfileString("WorkPath", workPathId.c_str(), vec[i].c_str(), FullPathOfPkpmIni().GetBuffer());
+			WritePrivateProfileStringA("WorkPath", workPathId.c_str(), vec[i].c_str(), FullPathOfPkpmIni().GetBuffer());
 		else//de a bug 
-			WritePrivateProfileString("WorkPath", workPathId.c_str(), NULL, FullPathOfPkpmIni().GetBuffer());
+			WritePrivateProfileStringA("WorkPath", workPathId.c_str(), NULL, FullPathOfPkpmIni().GetBuffer());
 	}
 }
 
@@ -196,18 +197,19 @@ BOOL CHtmlDlg::OnInitDialog()
 	OnInit_gMultLangStrings();
 	if(!InitPkpmAppFuncPtr())
 	{
-		MessageBox("error: pkpmv51.dll");
+		MessageBox(L"error: pkpmv51.dll");
 		EndDialog(IDCANCEL);
 		return TRUE;
 	}
 	cfg_key_str=fuc_InitPkpmApp();	
-	if (svr::GetRegCFGPath().IsEmpty())
-	{
-		CString str;
-		str.Format (_T("无法找到注册表 %s" ),cfg_key_str);
-		MessageBox(str);
-		EndDialog(IDCANCEL);
-	}
+	//不需要检查注册表
+	//if (svr::GetRegCFGPath().IsEmpty())
+	//{
+	//	CString str;
+	//	str.Format (_T("无法找到注册表 %s" ),cfg_key_str);
+	//	MessageBox(str);
+	//	EndDialog(IDCANCEL);
+	//}
 	SetCfgPmEnv();
 	LoadPkpmXXXXIniConfig();
 	ReadPrivateProfile();
@@ -221,13 +223,13 @@ BOOL CHtmlDlg::OnInitDialog()
 	CDHtmlDialog::OnInitDialog();
 	char PathOfHtmlFile[64]={0};
 	const char* defaultStr = "error";
-	GetPrivateProfileString(_T("Html"), _T("PathOfHtml"), defaultStr, &0[PathOfHtmlFile], sizeof(PathOfHtmlFile), FullPathOfPkpmIni());
+	GetPrivateProfileStringA(("Html"), ("PathOfHtml"), defaultStr, &0[PathOfHtmlFile], sizeof(PathOfHtmlFile), FullPathOfPkpmIni());
 	FalseIsFuckingNotTolerable([&]()->bool {return !std::equal(defaultStr, defaultStr + strlen(defaultStr), PathOfHtmlFile);});
 	NavigateTo(PathOfHtmlFile);
 	m_pBrowserApp->put_Silent(VARIANT_TRUE);
 	m_pBrowserApp->put_RegisterAsDropTarget(VARIANT_FALSE);//本地处理
 	MoveWindow(0,0,miniCx_,miniCy_,1);
-	SetWindowText("PKPM V5.1.1");
+	SetWindowText(L"PKPM V5.1.1");
 	::SetWindowPos(this->m_hWnd,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 	SetFocus();
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
@@ -264,7 +266,7 @@ BEGIN_DISPATCH_MAP(CHtmlDlg, CDHtmlDialog)
 	DISP_FUNCTION(CHtmlDlg, "ONCLICKMAX", OnClickedMax, VT_EMPTY, VTS_NONE)
 	DISP_FUNCTION(CHtmlDlg, "ONCLICKCLOSE", OnClickedClose, VT_EMPTY, VTS_NONE)
 	DISP_FUNCTION(CHtmlDlg, "READWORKPATHS", ReadWorkPaths, VT_BSTR, VTS_WBSTR)
-	DISP_FUNCTION(CHtmlDlg, "SHORTCUT", OnShortCut, VT_EMPTY, VTS_BSTR)
+	DISP_FUNCTION(CHtmlDlg, "SHORTCUT", OnShortCut, VT_EMPTY, VTS_WBSTR)
 	DISP_FUNCTION(CHtmlDlg, "ONDBCLICKHEADER", OnResume, VT_EMPTY, VTS_NONE)
 	DISP_FUNCTION(CHtmlDlg, "ONGETDEFAULTMENUSELECTION", OnGetDefaultMenuSelection, VT_BSTR, VTS_NONE)
 	DISP_FUNCTION(CHtmlDlg, "ONSETDEFAULTMENUSELECTION", OnSetDefaultMenuSelection, VT_EMPTY, VTS_WBSTR)
@@ -275,6 +277,8 @@ BEGIN_DISPATCH_MAP(CHtmlDlg, CDHtmlDialog)
 	DISP_FUNCTION(CHtmlDlg, "DBCLICKPROJECT", OnDbClickProject, VT_EMPTY, VTS_WBSTR VTS_WBSTR VTS_WBSTR VTS_WBSTR VTS_WBSTR)
 	DISP_FUNCTION(CHtmlDlg, "CLICKLISTMENU", OnListMenu, VT_EMPTY, VTS_WBSTR VTS_WBSTR VTS_WBSTR VTS_WBSTR)
 	DISP_FUNCTION(CHtmlDlg, "DOCUMENTPATH", OnOpenDocument, VT_EMPTY, VTS_WBSTR VTS_WBSTR)
+	DISP_FUNCTION(CHtmlDlg, "ISADVISIBLE", isAdvertisementOpen, VT_BSTR, VTS_NONE)
+	DISP_FUNCTION(CHtmlDlg, "CLOSEADVERTISEMENT", CloseAdvertisement, VT_EMPTY, VTS_NONE)
 END_DISPATCH_MAP()
 
 std::unordered_map<std::string, void (CHtmlDlg::*)()> funcMap;
@@ -310,7 +314,7 @@ END_INNERFUNC
 
 void CHtmlDlg::OnUpdateOnline()
 {
-	ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
+	ShellExecuteA(NULL, "open", UpdateUrl, NULL, NULL, SW_SHOW);
 }
 
 void CHtmlDlg::OnIntegrityCheck()
@@ -322,14 +326,14 @@ void CHtmlDlg::OnIntegrityCheck()
 	if(fi.Open(regcmd,CFile::readOnly,NULL,NULL))
 	{
 		fi.Close();
-		HINSTANCE hi = ShellExecute(NULL,"open",regcmd,NULL,NULL,SW_NORMAL);
+		HINSTANCE hi = ShellExecute(NULL,L"open",regcmd,NULL,NULL,SW_NORMAL);
 		WaitForSingleObject(hi,INFINITE);
 	}
 	else
 	{
 		CString strHint;
-		strHint.Format("无法找到或启动程序 %s",regcmd);
-		MessageBox(strHint,"错误提示");
+		strHint.Format(L"无法找到或启动程序 %s",regcmd);
+		MessageBox(strHint,L"错误提示");
 	}
 
 }
@@ -342,7 +346,7 @@ void CHtmlDlg::OnSwitchToNetVersion()
 
 void CHtmlDlg::OnContactUs()
 {
-	ShellExecute(GetSafeHwnd(),"open",m_sOnlineAsk,NULL,NULL,SW_SHOWDEFAULT );
+	ShellExecute(GetSafeHwnd(),_T("open"),m_sOnlineAsk,NULL,NULL,SW_SHOWDEFAULT );
 }
 
 void CHtmlDlg::OnRegiser()
@@ -352,14 +356,14 @@ void CHtmlDlg::OnRegiser()
 	//Fix me
 	CString cfgpa = svr::GetRegCFGPath()+_T("RegPKPMCtrl.exe");
 	CString cmdline;
-	cmdline.Format("/n,/select,%s",cfgpa);  
-	::ShellExecute(0,"open","explorer.exe",cmdline,NULL,SW_SHOWNORMAL);
+	cmdline.Format(L"/n,/select,%s",cfgpa);  
+	::ShellExecute(0,_T("open"),_T("explorer.exe"),cmdline,NULL,SW_SHOWNORMAL);
 }
 
 void CHtmlDlg::OnUserManual()
 {
 	CString helpPath = GetAppPath()+"Help\\UserGuider";
-	::ShellExecute(0,"open","explorer.exe",helpPath,NULL,SW_SHOWNORMAL);
+	::ShellExecute(0,_T("open"),_T("explorer.exe"),helpPath,NULL,SW_SHOWNORMAL);
 }
 
 void CHtmlDlg::OnParameterSettings()
@@ -370,7 +374,7 @@ void CHtmlDlg::OnParameterSettings()
 		toolsvr::FixPathStr(strFullName);
 		if(DRIVE_REMOTE == GetDriveType(strFullName))
 		{
-			CString strHint="您即将更改服务器的配置文件，请您确认是否具有服务器文件的读写权限。";
+			CString strHint=L"您即将更改服务器的配置文件，请您确认是否具有服务器文件的读写权限。";
 			//strHint = g_stringMgr.LoadString(IDS_MAYNOT_CONFIG_PKPM_INI);
 			if(IDCANCEL ==AfxMessageBox(strHint,MB_OKCANCEL))
 				return;
@@ -402,20 +406,22 @@ void CHtmlDlg::OnModelPacking()
 
 void CHtmlDlg::OnAboutPkpm()
 {
-	ShellExecute(GetSafeHwnd(),"open",m_introductionUrl,NULL,NULL,SW_SHOWDEFAULT );
+	ShellExecute(GetSafeHwnd(),L"open",m_introductionUrl,NULL,NULL,SW_SHOWDEFAULT );
 }
 
 void CHtmlDlg::OnImprovement()
 {
 	//run_cmd("改进说明完整版","V5.X版改进说明完整版",""); // 执行命令 wait
-	CString updateFilePath = GetAppPath()+"Help\\UpdateGuider";
-	::ShellExecute(0,"open","explorer.exe",updateFilePath,NULL,SW_SHOWNORMAL);
+	CString updateFilePath = GetAppPath()+L"Help\\UpdateGuider";
+	::ShellExecute(0,L"open",L"explorer.exe",updateFilePath,NULL,SW_SHOWNORMAL);
 }
 
-void CHtmlDlg::OnShortCut(const char* cutName)
+void CHtmlDlg::OnShortCut(BSTR cutName)
 {
-	if(funcMap.find(cutName)!=funcMap.end())
-			(this->*funcMap[cutName])();
+	auto sc = string_utility::WStringToString(cutName);
+	OutputDebugStringA(sc.c_str());
+ 	if(funcMap.find(sc)!=funcMap.end())
+			(this->*funcMap[sc])();
 	else
 		throw std::invalid_argument("invalid event name");
 }
@@ -434,28 +440,23 @@ void CHtmlDlg::OnDbClickProject(BSTR prjPath, BSTR pathOfCore, BSTR coreWithPara
 	m_WorkPath=CString(str.c_str());
 	if(!prjPaths_.size())
 	{//不应该再出现这个错误
-		MessageBox("工作目录不存在","PKPMV51");
+		MessageBox(L"工作目录不存在",L"PKPMV51");
 		return ;
 	}
-	if(false&&CommandFliter(CString(pathOfCore), 
-		CString(coreWithPara),
-		CString(secMenu),
-		CString(trdMenu)))
-		return;
 	{
 		//2019/11/22
 		//现在，你再也不是在main里面了
 		ShowWindow(SW_HIDE);
 		char oldWorkPath[256]={0};
-		GetCurrentDirectory(sizeof(oldWorkPath),oldWorkPath);
+		GetCurrentDirectoryA(sizeof(oldWorkPath),oldWorkPath);
 		auto ret=SetCurrentDirectory(m_WorkPath);
 		if(!ret)
 		{
-			MessageBox("工作目录错误或者没有权限","PKPMV51");
+			MessageBox(_T("工作目录错误或者没有权限"),_T("PKPMV51"));
 			//return;
 		}		
 		run_cmd(OLE2T(secMenu),OLE2T(trdMenu),"");
-		SetCurrentDirectory(oldWorkPath);
+		SetCurrentDirectoryA(oldWorkPath);
 		SaveMenuSelection();
 		this->m_pBrowserApp->Refresh();
 		ShowWindow(SW_SHOW);
@@ -467,14 +468,14 @@ void CHtmlDlg::OnListMenu(BSTR pathOfCore, BSTR coreWithPara,BSTR secMenu, BSTR 
 	//坑爹啊
 	if(!prjPaths_.size())
 	{
-		MessageBox("没有选择工作目录","PKPMV51");
+		MessageBox(L"没有选择工作目录",L"PKPMV51");
 		return ;
 	}
 	auto prjSelected=std::stoi(MenuSelectionOnHtml().back().second);
 	OnDbClickProject(_com_util::ConvertStringToBSTR(prjPaths_[prjSelected].c_str()), pathOfCore, coreWithPara,secMenu,trdMenu);
 }
 
-bool CHtmlDlg::CommandFliter(CString path,CString core, CString secMenu, CString trdMenu)
+bool CHtmlDlg::CommandFliter(CStringA path,CStringA core, CStringA secMenu, CStringA trdMenu)
 {
 	auto coreWithParameters=core;
 	coreWithParameters.MakeUpper();
@@ -485,15 +486,15 @@ bool CHtmlDlg::CommandFliter(CString path,CString core, CString secMenu, CString
 		ShowWindow(SW_HIDE);
 		//fix me, check it
 		char oldWorkPath[256]={0};
-		GetCurrentDirectory(sizeof(oldWorkPath),oldWorkPath);
-		auto ret=SetCurrentDirectory(path);
+		GetCurrentDirectoryA(sizeof(oldWorkPath),oldWorkPath);
+		auto ret=SetCurrentDirectoryA(path);
 		if(!ret)
 		{
-			MessageBox("工作目录错误或者没有权限","PKPMV51");
+			MessageBox(L"工作目录错误或者没有权限",L"PKPMV51");
 			//return true;
 		}		
 		run_cmd(secMenu,trdMenu,"");
-		SetCurrentDirectory(oldWorkPath);
+		SetCurrentDirectoryA(oldWorkPath);
 		SaveMenuSelection();
 		this->m_pBrowserApp->Refresh();
 		ShowWindow(SW_SHOW);
@@ -650,7 +651,7 @@ void CHtmlDlg::OnResume()
 void CHtmlDlg::SwitchSrcOfZoomAll(bool maxFlag)
 {
 	CComPtr<IHTMLElement> sp=NULL;
-	std::string elem="zoomAllTest";
+	std::wstring elem=L"zoomAllTest";
 	if(S_OK==GetElementInterface(elem.c_str(),&sp))
 	{
 		BSTR attribute=::SysAllocString(L"src");
@@ -691,8 +692,8 @@ BSTR CHtmlDlg::ReadWorkPaths(BSTR fileName)
 	CComVariant varStr(fileName);
 	varStr.ChangeType(VT_BSTR);
 	USES_CONVERSION;
-	CString strMsg;
-	strMsg.Format(_T("%s"), OLE2T(varStr.bstrVal));
+	CStringA strMsg;
+	strMsg.Format(("%s"), OLE2T(varStr.bstrVal));
 	std::string filename(strMsg.GetBuffer());
 	filename = GetAppPath() + filename.c_str();
 	//
@@ -706,7 +707,7 @@ BSTR CHtmlDlg::ReadWorkPaths(BSTR fileName)
 	{
 		auto workPathId = "WorkPath" + std::to_string((ULONGLONG)i);
 		memset(prjPathStr, 0, 256);
-		auto nRead=GetPrivateProfileString("WorkPath", workPathId.c_str(), "error", prjPathStr, 256, filename.c_str());	
+		auto nRead=GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", prjPathStr, 256, filename.c_str());	
 		if (!strcmp("error", prjPathStr))
 		{
 			//prjPathStr=="error"表明用户手动修改了配置文件!
@@ -762,8 +763,8 @@ BSTR CHtmlDlg::ReadWorkPaths(BSTR fileName)
 
 bool CHtmlDlg::isSnapShotExist(const std::string& path)
 {
-	assert(!PathIsDirectory(path.c_str()));
-	return static_cast<bool>(PathFileExists(path.c_str()));
+	assert(!PathIsDirectoryA(path.c_str()));
+	return static_cast<bool>(PathFileExistsA(path.c_str()));
 }
 
 /*
@@ -801,9 +802,9 @@ BSTR CHtmlDlg::OnGetConfig(BSTR filename)
 	CComVariant varStr(filename);
 	varStr.ChangeType(VT_BSTR);
 	USES_CONVERSION;
-	CString strMsg;
-	strMsg.Format(_T("%s"), OLE2T(varStr.bstrVal));
-	std::string fileNameStr = CT2A(strMsg.GetBuffer());
+	CStringA strMsg;
+	strMsg.Format("%s", OLE2T(varStr.bstrVal));
+	std::string fileNameStr = strMsg.GetBuffer();
 	if (fileNameStr=="CFG/PKPMAPPMENU\\PKPMAPP-JICHENG.xml")
 	{
 		fileNameStr="CFG/PKPMAPPMENU/PKPMAPP-JICHENG-part1.xml";
@@ -825,32 +826,32 @@ void CHtmlDlg::DataFormatTransfer(BSTR module_app_name)
 {
 	if(!prjPaths_.size())
 	{
-		MessageBox("请先选择工作目录","PKPMV51");
+		MessageBox(L"请先选择工作目录",L"PKPMV51");
 		return;
 	}
 	CComVariant varStr(module_app_name);
 	varStr.ChangeType(VT_BSTR);
 	USES_CONVERSION;
-	CString nameStr;
-	nameStr.Format(_T("%s"), OLE2T(module_app_name));
-	std::string str_Ret = CT2A(nameStr.GetBuffer());
+	CStringA nameStr;
+	nameStr.Format("%s", OLE2T(module_app_name));
+	std::string str_Ret = nameStr.GetBuffer();
 	auto vec=string_utility::string_split(str_Ret,",");
 	auto iter=vec.begin();
 	try
 	{
 		ShowWindow(SW_HIDE);	
 		char oldWorkPath[256]={0};
-		GetCurrentDirectory(sizeof(oldWorkPath),oldWorkPath);
+		GetCurrentDirectoryA(sizeof(oldWorkPath),oldWorkPath);
 		auto prjSelected=std::stoi(MenuSelectionOnHtml().back().second);
-		BOOL ret=SetCurrentDirectory(prjPaths_[prjSelected].c_str());
+		BOOL ret=SetCurrentDirectoryA(prjPaths_[prjSelected].c_str());
 		if(!ret)
 		{
-			MessageBox("工作目录错误或者没有权限","PKPMV51");
+			MessageBox(L"工作目录错误或者没有权限",L"PKPMV51");
 			//return;
 		}		
 		m_WorkPath=prjPaths_[prjSelected].c_str();
-		run_cmd(CString(vec.front().c_str()),CString((*++iter).c_str()),"");
-		SetCurrentDirectory(oldWorkPath);
+		run_cmd(CStringA(vec.front().c_str()),CStringA((*++iter).c_str()),"");
+		SetCurrentDirectoryA(oldWorkPath);
 		SaveMenuSelection();
 		this->m_pBrowserApp->Refresh();
 		ShowWindow(SW_SHOW);		
@@ -874,7 +875,7 @@ bool SetRegValue(HKEY nKeyType, const std::string& strUrl, const std::string& st
 	const int kBuffSize = 256;
 	char reBuff[kBuffSize] = { 0 };
 	HKEY hKey = NULL;
-	auto ret= RegCreateKeyEx(rootKey, strUrl.data(), 0, NULL, 0, 0, NULL, &hKey, &state);
+	auto ret= RegCreateKeyExA(rootKey, strUrl.data(), 0, NULL, 0, 0, NULL, &hKey, &state);
 	if (ret == ERROR_SUCCESS)
 	{
 		if (state == REG_CREATED_NEW_KEY)
@@ -885,10 +886,10 @@ bool SetRegValue(HKEY nKeyType, const std::string& strUrl, const std::string& st
 	{
 		//FIX ME 检查值并直接退出
 	}
-	ret= RegOpenKeyEx(rootKey , strUrl.data(), 0, KEY_WRITE, &hKey);
+	ret= RegOpenKeyExA(rootKey , strUrl.data(), 0, KEY_WRITE, &hKey);
 	if (ret== ERROR_SUCCESS)
 	{
-		RegSetValueEx(hKey, strKey.c_str(), 0, REG_DWORD, (BYTE *)&value, sizeof(DWORD)/*value.size()*2*/);
+		RegSetValueExA(hKey, strKey.c_str(), 0, REG_DWORD, (BYTE *)&value, sizeof(DWORD)/*value.size()*2*/);
 		RegCloseKey(hKey);
 		return true;
 	}
@@ -907,7 +908,7 @@ bool CHtmlDlg::ModifyRegistry()
 		9000);
 }
 
-void CHtmlDlg::NavigateTo(LPCTSTR pszUrl)
+void CHtmlDlg::NavigateTo(const char* pszUrl)
 {
 	CString strPath, str;
 	DWORD dwSize = MAX_PATH;
@@ -995,19 +996,19 @@ void CHtmlDlg::OnDropFiles(HDROP hDropInfo)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	UINT count;
-	TCHAR filePath[260] = { 0 };
+	CHAR filePath[260] = { 0 };
 	count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 	if (count!=1)
 	{
-		MessageBox("仅支持拖拽单个目录");
+		MessageBox(L"仅支持拖拽单个目录");
 		return;
 	}
 	else
 	{
-		DragQueryFile(hDropInfo, 0, filePath, sizeof(filePath));
-		if (PathFileExists(filePath) && PathIsDirectory(filePath))
+		DragQueryFileA(hDropInfo, 0, filePath, sizeof(filePath));
+		if (PathFileExistsA(filePath) && PathIsDirectoryA(filePath))
 		{
-			filePath[_tcslen(filePath)] = '\\';
+			filePath[strlen(filePath)] = '\\';
 			if(AddWorkPaths(filePath, FullPathOfPkpmIni().GetBuffer()))				
 			{
 				SaveMenuSelection(false);
@@ -1016,15 +1017,9 @@ void CHtmlDlg::OnDropFiles(HDROP hDropInfo)
 		}		
 		else
 		{
-			MessageBox("仅支持拖拽目录");
+			MessageBox(L"仅支持拖拽目录");
 			return;
 		}		
-		/*
-		we needs fileSystem
-		*/
-#ifdef DEBUG
-		AfxMessageBox(filePath);
-#endif		
 	}
 	DragFinish(hDropInfo);
 	CDHtmlDialog::OnDropFiles(hDropInfo);
@@ -1043,7 +1038,7 @@ BSTR CHtmlDlg::OnNewProject()
 			//文件夹就是文件，不要以\结束。
 			//为了迁就旧程序，我也得跟着乱写
 			path=dlg.m_sCurPath;
-			std::string dirName=dlg.m_sCurPath.GetBuffer();
+			std::string dirName=string_utility::WStringToString(dlg.m_sCurPath.GetBuffer());
 			if(!string_utility::endWith(dirName.c_str(),"\\"))
 			{
 				dirName+="\\";
@@ -1055,7 +1050,7 @@ BSTR CHtmlDlg::OnNewProject()
 					this->m_pBrowserApp->Refresh();
 			}
 		}
-		 return _com_util::ConvertStringToBSTR(path.GetBuffer());
+		 return _com_util::ConvertStringToBSTR(string_utility::WStringToString(path.GetBuffer()).c_str());
 	}
 	////deprecated///////////////////////////////////////////////////////
 	TCHAR  folderPath[MAX_PATH]={ 0 };
@@ -1075,16 +1070,15 @@ BSTR CHtmlDlg::OnNewProject()
 		{
 			path =folderPath;
 			::CoTaskMemFree(lpidlBrowse);
-			std::string dirName(path.GetBuffer());
+			std::string dirName(string_utility::WStringToString(path.GetBuffer()));
 			dirName+="\\";
-			std::string path_of_pkpm_dot_ini=std::string(GetAppPath())+
-				"../"+"cfg/pkpm.ini";//这个真的没有办法
+			std::string path_of_pkpm_dot_ini=string_utility::WStringToString( (GetAppPath()+L"../"+L"cfg/pkpm.ini").GetBuffer());//这个真的没有办法
 			AddWorkPaths(dirName, path_of_pkpm_dot_ini);
 			SaveMenuSelection(false);
 			this->m_pBrowserApp->Refresh();
 		}
 	}
-	return _com_util::ConvertStringToBSTR(path.GetBuffer());
+	return _com_util::ConvertStringToBSTR(string_utility::WStringToString(path.GetBuffer()).c_str());
 }
 
 
@@ -1252,7 +1246,7 @@ void CHtmlDlg::ReadPrivateProfile()
 
 	{
 
-		int nShowFullPath=GetPrivateProfileInt("PM控制参数","btnShowFullPath",-1,iniFile);
+		int nShowFullPath=GetPrivateProfileInt(L"PM控制参数",L"btnShowFullPath",-1,iniFile);
 		if (nShowFullPath>=0)
 		{
 			//ButtonPrjFile::s_SingleLine = nShowFullPath == 0?true:false;
@@ -1278,7 +1272,7 @@ void CHtmlDlg::OnInit_gMultLangStrings()
 	if (nSep>0)
 	{
 		vcxprojPath = strApplication.Left(nSep);
-		g_stringMgr.SetProjectPathName(vcxprojPath,_T("PKPMMain"));
+		g_stringMgr.SetProjectPathName(vcxprojPath,CString(L"PKPMMain"));
 
 		g_stringMgr.StringResToXml();
 		g_stringMgr.LoadFromFile();
@@ -1287,9 +1281,9 @@ void CHtmlDlg::OnInit_gMultLangStrings()
 }
 
 
-void CHtmlDlg::run_cmd( const CString&moduleName,const CString&appName1_,const CString&appName2 )
+void CHtmlDlg::run_cmd( const CStringA&moduleName,const CStringA&appName1_,const CStringA&appName2 )
 {
-	CString appName1(appName1_);
+	CStringA appName1(appName1_);
 	ASSERT(!moduleName.IsEmpty());
 	ASSERT(!appName1.IsEmpty());
 	/*
@@ -1350,7 +1344,7 @@ void CHtmlDlg::OnMoveWindow(VARIANT  pos)
 	USES_CONVERSION;
 	CString strMsg;
 	strMsg.Format(_T("%s"), OLE2T(varStr.bstrVal));
-	std::string stdStr(strMsg.GetBuffer());
+	std::string stdStr(string_utility::WStringToString(strMsg.GetBuffer()));
 	auto index= stdStr.find(",");
 	int x = std::stoi(stdStr.substr(0, index));
 	int y=  std::stoi(stdStr.substr(index+1));
@@ -1368,7 +1362,7 @@ void CHtmlDlg::OnBnClickedBtnFileMgr()
 	{
 		for (int i=0;i!=modPaths.GetSize();++i)
 		{
-			if(!modPaths[i].m_name.CompareNoCase("TDGL"))
+			if(!modPaths[i].m_name.CompareNoCase(L"TDGL"))
 			{
 				strPatTDGL = modPaths[i].m_path;
 				toolsvr::FixPathStr(strPatTDGL);
@@ -1380,8 +1374,8 @@ void CHtmlDlg::OnBnClickedBtnFileMgr()
 	if (strPatTDGL.IsEmpty())
 	{
 		CString strHint;
-		strHint.Format("无法找到安装目录TDGL");
-		MessageBox(strHint,"错误提示");
+		strHint.Format(L"无法找到安装目录TDGL");
+		MessageBox(strHint,L"错误提示");
 		return;
 	}
 
@@ -1390,20 +1384,20 @@ void CHtmlDlg::OnBnClickedBtnFileMgr()
 	toolsvr::FixPathStr(strCfgPa);
 
 	CString regcmd = strPatTDGL + m_strNameOfPManager;
-	CString cmdParm = "-f ";
-	cmdParm +="\""+ strCfgPa +"pkpm.ini\"";
+	CString cmdParm = L"-f ";
+	cmdParm +=L"\""+ strCfgPa +L"pkpm.ini\"";
 	CFile fi;
 	if(fi.Open(regcmd,CFile::readOnly,NULL,NULL))
 	{
 		fi.Close();
-		HINSTANCE hi = ShellExecute(NULL,"open",regcmd,cmdParm,NULL,SW_NORMAL);
+		HINSTANCE hi = ShellExecute(NULL,L"open",regcmd,cmdParm,NULL,SW_NORMAL);
 		WaitForSingleObject(hi,INFINITE);//wtf
 	}
 	else
 	{
 		CString strHint;
-		strHint.Format("无法找到或启动程序 %s %s",regcmd,cmdParm);
-		MessageBox(strHint,"错误提示");
+		strHint.Format(L"无法找到或启动程序 %s %s",regcmd,cmdParm);
+		MessageBox(strHint,L"错误提示");
 	}
 }
 
@@ -1484,7 +1478,7 @@ bool CHtmlDlg::VersionPage()
 	if (200 != res.statusCode)
 	{
 #ifdef _DEBUG
-		MessageBox("请检查联网功能");
+		MessageBox(L"请检查联网功能");
 #endif // _DEBUG
 		return false;
 	}
@@ -1602,11 +1596,6 @@ BSTR CHtmlDlg::TellMeNewVersionExistOrNot()
 		{
 			std::string keyName = "Advertisement";
 			std::string adver(arr[i][keyName.c_str()].GetString());
-			CString str;
-			str.Format("advertisement = %s\n", adver.c_str());
-			OutputDebugString(str);
-			str.Format("url = %s\n", arr[i]["Url"].GetString());
-			OutputDebugString(str);
 		}
 #endif // _DEBUG
 		int MainVersionOnServer = std::stoi(document["Version"]["MainVersion"].GetString());
@@ -1614,7 +1603,7 @@ BSTR CHtmlDlg::TellMeNewVersionExistOrNot()
 		int SubVersionOnServer = std::stoi(document["Version"]["SubVersion"].GetString());
 		int mv=-1, vv=-1, sv=0;
 		CString VersionPath=GetAppPath()+"CFG";
-		auto vec=FindVersionFiles(VersionPath,"V","ini");
+		auto vec=FindVersionFiles(string_utility::WStringToString(VersionPath.GetBuffer()).c_str(),"V","ini");
 		if(!vec.empty())
 		{
 			getLatestVersion(vec,mv,vv,sv);
@@ -1624,30 +1613,6 @@ BSTR CHtmlDlg::TellMeNewVersionExistOrNot()
 			else
 				return _com_util::ConvertStringToBSTR("false");
 		}
-	}
-	return _com_util::ConvertStringToBSTR("false");
-////////////////////////////////////////////以下为废弃的代码/////////////////////////////////////////
-	CString appPath=GetAppPath();
-	CString localFileName= appPath+"CFG\\CheckVersion.ini";
-	CString SrvAddress = _T("http://111.230.143.87/pkpm.txt");
-	if (S_OK==URLDownloadToFile(NULL, SrvAddress, localFileName, 0, NULL))
-	{
-		int MainVersionOnServer = GetPrivateProfileInt(_T("Version"), _T("MainVer"), 10, localFileName);
-		int ViceVersionOnServer = GetPrivateProfileInt(_T("Version"), _T("ViceVer"), 10, localFileName);
-		int SubVersionOnServer = GetPrivateProfileInt(_T("Version"), _T("SubVer"), 10, localFileName);
-		int mv=-1, vv=-1, sv=0;
-		CString VersionPath=GetAppPath()+"CFG";
-		auto vec=FindVersionFiles(VersionPath,"V","ini");
-		//刘超提供的逻辑
-		if(!vec.empty())
-		{
-			getLatestVersion(vec,mv,vv,sv);
-			//偷懒
-			if (MainVersionOnServer != mv || ViceVersionOnServer != vv || SubVersionOnServer!=sv)
-				return _com_util::ConvertStringToBSTR("true");
-		}
-		else
-			return _com_util::ConvertStringToBSTR("false");
 	}
 	return _com_util::ConvertStringToBSTR("false");
 }
@@ -1719,7 +1684,7 @@ std::vector<std::string> CHtmlDlg::FindVersionFiles(
 		DWORD dwRet = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, LENGTH_OF_ENV);
 		if(!dwRet)
 		{
-			AfxMessageBox("Error! Can not find Path");
+			AfxMessageBox(L"Error! Can not find Path");
 			return false;
 		}
 		else if (LENGTH_OF_ENV<dwRet)//需要重新分配内存
@@ -1732,21 +1697,22 @@ std::vector<std::string> CHtmlDlg::FindVersionFiles(
 		}
 
 		CString strCFG = svr::GetRegCFGPath();
-		CString strPM;
-		if(false == svr::getPathByMaker("PM",strPM))
-		{
-			AfxMessageBox("无法找到PM的路径 ");
-			return false;
-		}
+
+		TCHAR path[256];
+		GetModuleFileName(NULL, path, 256);
+		PathRemoveFileSpec(path);
+		CString strPM = path;
+		strPM += "\\Ribbon\\PM";
+		
 		CString strPath;
-		strPath = strCFG + ";";
-		strPath += strPM + ";";
+		strPath = strCFG + L";";
+		strPath += strPM + L";";
 		strPath += szOriEnvPath;
 		strPath.Trim();
 		int	iv= SetEnvironmentVariable(_T("PATH"),strPath);
 		if (iv==0)
 		{
-			AfxMessageBox("无法设置PATH路径");
+			AfxMessageBox(L"无法设置PATH路径");
 			return false;
 		}
 		else
@@ -1763,9 +1729,9 @@ std::vector<std::string> CHtmlDlg::FindVersionFiles(
 		{
 			std::string workPathId = std::string("WorkPath") + std::to_string(i);
 			if (static_cast<size_t>(i) < prjPaths.size())
-				WritePrivateProfileString("WorkPath", workPathId.c_str(), prjPaths[i].c_str(), filename.c_str());
+				WritePrivateProfileStringA("WorkPath", workPathId.c_str(), prjPaths[i].c_str(), filename.c_str());
 			else//de a bug 
-				WritePrivateProfileString("WorkPath", workPathId.c_str(), NULL, filename.c_str());
+				WritePrivateProfileStringA("WorkPath", workPathId.c_str(), NULL, filename.c_str());
 		}
 	}
 
@@ -1845,7 +1811,7 @@ void CHtmlDlg::PathFromClipBoard()
 	}
 	if(!filePath.empty())
 	{
-		if(PathFileExists(filePath.c_str())&&PathIsDirectory(filePath.c_str()))
+		if(PathFileExistsA(filePath.c_str())&&PathIsDirectoryA(filePath.c_str()))
 		{
 			filePath+="\\";
 			if(AddWorkPaths(filePath,FullPathOfPkpmIni().GetBuffer()))
@@ -1867,7 +1833,7 @@ void CHtmlDlg::OnDocumentComplete(LPDISPATCH pDisp, LPCTSTR szUrl)
 {
 	CDHtmlDialog::OnDocumentComplete(pDisp, szUrl);
 	// TODO: 在此添加专用代码和/或调用基类
-	if (!strcmp(szUrl, ""))
+	if (!_tcscmp(szUrl, _T("")))
 		return;
 	IHTMLDocument2* pIHtmlDoc = NULL;
 	GetDHtmlDocument(&pIHtmlDoc);
@@ -1927,12 +1893,12 @@ BSTR CHtmlDlg::OnGetDefaultMenuSelection()
 std::vector<std::pair<std::string, std::string>> CHtmlDlg::MenuSelectionOnHtml()
 {
 	_variant_t  pVarResult;
-	CString args = "uselessArg";
-	JavaScriptFuncInvoker("postMenuIndex1", &pVarResult);
+	CString args = L"uselessArg";
+	JavaScriptFuncInvoker(L"postMenuIndex1", &pVarResult);
 	CString selections;
 	assert(pVarResult.vt == VT_BSTR);
 	selections = pVarResult.bstrVal;
-	std::string stdStr(selections.GetBuffer());
+	std::string stdStr(string_utility::WStringToString(selections.GetBuffer()));
 	auto vec = string_split(stdStr, ",");
 	assert(vec.size() == ArraySize(toRead));
 	std::vector<std::pair<std::string, std::string>> dict;
@@ -1967,7 +1933,7 @@ void CHtmlDlg::OnSetDefaultMenuSelection(BSTR json_str)
 	{
 		Value&s = d[toRead[i]];
 		auto indexSelection = s.GetString();
-		WritePrivateProfileString("Html", toRead[i], indexSelection, FullPathOfPkpmIni());
+		WritePrivateProfileStringA("Html", toRead[i], indexSelection, FullPathOfPkpmIni());
 	}
 	Value&s = d[toRead[i]];
 	int indexSelection=atoi(s.GetString());
@@ -1994,7 +1960,7 @@ void CHtmlDlg::OnSetDefaultMenuSelection2(BSTR json_str)
 	{
 		Value&s = d[toRead[i]];
 		auto indexSelection = s.GetString();
-		WritePrivateProfileString("Html", toRead[i], indexSelection, FullPathOfPkpmIni());
+		WritePrivateProfileStringA("Html", toRead[i], indexSelection, FullPathOfPkpmIni());
 	}
 	Value&s = d[toRead[i]];
 	int indexSelection=atoi(s.GetString());
@@ -2008,7 +1974,7 @@ void CHtmlDlg::OnRightClickProject(BSTR prj)
 	varStr.ChangeType(VT_BSTR);
 	USES_CONVERSION;
 	std::string path(OLE2T(varStr.bstrVal));
-	ShellExecute(NULL, "open", "explorer.exe", path.c_str(), NULL, SW_SHOWNORMAL);
+	ShellExecuteA(NULL, "open", "explorer.exe", path.c_str(), NULL, SW_SHOWNORMAL);
 }
 
 /*
@@ -2166,7 +2132,7 @@ BOOL CHtmlDlg::InvokeJsFunc(const CString strFunc, const CStringArray& paramArra
 	HRESULT hr = m_spHtmlDoc->get_Script(&spScript);
 	if (!SUCCEEDED(hr))
 	{
-		MessageBox("函数GetJScrip调用失败！");
+		MessageBox(L"函数GetJScrip调用失败！");
 		return FALSE;
 	}
 	CComBSTR bstrFunc(strFunc);
@@ -2229,17 +2195,17 @@ void CHtmlDlg::OnOpenDocument(BSTR rootInRibbon, BSTR filePath)
 	FullPath+=OLE2T(root.bstrVal);
 	FullPath+=OLE2T(pathStr.bstrVal);
 
-	SHELLEXECUTEINFO ShExecInfo;
+	SHELLEXECUTEINFOA ShExecInfo;
 	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS ;
 	ShExecInfo.hwnd = NULL;
-	ShExecInfo.lpVerb = _T("open");
+	ShExecInfo.lpVerb = ("open");
 	ShExecInfo.lpFile = FullPath.c_str();
-	ShExecInfo.lpParameters = _T(""); 
+	ShExecInfo.lpParameters = (""); 
 	ShExecInfo.lpDirectory = NULL;
 	ShExecInfo.nShow = SW_SHOW;
 	ShExecInfo.hInstApp = NULL; 
-	ShellExecuteEx(&ShExecInfo);
+	ShellExecuteExA(&ShExecInfo);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2301,35 +2267,6 @@ std::pair<int,int> parseSecAndTrdLevelMenu(const std::string &text, const std::s
 
 	return std::make_pair(result_second_menu, result_third_menu);
 
-}
-
-
-
-int CHtmlDlg::parseHtmlText()
-{
-	//要返回4个整数0.0
-	int result = 0;
-	{
-		std::string elem_navi = "navi";
-		auto text_1Level = GetElementHtml(elem_navi.c_str());
-		std::string text_string = _com_util::ConvertBSTRToString(text_1Level);
-		int index = parseTopLevelMenu(text_string);
-		if (index < 0)
-			throw("bad index");
-		result = index << 24;
-	}
-	{
-		std::string elem_secondLevelMenu = "modelUi";
-		auto text_2Level = GetElementHtml(elem_secondLevelMenu.c_str());
-		std::string  text_string_second = _com_util::ConvertBSTRToString(text_2Level);
-
-		std::string elem_thirdLevelMenu = "selectText_";
-		auto text_3Level = GetElementHtml(elem_thirdLevelMenu.c_str());
-		std::string  text_string_third = _com_util::ConvertBSTRToString(text_2Level);
-
-		auto indexs = parseSecAndTrdLevelMenu(text_string_second, text_string_third);
-	}
-	return 0;
 }
 
 void CHtmlDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
@@ -2458,4 +2395,14 @@ BOOL CHtmlDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
 	}
 	return 0;
+}
+
+BSTR CHtmlDlg::isAdvertisementOpen()
+{
+	return _com_util::ConvertStringToBSTR(adOpen.c_str());
+}
+
+void CHtmlDlg::CloseAdvertisement()
+{
+	adOpen = "false";
 }

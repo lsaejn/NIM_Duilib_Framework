@@ -280,7 +280,7 @@ bool PkpmmainConfigJson::read( CString filename )
 	{
 		//ASSERT(FALSE);
 		CString str;
-		str.Format("未找到配置文件!\n文件:%s",filename);
+		str.Format(_T("未找到配置文件!\n文件:%s"),filename);
 		AfxMessageBox(str);
 
 		clear();
@@ -297,7 +297,7 @@ bool PkpmmainConfigJson::read( CString filename )
 	else
 	{
 		CString str;
-		str.Format("请检查配置文件格式!\n文件:%s",filename);
+		str.Format(_T("请检查配置文件格式!\n文件:%s"),filename);
 		return false;
 	}
 	
@@ -309,13 +309,13 @@ bool PkpmmainConfigJson::Load()
 	clear();
 
 	CString mainPath;
-	if(false == svr::getPathByMaker("RIBBON-RELEASE",mainPath))
+	if(false == svr::getPathByMaker(_T("RIBBON-RELEASE"),mainPath))
 	{
-		AfxMessageBox("无法找到RIBBON-RELEASE的路径,不能加载PKPMMAIN.JSON。");
+		AfxMessageBox(_T("无法找到RIBBON-RELEASE的路径,不能加载PKPMMAIN.JSON。"));
 		return false;
 	}
 	 
-	m_JsonPaName = mainPath + "PKPMMAIN.JSON";
+	m_JsonPaName = mainPath + _T("PKPMMAIN.JSON");
 	return read(m_JsonPaName);
 
 }
@@ -420,6 +420,7 @@ bool PkpmmainConfigJson::save()
 	}
 	catch (CException* e)
 	{
+		UNREFERENCED_PARAMETER(e);
 		ASSERT(FALSE);
 		return false;
 	}

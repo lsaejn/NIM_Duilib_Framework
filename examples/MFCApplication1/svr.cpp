@@ -56,68 +56,27 @@ CString svr::GetRegCFGPath()
 {
 	CString strCFG;
 	strCFG.Empty();
-	if (GetAssignCFGPath(strCFG,false))
-	{
-		return strCFG;
-	}
-	else if(GetAssignCFGPath(strCFG,true))
-	{
-		return strCFG;
-	}
-
+	GetAssignCFGPath(strCFG, false);
 	return strCFG;
 }
 
 bool svr::GetAssignCFGPath(CString& strCFG,bool bMarchine)
 {
-	CString path;
-	path.Empty();
-	HKEY hkey;
-	//必需使用KEY_READ权限，windows7 必需用管理员身份运行
-
-	long rt;
-	if (bMarchine)
-	{
-		rt=RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\PKPM\\MAIN\\PATH"),0,KEY_READ,&hkey);
-	}
-	else
-	{
-		rt=RegOpenKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\PKPM\\MAIN\\PATH"),0,KEY_READ,&hkey);
-	}
-
-	if(rt==ERROR_SUCCESS)
-	{
-		DWORD dwType;
-		DWORD dwSize = MAX_PATH;
-		BYTE  string[MAX_PATH+1];
-		CString sKey=get_cfg_path_reg_key();
-		ASSERT(!sKey.IsEmpty());
-#ifdef _UNICODE
-		char ssKey[100];
-		int nn=WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK,sKey,sKey.GetLength(),ssKey,sizeof(ssKey),NULL,NULL);
-		ssKey[nn]=0;
-		rt = RegQueryValueExA (hkey, ssKey, NULL,	&dwType, (BYTE*)string, &dwSize);
-#else
-		rt = RegQueryValueExA (hkey, sKey, NULL,	&dwType, (BYTE*)string, &dwSize);
-#endif
-		if(rt==ERROR_SUCCESS)
-		{
-			path=string;
-		}
-		RegCloseKey(hkey);
-	}
-	FixPathStr(path);
+	TCHAR path[256];
+	GetModuleFileName(NULL, path, 256);
+	PathRemoveFileSpec(path);
 	strCFG = path;
-	return path.IsEmpty()?false:true;
+	strCFG += "\\CFG\\";
+	return strCFG.IsEmpty()?false:true;
 }
 typedef   BOOL   (WINAPI   *SHCreateDirectory2)   (HWND   hwnd, LPCWSTR   pszPath);
 bool svr::CreateDirtory(const char*path)
 {
-	HMODULE hmodShell=LoadLibraryA("shell32.dll");
+	HMODULE   hmodShell   =   LoadLibraryA("shell32.dll");
 	if(hmodShell)
 	{
 		BOOL ok=false;
-		SHCreateDirectory2 shcd=(SHCreateDirectory2)GetProcAddress(hmodShell, "SHCreateDirectory");
+		SHCreateDirectory2   shcd   =   (SHCreateDirectory2)GetProcAddress(hmodShell,   "SHCreateDirectory");
 		if(shcd)
 		{
 			wchar_t wpath[MAX_PATH];
@@ -179,7 +138,7 @@ bool svr::SaveWorkPathToFile_CFGPATH(const CString&path)
 	}
 	if(!ok)
 	{
-		arrItems.push_back(L"WORK");
+		arrItems.push_back(_T("WORK"));
 		CString ss=path;
 		//ss+="\\";
 		FixPathStr(ss);
@@ -193,7 +152,7 @@ bool svr::SaveWorkPathToFile_CFGPATH(const CString&path)
 		for(int i=0;i<num;++i)
 		{
 			file2.WriteString(arrItems[i]);
-			file2.WriteString(L"\n");
+			file2.WriteString(_T("\n"));
 		}
 		file2.Close();
 	}

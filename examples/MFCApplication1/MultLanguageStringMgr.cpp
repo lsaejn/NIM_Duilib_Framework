@@ -433,7 +433,7 @@ CString CMultLanguageStringMgr::LoadString(long ID)
 	}
 	for (i=0;i<pCurSet->arrItems.GetCount();i++)
 	{
-		AfxTrace("%d = %d\n",pCurSet->arrItems.GetAt(i)->ID,ID);
+		AfxTrace(L"%d = %d\n",pCurSet->arrItems.GetAt(i)->ID,ID);
 		if( pCurSet->arrItems.GetAt(i)->ID==ID)
 		{
 			

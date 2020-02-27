@@ -189,6 +189,12 @@
     <ClInclude Include="CDirSelectThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DlgRegRunAsHint.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCApplication1.cpp">
@@ -230,6 +236,12 @@
     <ClCompile Include="CDirSelectThread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DlgRegRunAsHint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Console.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCApplication1.rc">
@@ -244,6 +256,21 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\MFCApplication1.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\PkpmV51.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\V5\RegRunAs.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\RegRunAs.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\bitmap2.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
