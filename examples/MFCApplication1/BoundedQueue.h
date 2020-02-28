@@ -31,7 +31,8 @@ namespace collection_utility
 	{
 	public:
 		explicit BoundedQueue(const int maxSize)
-			:queue_(0), maxSize_(maxSize)
+			:queue_(0), 
+			maxSize_(maxSize)
 		{
 		}
 

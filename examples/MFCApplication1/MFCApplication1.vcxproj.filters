@@ -195,6 +195,15 @@
     <ClInclude Include="Console.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="nlohmannJson.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="nlohmann\json.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="string_util.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCApplication1.cpp">

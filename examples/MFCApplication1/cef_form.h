@@ -52,7 +52,10 @@ private:
 
 	WEBINTERFACE void OnDbClickProject(const std::vector<std::string>& args);
 	WEBINTERFACE void OnListMenu(const std::vector<std::string>& args);
-	WEBINTERFACE void OnOpenDocument(const std::string& RootInRibbon, const std::string& filePath);
+	WEBINTERFACE void OnOpenDocument(const std::string& filePath);
+	WEBINTERFACE bool AddWorkPaths(const std::string& newProj, const std::string& filename);
+	WEBINTERFACE void SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPaths, const std::string& filename);
+	WEBINTERFACE void OnSetDefaultMenuSelection(const std::string& json_str);
 
 	//读取工程信息
 	bool GetPrjInfo(const std::string& path, std::string& timestamp, const char* surfix = "buildUp.bmp");
@@ -67,8 +70,8 @@ private:
 	ui::RichEdit*		edit_url_;
 	ui::Label* label_;
 	WebDataReader webDataReader_;
+	const int maxPrjNum_;
 	collection_utility::BoundedQueue<std::string> prjPaths_;
-	const int maxPrjNum;
 	ShortCutHandler shortCutHandler_;
 };
 
