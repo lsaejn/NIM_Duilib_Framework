@@ -3,6 +3,7 @@
 #include "WebDataReader.h"
 #include "BoundedQueue.h"
 #include "ShortCutHandler.h"
+#include "AppDllAdaptor.h"
 
 #define WEBINTERFACE
 
@@ -62,6 +63,7 @@ private:
 	//inner function
 	void RegisterCppFuncs();
 	bool IsSnapShotExist(const std::string& path);
+	void run_cmd(const CStringA& moduleName, const CStringA& appName1, const CStringA& appName2);
 
 private:
 	nim_comp::CefControlBase* cef_control_;
@@ -73,5 +75,6 @@ private:
 	const int maxPrjNum_;
 	collection_utility::BoundedQueue<std::string> prjPaths_;
 	ShortCutHandler shortCutHandler_;
+	AppDllAdaptor appDll_;
 };
 

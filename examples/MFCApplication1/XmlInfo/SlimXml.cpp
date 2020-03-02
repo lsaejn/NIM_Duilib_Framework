@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SlimXml.h"
 #include <cassert>
 #include <fstream>

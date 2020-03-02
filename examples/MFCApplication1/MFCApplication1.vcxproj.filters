@@ -171,15 +171,6 @@
     <ClInclude Include="svr.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="pkpm2014svr.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="XmlInfo\SlimXml.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="XmlInfo\InfoItem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="json\json-forwards.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -202,6 +193,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="string_util.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AppDllAdaptor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pkpm2014svr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlInfo\SlimXml.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlInfo\InfoItem.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -230,15 +233,6 @@
     <ClCompile Include="svr.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pkpm2014svr.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="XmlInfo\SlimXml.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="XmlInfo\InfoItem.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="json\jsoncpp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -249,6 +243,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Console.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AppDllAdaptor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pkpm2014svr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlInfo\InfoItem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="XmlInfo\SlimXml.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

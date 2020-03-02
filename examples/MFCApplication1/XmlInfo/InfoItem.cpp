@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "InfoItem.h"
 #include <afxtempl.h>
 

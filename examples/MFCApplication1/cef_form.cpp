@@ -153,8 +153,8 @@ void CefForm::InitWindow()
 	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
 
 	// 设置输入框样式
-	//edit_url_->SetSelAllOnFocus(true);
-	//edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
+	edit_url_->SetSelAllOnFocus(true);
+	edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
 
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
@@ -177,6 +177,7 @@ void CefForm::InitWindow()
 
 	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
 	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    调用接口OnSetCaption修改软件");
+	appDll_.InitPkpmAppFuncPtr();
 
 	ui::Button* settings = dynamic_cast<ui::Button*>(FindControl(L"settings"));
 	settings->AttachClick([this](ui::EventArgs* args) {
@@ -345,8 +346,8 @@ bool CefForm::OnNavigate(ui::EventArgs* msg)
 
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
-	//FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
-	//FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
+	FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
+	FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
 }
 
 
@@ -357,6 +358,18 @@ void CefForm::RegisterCppFuncs()
 			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
 			callback(false, R"({ "message": "Success0." })");
 		})
+	);
+
+	cef_control_->RegisterCppFunc(L"ONRCLICKPRJ",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
+			rapidjson::StringStream input(params.c_str());
+			rapidjson::Document document;
+			document.ParseStream(input);
+			std::string filePath = document["projectName"].GetString();
+			OnRightClickProject(nbase::UTF8ToUTF16(filePath));
+			callback(true, R"({ "message": "Success0." })");
+			})
 	);
 
 	cef_control_->RegisterCppFunc(L"CONFIGFILES",
@@ -432,28 +445,12 @@ void CefForm::RegisterCppFuncs()
 		)
 	);
 
-	cef_control_->RegisterCppFunc(L"ONNEWPROJECT",
+	cef_control_->RegisterCppFunc(L"DATAFORMAT",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-			auto strAnsi=OnNewProject();
-			if (strAnsi.empty())
-			{
-				std::string debugStr = R"({ "call ONNEWPROJECT": "Failed." })";
-				callback(false, debugStr);
-			}
-			else
-			{
-				strAnsi = strAnsi + "\\";
-				nlohmann::json json;
-				json["pathSelected"] = nbase::AnsiToUtf8(strAnsi);
-				auto str = json.dump();
-				std::string debugStr = R"({ "call ONNEWPROJECT": "Failed." })";
-				
-				//std::string path_of_pkpm_dot_ini =
-				//	nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()) + "../" + "cfg/pkpm.ini";//这个真的没有办法
-				//SaveWorkPaths(prjPaths_, path_of_pkpm_dot_ini);
-				callback(true, str);
-				return;
-			}
+			nlohmann::json json = nlohmann::json::parse(params);
+			std::string u8str=json["menuData"];
+			std::string ansi=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(u8str));
+			DataFormatTransfer(ansi);
 			}
 		)
 	);
@@ -683,35 +680,59 @@ void CefForm::DataFormatTransfer(const std::string& module_app_name)
 		::AfxMessageBox(L"请先选择工作目录");
 		return;
 	}
-	try
 	{
-		cef_control_->CallJSFunction(L"MenuSelectionOnHtml", L"", 
-			ToWeakCallback([this, module_app_name](const std::string& json_result){
-				//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(json_result), 3000, GetHWND());
-				std::string str_Ret = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(module_app_name));
-				auto vec = nbase::StringTokenize(str_Ret.c_str(), ",");
-				auto iter = vec.begin();
-				ShowWindow(SW_HIDE);
-				char oldWorkPath[256] = { 0 };
-				GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
-				int prjSelected = -1;
-				BOOL ret = SetCurrentDirectoryA(prjPaths_[prjSelected].c_str());
-				if (!ret)
-				{
-					MessageBoxA(NULL, "工作目录错误或者没有权限", "PKPMV51", 1);
-				}
-				//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
-				SetCurrentDirectoryA(oldWorkPath);
-				//在这里通知网页更新工程
-				//SaveMenuSelection();
-				ShowWindow(SW_SHOW);
+		std::string str_Ret = module_app_name;	
+		auto vec = nbase::StringTokenize(str_Ret.c_str(), ",");
+		auto iter = vec.begin();	
+		{
+			ShowWindow(SW_HIDE);
+			char oldWorkPath[256] = { 0 };
+			GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
+			//BOOL ret = SetCurrentDirectory(prjPaths_[prjSelected].c_str());
+			bool ret = false;
+			if (!ret)
+			{
+				MessageBox(NULL, L"工作目录错误或者没有权限", L"PKPMV51", 1);
+				//return;
 			}
-		));
+			run_cmd(vec.front().c_str(), vec.back().c_str(), "");
+			//m_WorkPath = prjPaths_[prjSelected].c_str();
+			//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
+			SetCurrentDirectoryA(oldWorkPath);
+			//SaveMenuSelection();
+			//this->m_pBrowserApp->Refresh();
+			ShowWindow(SW_SHOW);
+		}
 	}
-	catch (CException & e)
-	{
-		std::abort();
-	}
+	//try
+	//{
+	//	cef_control_->CallJSFunction(L"MenuSelectionOnHtml", L"", 
+	//		ToWeakCallback([this, module_app_name](const std::string& json_result){
+	//			//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(json_result), 3000, GetHWND());
+	//			std::string str_Ret = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(module_app_name));
+	//			auto vec = nbase::StringTokenize(str_Ret.c_str(), ",");
+	//			auto iter = vec.begin();
+	//			ShowWindow(SW_HIDE);
+	//			char oldWorkPath[256] = { 0 };
+	//			GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
+	//			int prjSelected = -1;
+	//			BOOL ret = SetCurrentDirectoryA(prjPaths_[prjSelected].c_str());
+	//			if (!ret)
+	//			{
+	//				MessageBoxA(NULL, "工作目录错误或者没有权限", "PKPMV51", 1);
+	//			}
+	//			//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
+	//			SetCurrentDirectoryA(oldWorkPath);
+	//			//在这里通知网页更新工程
+	//			//SaveMenuSelection();
+	//			ShowWindow(SW_SHOW);
+	//		}
+	//	));
+	//}
+	//catch (CException & e)
+	//{
+	//	std::abort();
+	//}
 }
 
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
@@ -828,4 +849,47 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 		return;
 	prjPaths_.moveToFront(indexSelection);
 	SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+}
+
+void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, const CStringA& appName2)
+{
+	CStringA appName1(appName1_);
+	ASSERT(!moduleName.IsEmpty());
+	ASSERT(!appName1.IsEmpty());
+
+	if (moduleName == "数据转换")
+	{
+		if (appName1 == "SP3D/PDS")
+			appName1 = "PDS";
+		else if (appName1 == "Revit")
+		{
+			appName1 = "导出Revit";
+		}
+	}
+	char str[400];
+	if (appName2.IsEmpty())
+	{
+		sprintf(str, "%s|%s", moduleName, appName1);
+	}
+	else
+	{
+		sprintf(str, "%s|%s_%s", moduleName, appName1, appName2);
+	}
+
+	//CWnd* mainWnd = ::AfxGetMainWnd();
+	//ASSERT(mainWnd);
+	//ASSERT(SetCurrentDirectory(m_WorkPath));
+	appDll_.Invoke_RunCommand(str);
+	try
+	{
+		//appDll_.
+		//appDll_.
+		//appDll_.fuc_RunCommand(str);
+	}
+	catch (...)
+	{
+	}
+
+	//恢复工作目录
+	//ASSERT(SetCurrentDirectory(m_WorkPath));//?
 }
