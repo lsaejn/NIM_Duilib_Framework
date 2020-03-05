@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "ShortCutHandler.h"
-#include "DlgRegRunAsHint.h"
 #include "MFCApplication1Dlg.h"
 #include "svr.h"
 #include "pkpm2014svr.h"

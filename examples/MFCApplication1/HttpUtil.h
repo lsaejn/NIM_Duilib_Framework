@@ -1,8 +1,3 @@
-/*
-代码说明:
-modifed from vlppOs, www.gaclib.com.
-原作者:vczh
-*/
 #pragma once
 #include <vector>
 #include <unordered_map>

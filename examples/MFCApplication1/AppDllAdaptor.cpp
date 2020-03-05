@@ -34,7 +34,7 @@ bool AppDllAdaptor::InitPkpmAppFuncPtr()
 	if (!fuc_InitPkpmApp || !fuc_RunCommand || !fuc_GetMenu || !fuc_AdjustProOrder)
 	{
 		//LOG_FATAL<<
-		return false;
+		::AfxMessageBox(L"pkpmv51.dll, ¶¯Ì¬¿â´íÎó");
 	}
 	return true;
 }

@@ -12,12 +12,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/memorystream.h"
+
 
 #include "nlohmann/json.hpp"
 using rapidjson::Document;
@@ -27,6 +35,11 @@ using namespace rapidjson;
 //#include "CppFuncRegister.h"
 
 HWND mainWnd=NULL;
+//CString cfg_key_str;
+//CString get_cfg_path_reg_key()
+//{
+//	return cfg_key_str;
+//}
 //details
 namespace //which will write to configFile
 {
@@ -155,6 +168,7 @@ void CefForm::InitWindow()
 	// 设置输入框样式
 	edit_url_->SetSelAllOnFocus(true);
 	edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
+	//edit_url_->
 
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
@@ -176,9 +190,10 @@ void CefForm::InitWindow()
 	SetSizeBox({ 5,5,5,5 });
 
 	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
-	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    调用接口OnSetCaption修改软件");
+	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    调用接口OnSetCaption修改软件标题");
+	SetCfgPmEnv();
 	appDll_.InitPkpmAppFuncPtr();
-
+	appDll_.Invoke_InitPkpmApp();
 	ui::Button* settings = dynamic_cast<ui::Button*>(FindControl(L"settings"));
 	settings->AttachClick([this](ui::EventArgs* args) {
 		RECT rect = args->pSender->GetPos();
@@ -448,9 +463,11 @@ void CefForm::RegisterCppFuncs()
 	cef_control_->RegisterCppFunc(L"DATAFORMAT",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nlohmann::json json = nlohmann::json::parse(params);
-			std::string u8str=json["menuData"];
-			std::string ansi=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(u8str));
-			DataFormatTransfer(ansi);
+			std::string modName=json["modName"];
+			std::string exeName = json["exeName"];
+			std::string ansiMod=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(modName));
+			std::string ansiExe = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(exeName));
+			DataFormatTransfer(ansiMod, ansiExe);
 			}
 		)
 	);
@@ -465,7 +482,13 @@ void CefForm::RegisterCppFuncs()
 			}
 			else
 			{
-				strAnsi = strAnsi + "\\";
+				if(strAnsi.back()!='\\')
+					strAnsi = strAnsi + "\\";
+				if (!AddWorkPaths(strAnsi, nbase::UnicodeToAnsi((nbase::win32::GetCurrentModuleDirectory() + L"cfg\\pkpm.ini"))))
+				{
+					std::string debugStr = R"({ "call ONNEWPROJECT": "Failed." })";
+					callback(false, debugStr);
+				}
 				nlohmann::json json;
 				json["pathSelected"] = nbase::AnsiToUtf8(strAnsi);
 				auto str = json.dump();
@@ -484,7 +507,148 @@ void CefForm::RegisterCppFuncs()
 			callback(true, nbase::AnsiToUtf8(selection));
 			})
 	);
-	
+
+	//双击工程
+	cef_control_->RegisterCppFunc(L"DBCLICKPROJECT",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			nlohmann::json json = nlohmann::json::parse(params);
+			//实际上只需要3个参数, 为了不给前端造成疑惑，就不改了
+			std::string prjPath_ansi = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathSelected"]));
+			std::string pathOfCore = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathOfCore"]));
+			std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));
+			std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
+			std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
+			std::vector<std::string> vec;
+			vec.push_back(prjPath_ansi); 
+			vec.push_back(pathOfCore);
+			vec.push_back(coreWithPara);
+			vec.push_back(secMenu);
+			vec.push_back(trdMenu);
+			OnDbClickProject(vec);
+			//prjPath, BSTR pathOfCore, BSTR coreWithPara, BSTR secMenu, BSTR trdMenu
+			//params
+			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
+			callback(true, nbase::AnsiToUtf8(debugStr));
+			})
+	);
+
+	//
+	cef_control_->RegisterCppFunc(L"ONDROPFILES",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			HDROP hDropInfo;
+			UINT count;
+			CHAR filePath[260] = { 0 };
+			count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
+			if (count != 1)
+			{
+				::AfxMessageBox(L"仅支持拖拽单个目录");
+				return;
+			}
+			else
+			{
+				DragQueryFileA(hDropInfo, 0, filePath, sizeof(filePath));
+				if (PathFileExistsA(filePath) && PathIsDirectoryA(filePath))
+				{
+					filePath[strlen(filePath)] = '\\';
+					if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
+					{
+						//fix me
+						//SaveMenuSelection(false);
+						//fix me
+						//this->m_pBrowserApp->Refresh();
+					}
+				}
+				else
+				{
+					::AfxMessageBox(L"仅支持拖拽目录");
+					return;
+				}
+			}
+			DragFinish(hDropInfo);
+			})
+	);
+
+	//ctrl + v
+	cef_control_->RegisterCppFunc(L"ONCTRLV",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			std::string filePath;
+			if (OpenClipboard(GetHWND()))
+			{
+				if (IsClipboardFormatAvailable(CF_TEXT))
+				{
+					HANDLE hclip = GetClipboardData(CF_TEXT);
+					char* pBuf = static_cast<char*>(GlobalLock(hclip));
+					LocalUnlock(hclip);
+					USES_CONVERSION;
+					filePath = std::move(std::string(pBuf));
+				}
+				CloseClipboard();
+			}
+			if (!filePath.empty())
+			{
+				if (PathFileExistsA(filePath.c_str()) && PathIsDirectoryA(filePath.c_str()))
+				{
+					if(filePath.back()!='\\')
+						filePath += "\\";
+					if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
+					{
+						//fix me
+						//SaveMenuSelection(false);
+						//this->m_pBrowserApp->Refresh();
+						std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
+						callback(true, nbase::AnsiToUtf8(debugStr));
+						return;
+					}
+
+				}
+				else
+				{
+					//可以崩溃了
+					//LOG_ERROR<<"invalid path";
+				}
+			}
+			std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED." })";
+			callback(false, nbase::AnsiToUtf8(debugStr));
+			})
+		);
+
+	cef_control_->RegisterCppFunc(L"ONDELETE",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			static unsigned long  lastTick = 0;
+			auto now = GetTickCount();
+			auto interval = now - lastTick;
+			lastTick = now;
+			if (interval < 500)	
+				return S_OK;
+			try {
+				if (prjPaths_.size() > 0)
+				{
+					//获取工作的索引
+					nlohmann::json json = nlohmann::json::parse(params);
+					//std::string indexStr(json["index"]);
+					int prjSelected = json["index"];
+					//没有工程为什么不传-1?
+					prjPaths_.deleteAt(prjSelected);
+					SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+					//fix me
+					//SaveMenuSelection(false);
+					/*Fix me
+					Refresh不能在别的线程调用，而mfc又有自己的事件循环，
+					所以，只能在documentComplete里做判断。
+					我这里先对付过去了。
+					你应该判断上一次keyup和这次keydown的间隔
+					*/
+					return S_OK;
+				}
+			}
+			catch (...) {
+				//FATAL<<
+			}
+
+
+			})
+	);
+
 
 }
 
@@ -673,7 +837,7 @@ void CefForm::OnRightClickProject(const std::wstring& prjName)
 }
 
 //写得有问题，我应该让前端调用时就把工程路径
-void CefForm::DataFormatTransfer(const std::string& module_app_name)
+void CefForm::DataFormatTransfer(const std::string& module, const std::string& app)
 {
 	if (!prjPaths_.size())
 	{
@@ -681,28 +845,26 @@ void CefForm::DataFormatTransfer(const std::string& module_app_name)
 		return;
 	}
 	{
-		std::string str_Ret = module_app_name;	
-		auto vec = nbase::StringTokenize(str_Ret.c_str(), ",");
-		auto iter = vec.begin();	
+		ShowWindow(SW_HIDE);
+		char oldWorkPath[256] = { 0 };
+		GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
+		BOOL ret = SetCurrentDirectoryA(oldWorkPath);
+		if (!ret)
 		{
-			ShowWindow(SW_HIDE);
-			char oldWorkPath[256] = { 0 };
-			GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
-			//BOOL ret = SetCurrentDirectory(prjPaths_[prjSelected].c_str());
-			bool ret = false;
-			if (!ret)
-			{
-				MessageBox(NULL, L"工作目录错误或者没有权限", L"PKPMV51", 1);
-				//return;
-			}
-			run_cmd(vec.front().c_str(), vec.back().c_str(), "");
-			//m_WorkPath = prjPaths_[prjSelected].c_str();
-			//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
-			SetCurrentDirectoryA(oldWorkPath);
-			//SaveMenuSelection();
-			//this->m_pBrowserApp->Refresh();
-			ShowWindow(SW_SHOW);
+			MessageBox(NULL, L"工作目录错误或者没有权限", L"PKPMV51", 1);
+			//return;
 		}
+		run_cmd(module.c_str(), app.c_str(), "");
+		//m_WorkPath = prjPaths_[prjSelected].c_str();
+		//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
+		SetCurrentDirectoryA(oldWorkPath);
+		//fix me 
+		//这里需要网页重新读一下工程列表
+		//SaveMenuSelection();
+		//this->m_pBrowserApp->Refresh();
+		//ShowWindow(SW_SHOW);
+		ShowWindow();
+		
 	}
 	//try
 	//{
@@ -755,11 +917,11 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			::AfxMessageBox(L"工作目录错误或者没有权限");
 			//return;
 		}
-		//run_cmd(OLE2T(secMenu), OLE2T(trdMenu), "");
+		run_cmd(args[4].c_str(), args[5].c_str(),"");
 		AfxMessageBox(L"进入项目的命令尚未完成");
 		SetCurrentDirectoryA(oldWorkPath);
 		//SaveMenuSelection();
-		ShowWindow(SW_SHOW);
+		ShowWindow();
 	}
 }
 
@@ -798,7 +960,7 @@ void CefForm::OnOpenDocument(const std::string& filename)
 
 void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPaths, const std::string& filename)
 {
-	for (ULONGLONG i = 0; i < maxPrjNum_; ++i)
+	for (int i = 0; i < maxPrjNum_; ++i)
 	{
 		std::string workPathId = std::string("WorkPath") + std::to_string(i);
 		if (static_cast<size_t>(i) < prjPaths.size())
@@ -869,11 +1031,11 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 	char str[400];
 	if (appName2.IsEmpty())
 	{
-		sprintf(str, "%s|%s", moduleName, appName1);
+		sprintf(str, "%s|%s", moduleName.GetString(), appName1.GetString());
 	}
 	else
 	{
-		sprintf(str, "%s|%s_%s", moduleName, appName1, appName2);
+		sprintf(str, "%s|%s_%s", moduleName.GetString(), appName1.GetString(), appName2.GetString());
 	}
 
 	//CWnd* mainWnd = ::AfxGetMainWnd();
@@ -892,4 +1054,50 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 
 	//恢复工作目录
 	//ASSERT(SetCurrentDirectory(m_WorkPath));//?
+}
+
+
+bool CefForm::SetCfgPmEnv()
+{
+	const int LENGTH_OF_ENV = 1024 * 4;
+	TCHAR* szOriEnvPath = new  TCHAR[LENGTH_OF_ENV];//所以这片内存去哪了....?
+	DWORD dwRet = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, LENGTH_OF_ENV);
+	if (!dwRet)
+	{
+		AfxMessageBox(L"Error! Can not find Path");
+		return false;
+	}
+	else if (LENGTH_OF_ENV < dwRet)//需要重新分配内存
+	{
+		delete[] szOriEnvPath;
+		szOriEnvPath = new  TCHAR[dwRet + 1];
+		DWORD dwRetNewAlloc;
+		dwRetNewAlloc = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, dwRet);
+		ASSERT(dwRetNewAlloc <= dwRet);
+	}
+
+	CString strCFG = (nbase::win32::GetCurrentModuleDirectory() + L"CFG").c_str(); //svr::GetRegCFGPath();
+
+	TCHAR path[256];
+	GetModuleFileName(NULL, path, 256);
+	PathRemoveFileSpec(path);
+	CString strPM = path;
+	strPM += "\\Ribbon\\PM";
+
+	CString strPath;
+	strPath = strCFG + L";";
+	strPath += strPM + L";";
+	strPath += szOriEnvPath;
+	strPath.Trim();
+	int	iv = SetEnvironmentVariable(_T("PATH"), strPath);
+	if (iv == 0)
+	{
+		AfxMessageBox(L"无法设置PATH路径");
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+	return false;
 }

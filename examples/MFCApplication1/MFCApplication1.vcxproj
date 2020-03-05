@@ -80,7 +80,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>PKPM2010V51</TargetName>
-    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;./;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
   </PropertyGroup>
@@ -124,7 +124,7 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V51.exe D:\PKPMDIR\bin\PKPM2010V51.exe</Command>
+      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V51.exe D:\PKPMV51\PKPM2010V51.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -207,10 +207,9 @@
     <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="DlgRegRunAsHint.h" />
+    <ClInclude Include="HttpUtil.h" />
     <ClInclude Include="json\json-forwards.h" />
     <ClInclude Include="json\json.h" />
-    <ClInclude Include="nlohmannJson.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="pkpm2014svr.h" />
     <ClInclude Include="rapidjson\allocators.h" />
@@ -272,7 +271,7 @@
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="Console.cpp" />
-    <ClCompile Include="DlgRegRunAsHint.cpp" />
+    <ClCompile Include="HttpUtil.cpp" />
     <ClCompile Include="json\jsoncpp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

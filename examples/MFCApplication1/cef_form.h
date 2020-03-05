@@ -49,7 +49,7 @@ private:
 	//打开工程图标
 	WEBINTERFACE void OnRightClickProject(const std::wstring& prjName);
 	//数据转换
-	WEBINTERFACE void DataFormatTransfer(const std::string& module_app_name);
+	WEBINTERFACE void DataFormatTransfer(const std::string& module, const std::string& exeName);
 
 	WEBINTERFACE void OnDbClickProject(const std::vector<std::string>& args);
 	WEBINTERFACE void OnListMenu(const std::vector<std::string>& args);
@@ -64,6 +64,7 @@ private:
 	void RegisterCppFuncs();
 	bool IsSnapShotExist(const std::string& path);
 	void run_cmd(const CStringA& moduleName, const CStringA& appName1, const CStringA& appName2);
+	bool SetCfgPmEnv();
 
 private:
 	nim_comp::CefControlBase* cef_control_;

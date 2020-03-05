@@ -346,3 +346,5 @@ healthchecksdb
 /examples/MFCApp
 /bin/*
 *.bsc
+/examples/MFCApplication1/PROGINFO.STS
+/stats

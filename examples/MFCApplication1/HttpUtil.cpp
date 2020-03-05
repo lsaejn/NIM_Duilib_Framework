@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "HttpUtil.h"
 #include <Windows.h>
 #include <winhttp.h>

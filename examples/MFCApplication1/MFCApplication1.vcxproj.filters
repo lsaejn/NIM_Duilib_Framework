@@ -180,13 +180,7 @@
     <ClInclude Include="CDirSelectThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DlgRegRunAsHint.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Console.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="nlohmannJson.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="nlohmann\json.hpp">
@@ -205,6 +199,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="XmlInfo\InfoItem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -239,9 +236,6 @@
     <ClCompile Include="CDirSelectThread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="DlgRegRunAsHint.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Console.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -255,6 +249,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="XmlInfo\SlimXml.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
