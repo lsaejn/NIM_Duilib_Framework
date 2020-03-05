@@ -419,7 +419,12 @@ void CefForm::RegisterCppFuncs()
 			rapidjson::Document document;
 			document.ParseStream(input);
 			const char* captionName = document["caption"].GetString();
-			SetCaption(captionName);
+			//projectIndex
+			int project= document["projectIndex"].GetInt();
+			assert(nbase::AnsiToUtf8(prjPaths_[project]) == captionName);
+			std::string captionU8 = u8"PKPM结构设计软件 10版 V5.1.1   ";
+			captionU8 += captionName;
+			SetCaption(captionU8);
 #ifdef DEBUG
 			std::string debugStr = R"({ "SetCaption": "Success." })";
 			callback(true, debugStr);
@@ -917,10 +922,17 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			::AfxMessageBox(L"工作目录错误或者没有权限");
 			//return;
 		}
-		run_cmd(args[4].c_str(), args[5].c_str(),"");
-		AfxMessageBox(L"进入项目的命令尚未完成");
+		run_cmd(args[3].c_str(), args[4].c_str(),"");
 		SetCurrentDirectoryA(oldWorkPath);
-		//SaveMenuSelection();
+		for (int i = 0; i != prjPaths_.size(); ++i)
+		{
+			if (prjPaths_[i] == path)
+			{
+				prjPaths_.moveToFront(i);
+				SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+				break;
+			}
+		}
 		ShowWindow();
 	}
 }
@@ -939,7 +951,6 @@ void CefForm::OnListMenu(const std::vector<std::string>& args)
 
 void CefForm::OnOpenDocument(const std::string& filename)
 {
-
 	std::string FullPath(nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()) + "Ribbon\\");
 	FullPath += filename;
 

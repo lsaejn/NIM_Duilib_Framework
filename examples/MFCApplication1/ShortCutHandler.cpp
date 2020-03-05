@@ -162,6 +162,13 @@ public:
 		PROCESS_INFORMATION prinfo;
 
 		CRect rc;
+		if (!mainWnd)
+		{
+			//for debug不应该出现这种情况
+			AfxMessageBox(L"主窗口尚未初始化完成");
+			std::abort();
+		}
+			
 		GetWindowRect(mainWnd, rc);
 		ShowWindow(mainWnd, SW_HIDE);
 		CreateProcess(NULL, STRPATH, NULL, NULL, FALSE, 0, NULL, NULL, &info, &prinfo);
