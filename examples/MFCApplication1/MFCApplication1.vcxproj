@@ -277,6 +277,7 @@
     </ClCompile>
     <ClCompile Include="pkpm2014svr.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
+    <ClCompile Include="string_util.cpp" />
     <ClCompile Include="svr.cpp" />
     <ClCompile Include="WebDataReader.cpp" />
     <ClCompile Include="MessageLoop.cpp" />

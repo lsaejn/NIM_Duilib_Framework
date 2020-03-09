@@ -3,6 +3,7 @@
 #include "CDirSelectThread.h"
 #include "Console.h"
 #include "string_util.h"
+#include "HttpUtil.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -10,7 +11,10 @@
 #include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/stat.h>
+#include <filesystem>
+
+#include <regex>
+
 
 #ifdef max
 #undef max
@@ -26,12 +30,13 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/memorystream.h"
 
-
 #include "nlohmann/json.hpp"
+
 using rapidjson::Document;
 using rapidjson::StringBuffer;
 using rapidjson::Writer;
 using namespace rapidjson;
+using namespace Alime::HttpUtility;
 //#include "CppFuncRegister.h"
 
 HWND mainWnd=NULL;
@@ -46,6 +51,10 @@ namespace //which will write to configFile
 	//exe为起点
 	const std::wstring RelativePathForHtmlRes = L"Ribbon\\HtmlRes\\index.html";
 	const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
+	const char* defaultAdvertise = "{data:[ \
+{\"key\":\"官方网站: www.pkpm.cn\", \"value\":\"www.pkpm.cn\"}, "
+"{\"key\":\"官方论坛: www.pkpm.cn/bbs\",\"value\":\"www.pkpm.cn/bbs\"}"
+"]}";
 
 	std::wstring FullPathOfPkpmIni()
 	{
@@ -86,6 +95,8 @@ CefForm::CefForm()
 	webDataReader_.init();
 	shortCutHandler_.Init();
 	ReadWorkPathFromFile("CFG/pkpm.ini");
+	serverIp_ = L"111.230.143.87";
+	InitAdvertisement();
 	//将被写入log模块
 	//Alime::Console::CreateConsole();
 	//Alime::Console::SetTitle(L"Alime");
@@ -166,9 +177,11 @@ void CefForm::InitWindow()
 	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
 
 	// 设置输入框样式
-	edit_url_->SetSelAllOnFocus(true);
-	edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
-	//edit_url_->
+	if (edit_url_)
+	{
+		edit_url_->SetSelAllOnFocus(true);
+		edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
+	}
 
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
@@ -292,6 +305,17 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	{
 		return false;
 	}
+	else if (name == L"closebtn")
+	{
+		cef_control_->CallJSFunction(L"currentChosenData", 
+			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+			ToWeakCallback([this](const std::string& chosenData) {
+				//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(chosenData), 3000, GetHWND());
+				//这必然是个合法json
+				OnSetDefaultMenuSelection(chosenData);
+				}
+		));
+	}
 	return true;
 }
 
@@ -299,25 +323,45 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_LBUTTONDBLCLK)
 	{
-		OutputDebugString(L"fuck");
-	}
-	if (uMsg == WM_LBUTTONDBLCLK)
-	{
 		OutputDebugString(L"WM_NCLBUTTONDBLCLK");
-		OutputDebugString(L"this output means ");
-		{
-			cef_control_->CallJSFunction(L"showJsMessage", nbase::UTF8ToUTF16("{\"msg\":\"hello!!!\"}"),
-				ToWeakCallback([this](const std::string& json_result) {
-					nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(json_result), 3000, GetHWND());
-				}
-			));
-
-			int x = 3;
-		}
+		//{
+		//	cef_control_->CallJSFunction(L"showJsMessage", nbase::UTF8ToUTF16("{\"msg\":\"hello!!!\"}"),
+		//		ToWeakCallback([this](const std::string& json_result) {
+		//			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(json_result), 3000, GetHWND());
+		//		}
+		//	));
+		//}
 	}
 	if (uMsg == WM_DROPFILES)
 	{
 		OutputDebugString(L"fuck WM_DROPFILES");
+		HDROP hDropInfo = (HDROP)wParam;
+		UINT count;
+		TCHAR filePath[MAX_PATH] = { 0 };
+		count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
+		if (count != 1)
+		{
+			AfxMessageBox(L"仅支持拖拽单个目录");
+		}
+		else
+		{
+			DragQueryFile(hDropInfo, 0, filePath, sizeof(filePath));
+			if (PathFileExists(filePath) && PathIsDirectory(filePath))
+			{
+				std::string pathString = nbase::UnicodeToAnsi(filePath);
+				if (pathString.back() != '\\')
+					pathString += '\\';
+				AddWorkPaths(pathString, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+				cef_control_->CallJSFunction(L"flush",
+					nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+					ToWeakCallback([this](const std::string& chosenData) {
+						}
+				));
+			}
+			else
+				AfxMessageBox(L"仅支持拖拽目录");
+		}
+		DragFinish(hDropInfo);
 	}
 	if (uMsg == WM_KEYDOWN)
 	{
@@ -329,24 +373,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				//OutputDebugString(L"fuck WM_KEYDOWN");
 			}
 		}
-	}
-	if (uMsg == WM_LBUTTONDOWN)
-	{
-		OutputDebugString(L"fuck");
+		//fix me 增加f5?
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
-}
-
-//这个什么时候调用?
-bool CefForm::OnDbClicked(ui::EventArgs* msg)
-{
-	std::wstring name = msg->pSender->GetName();
-	if (msg->Type == ui::kEventMouseDoubleClick)
-	{
-		int x = 3;
-		x++;
-	}
-	return 1;
 }
 
 bool CefForm::OnNavigate(ui::EventArgs* msg)
@@ -361,8 +390,10 @@ bool CefForm::OnNavigate(ui::EventArgs* msg)
 
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
-	FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
-	FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
+	if(FindControl(L"btn_back"))
+		FindControl(L"btn_back")->SetEnabled(cef_control_->CanGoBack());
+	if(FindControl(L"btn_forward"))
+		FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
 }
 
 
@@ -643,6 +674,8 @@ void CefForm::RegisterCppFuncs()
 					我这里先对付过去了。
 					你应该判断上一次keyup和这次keydown的间隔
 					*/
+					std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED." })";
+					callback(false, nbase::AnsiToUtf8(debugStr));
 					return S_OK;
 				}
 			}
@@ -769,7 +802,7 @@ void CefForm::SetCaption(const std::string& name)
 std::string CefForm::OnGetDefaultMenuSelection()
 {
 	std::vector<std::pair<std::string, std::string>> dict;
-	const int n = sizeof(toRead) / sizeof(*toRead);//不要骗自己了，这个程序没有可能国际化
+	const int n = sizeof(toRead) / sizeof(*toRead);
 	char indexRet[32] = { 0 };
 	for (size_t i = 0; i != n; ++i)
 	{
@@ -981,14 +1014,35 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 	}
 }
 
+
+
+std::string CefForm::PathChecker(const std::string& newProj, bool &legal)
+{
+	legal = true;
+	std::filesystem::path fullpath(newProj);
+	auto realPath = std::filesystem::canonical(fullpath);
+	std::string realPathOfNewProj = nbase::UnicodeToAnsi(realPath);
+	if (realPathOfNewProj.back() != '\\')
+		realPathOfNewProj += '\\';
+	if (realPathOfNewProj.length() == 3)//盘符
+		legal = false;
+	return realPathOfNewProj;
+}
+
+
+
 bool CefForm::AddWorkPaths(const std::string& newProj, const std::string& filename)
 {
 	if (newProj.empty())
 		return false;
-	auto iter = std::find(prjPaths_.begin(), prjPaths_.end(), newProj);
+	bool isLegalPath;
+	auto realPathOfNewProj=PathChecker(newProj, isLegalPath);
+	if (!isLegalPath)
+		return false;
+	auto iter = std::find(prjPaths_.begin(), prjPaths_.end(), realPathOfNewProj);
 	if (iter == prjPaths_.end())
 	{
-		prjPaths_.put(newProj);
+		prjPaths_.put(realPathOfNewProj);
 		SaveWorkPaths(prjPaths_, filename);
 		return true;
 	}
@@ -1012,12 +1066,12 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 	for (; i != ArraySize(toRead) - 1; ++i)
 	{
 		Value& s = d[toRead[i]];
-		auto indexSelection = s.GetString();
-		WritePrivateProfileStringA("Html", toRead[i], indexSelection, nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
+		auto indexSelection = s.GetInt();
+		WritePrivateProfileStringA("Html", toRead[i], std::to_string(indexSelection).c_str(), nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
 	}
-	//数据结构是前端定的，所以，其实没有选择。
+	//数据结构是前端定的，所以，我其实没有选择。
 	Value& s = d[toRead[i]];
-	int indexSelection = atoi(s.GetString());
+	int indexSelection = s.GetInt();
 	if (!prjPaths_.size() || !indexSelection)
 		return;
 	prjPaths_.moveToFront(indexSelection);
@@ -1111,4 +1165,234 @@ bool CefForm::SetCfgPmEnv()
 		return true;
 	}
 	return false;
+}
+
+
+void CefForm::InitAdvertisement()
+{
+	//基础设施不够，要承受this失效的风险。但用户推出程序，问题应该不大。
+	std::thread func(std::bind(&CefForm::AdvertisementThreadFunc, this));
+	func.detach();
+}
+
+//由于前端搞不定，所以逼着我开线程查询广告
+//这样，前端读取所有广告前，需要加锁
+void CefForm::AdvertisementThreadFunc()
+{
+	if (!VersionPage())//获取网页失败
+	{
+		//可以不锁,只是提醒你
+		std::lock_guard<std::mutex> guarder(lock_);
+		isWebPageAvailable_ = false;
+		return;
+	}
+	else
+	{
+		//ok,下载到网页了
+		std::lock_guard<std::mutex> guarder(lock_);
+		isWebPageAvailable_ = true;
+		
+	}
+}
+
+
+bool CefForm::VersionPage()
+{
+	HttpRequest req;
+	req.server = serverIp_;
+	req.query = L"/index.html";
+	req.acceptTypes.push_back(L"text/html");
+	req.acceptTypes.push_back(L"application/xhtml+xml");
+	req.method = L"Get";
+	req.port = 80;
+	req.secure = false;
+	HttpResponse res;
+	HttpQuery(req, res);
+	if (200 != res.statusCode)
+	{
+#ifdef _DEBUG
+		AfxMessageBox(L"请检查联网功能");
+#endif // _DEBUG
+		return false;
+	}
+	////////////else///////////////////
+	auto result = res.GetBodyUtf8();
+	std::wstring re = result.c_str();
+	auto astring = nbase::UnicodeToAnsi(re);
+	{
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
+		//tr版本的正则表达式无法匹配"空白符"和字符串的组合
+		//***这么处理，字面量中不允许出现空格
+		if (_MSC_VER <= 1600)
+			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {return c == '\n' || c == '\r' || c == ' '; }), astring.end());
+		auto re = std::regex_search(astring, reg);
+		std::smatch match;
+		if (std::regex_search(astring, match, reg))
+		{
+			PageInfo_ = match[3];
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CefForm::TellMeNewVersionExistOrNot()
+{
+	bool isWebPageAvailable = false;
+	{
+		std::lock_guard<std::mutex> guarder(lock_);
+		isWebPageAvailable = isWebPageAvailable_;
+	}
+	if (!isWebPageAvailable)
+		return false;
+	else
+	{
+		Document document;
+		document.Parse(PageInfo_.c_str());
+		assert(document.HasMember("UpdateUrl"));//旧代码，觉得没用就删除吧
+		assert(document.HasMember("Advertise"));
+		auto& arr = document["Advertise"]["NationWide"];
+		assert(arr.IsArray());
+#ifdef ALIME_DEBUG
+		for (size_t i = 0; i < arr.Size(); ++i)
+		{
+			std::string keyName = "Advertisement";
+			std::string adver(arr[i][keyName.c_str()].GetString());
+		}
+#endif // _DEBUG
+		int MainVersionOnServer = std::stoi(document["Version"]["MainVersion"].GetString());
+		int ViceVersionOnServer = std::stoi(document["Version"]["ViceVersion"].GetString());
+		int SubVersionOnServer = std::stoi(document["Version"]["SubVersion"].GetString());
+		int mv = -1, vv = -1, sv = 0;
+		std::wstring VersionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
+		auto vec = FindVersionFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");
+		if (!vec.empty())
+		{
+			getLatestVersion(vec, mv, vv, sv);
+			//偷懒
+			if (MainVersionOnServer != mv || ViceVersionOnServer != vv || SubVersionOnServer != sv)
+				return true;
+		}
+	}
+	return false;
+}
+
+std::vector<std::string> CefForm::FindVersionFiles(
+	const char* path,
+	const char* prefix,
+	const char* suffix)
+{
+	std::string toFind(path);
+	toFind += "\\*.";//时间再 一次很赶
+	toFind += suffix;
+	std::vector<std::string> result;
+	long handle;		//用于查找的句柄
+	_finddata_t fileinfo;
+	handle = _findfirst(toFind.c_str(), &fileinfo);
+	if (handle == -1)
+		return result;
+	do
+	{
+		if (string_utility::startWith(fileinfo.name, prefix)/* && endWith(fileinfo.name, ".ini")*/)
+		{
+			std::string filename(fileinfo.name);
+			filename = filename.substr(1, filename.size() - 5);
+			result.push_back(filename);
+		}
+	} while (!_findnext(handle, &fileinfo));
+	_findclose(handle);
+	return result;
+}
+
+void CefForm::getLatestVersion(std::vector<std::string>& result,
+	int& major_version, int& minor_version, int& sub_version)
+{
+	if (result.empty())
+		throw std::exception("vector empty");
+	std::sort(result.begin(), result.end(),
+		[](const std::string& s1, const std::string& s2)->bool {
+			auto num_in_s1 = string_utility::string_split(s1, ".");
+			auto num_in_s2 = string_utility::string_split(s2, ".");
+			int size_s1 = num_in_s1.size();
+			int size_s2 = num_in_s2.size();
+			int n = size_s1 < size_s2 ? size_s1 : size_s2;
+			for (int i = 0; i != n; ++i)
+			{
+				auto num1 = atoi(num_in_s1[i].c_str());
+				auto num2 = atoi(num_in_s2[i].c_str());
+				if (num1 != num2)
+					return num1 - num2 < 0 ? true : false;
+			}
+			return size_s1 < size_s2 ? true : false;
+		});
+	auto ret = string_utility::string_split(result.back(), ".");
+	if (ret.size() < 3)
+	{
+		sub_version = 0;
+	}
+	else
+	{
+		sub_version = std::stoi(ret[2]);
+	}
+	major_version = std::stoi(ret[0]);
+	minor_version = std::stoi(ret[1]);
+}
+
+std::string CefForm::TellMeAdvertisement()
+{
+	bool isAdvertisementAvailable = false;
+	{
+		//bool是原子的，但我不清楚直接判断会不会被编译器优化。
+		//安全第一
+		std::lock_guard<std::mutex> guarder(lock_);
+		isAdvertisementAvailable = isWebPageAvailable_;
+	}
+	if (!isAdvertisementAvailable)
+		return defaultAdvertise;
+	else
+	{
+		if (PageInfo_.empty())
+			return defaultAdvertise;
+		else
+		{
+			std::vector<std::pair<std::string, std::string>> data;
+			//////分成两部分~,方便调试//////////////////////
+			Document document;
+			document.Parse(PageInfo_.c_str());
+			auto& arr = document["Advertise"]["NationWide"];
+			assert(arr.IsArray());
+			for (size_t i = 0; i < arr.Size(); ++i)
+			{
+				std::string adver_content(arr[i]["Advertisement"].GetString());
+				std::string adver_url(arr[i]["Url"].GetString());
+				data.push_back(std::make_pair(adver_content, adver_url));
+			}
+			//////////begin/////////////////////
+			Document doc;
+			rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+
+			Value array(kArrayType);//< 创建一个数组对象
+			for (int i = 0; i != data.size(); ++i)
+			{
+				rapidjson::Value obj(rapidjson::kObjectType);
+				Value content(kStringType);
+				content.SetString(data[i].first.c_str(), allocator);
+				obj.AddMember("key", content, allocator);
+				Value url(kStringType);
+				url.SetString(data[i].second.c_str(), allocator);
+				obj.AddMember("value", url, allocator);
+				array.PushBack(obj, allocator);
+			}
+
+			Value root(kObjectType);
+			root.AddMember("data", array, allocator);
+			rapidjson::StringBuffer s;
+			rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+			root.Accept(writer);
+			std::string toSend = s.GetString();//for debug
+			return s.GetString();
+		}
+	}
+	return defaultAdvertise;
 }

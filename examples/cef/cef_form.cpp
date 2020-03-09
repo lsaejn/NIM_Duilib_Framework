@@ -5,6 +5,7 @@ const std::wstring CefForm::kClassName = L"CEF_Control_Example";
 
 CefForm::CefForm()
 {
+	InitAdvertisement();
 }
 
 CefForm::~CefForm()

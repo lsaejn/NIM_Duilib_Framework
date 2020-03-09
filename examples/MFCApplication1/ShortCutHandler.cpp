@@ -7,11 +7,7 @@
 const wchar_t* separator = L"\\";
 const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112";
 const wchar_t* urlAboutPkpm = L"https://www.pkpm.cn";
-const wchar_t serverIp[128] = L"111.230.143.87";
-const char* defaultAdvertise = "{data:[ \
-{\"key\":\"¹Ù·½ÍøÕ¾: www.pkpm.cn\", \"value\":\"www.pkpm.cn\"}, "
-"{\"key\":\"¹Ù·½ÂÛÌ³: www.pkpm.cn/bbs\",\"value\":\"www.pkpm.cn/bbs\"}"
-"]}";
+
 
 extern HWND mainWnd;
 TCHAR* m_ini_file = _T("PKPM2010V51.ini");

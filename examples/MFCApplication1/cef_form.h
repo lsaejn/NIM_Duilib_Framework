@@ -4,6 +4,7 @@
 #include "BoundedQueue.h"
 #include "ShortCutHandler.h"
 #include "AppDllAdaptor.h"
+#include <atomic>
 
 #define WEBINTERFACE
 
@@ -57,6 +58,15 @@ private:
 	WEBINTERFACE bool AddWorkPaths(const std::string& newProj, const std::string& filename);
 	WEBINTERFACE void SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPaths, const std::string& filename);
 	WEBINTERFACE void OnSetDefaultMenuSelection(const std::string& json_str);
+	WEBINTERFACE std::string TellMeAdvertisement();
+	WEBINTERFACE bool TellMeNewVersionExistOrNot();
+
+	void getLatestVersion(std::vector<std::string>& result, int& major_version, int& minor_version, int& sub_version);
+	std::vector<std::string> CefForm::FindVersionFiles(const char* path, const char* prefix, const char* suffix);
+	std::string PathChecker(const std::string& path, bool& legal);
+	void InitAdvertisement();
+	void AdvertisementThreadFunc();
+	bool VersionPage();
 
 	//读取工程信息
 	bool GetPrjInfo(const std::string& path, std::string& timestamp, const char* surfix = "buildUp.bmp");
@@ -77,5 +87,9 @@ private:
 	collection_utility::BoundedQueue<std::string> prjPaths_;
 	ShortCutHandler shortCutHandler_;
 	AppDllAdaptor appDll_;
+	std::mutex lock_;//fix me改成原子变量后，锁可以去掉了
+	std::atomic<bool> isWebPageAvailable_;
+	std::string PageInfo_;
+	std::wstring serverIp_;
 };
 

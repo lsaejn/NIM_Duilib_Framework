@@ -1,0 +1,2 @@
+git log --author="jian chen" --pretty=tformat: --numstat --since="2020-1-16 0:0:0" --until="2020-8-8 0:0:0" | gawk '{ addn += $1; subn += $2; coln += $1-$2} END {print addn,subn,coln}'
+
