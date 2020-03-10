@@ -90,7 +90,8 @@ const std::wstring CefForm::kClassName = L"PKPM V5.1.1启动界面";
 
 CefForm::CefForm()
 	:maxPrjNum_(6),
-	prjPaths_(maxPrjNum_)
+	prjPaths_(maxPrjNum_),
+	isWebPageAvailable_(false)
 {
 	webDataReader_.init();
 	shortCutHandler_.Init();
@@ -101,7 +102,7 @@ CefForm::CefForm()
 	//Alime::Console::CreateConsole();
 	//Alime::Console::SetTitle(L"Alime");
 	//std::thread t([this]() {
-	//	while (1)
+	//	while (!stop)//没有办法优雅地中止这个线程,因windows似乎不能向stdin直接write?
 	//	{
 	//		auto str = Alime::Console::ReadLine();
 	//		if (str.find(L"SetCaption") != std::wstring::npos)
@@ -177,6 +178,7 @@ void CefForm::InitWindow()
 	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
 
 	// 设置输入框样式
+	//保留这段代码是因为前端需要一个刷新机制
 	if (edit_url_)
 	{
 		edit_url_->SetSelAllOnFocus(true);
@@ -186,6 +188,7 @@ void CefForm::InitWindow()
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
+	
 	cef_control_->AttachDevTools(cef_control_dev_);
 
 	auto path= nbase::win32::GetCurrentModuleDirectory()+ RelativePathForHtmlRes;
@@ -334,7 +337,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	if (uMsg == WM_DROPFILES)
 	{
-		OutputDebugString(L"fuck WM_DROPFILES");
+		OutputDebugString(L"receive WM_DROPFILES");
 		HDROP hDropInfo = (HDROP)wParam;
 		UINT count;
 		TCHAR filePath[MAX_PATH] = { 0 };
@@ -365,15 +368,10 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	if (uMsg == WM_KEYDOWN)
 	{
-		if ('V' == wParam || 'v' == wParam)
+		if (116 == wParam)
 		{
-			if (0x80 == (0x80 & GetKeyState(VK_CONTROL)))
-			{
-				//OutputDebugString(L"fuck WM_KEYDOWN");
-				//OutputDebugString(L"fuck WM_KEYDOWN");
-			}
+			cef_control_->Refresh();
 		}
-		//fix me 增加f5?
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
@@ -503,7 +501,17 @@ void CefForm::RegisterCppFuncs()
 			std::string exeName = json["exeName"];
 			std::string ansiMod=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(modName));
 			std::string ansiExe = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(exeName));
-			DataFormatTransfer(ansiMod, ansiExe);
+
+			cef_control_->CallJSFunction(L"currentChosenData",
+				nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+				ToWeakCallback([this, ansiMod, ansiExe](const std::string& chosenData) {
+					std::string str(nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(chosenData)));
+					nlohmann::json jsonstr= nlohmann::json::parse(str);
+					int index = jsonstr["projectIndex"];
+					std::string wordDir = prjPaths_[index];
+					DataFormatTransfer(ansiMod, ansiExe, wordDir);
+					}
+			));
 			}
 		)
 	);
@@ -561,8 +569,7 @@ void CefForm::RegisterCppFuncs()
 			vec.push_back(secMenu);
 			vec.push_back(trdMenu);
 			OnDbClickProject(vec);
-			//prjPath, BSTR pathOfCore, BSTR coreWithPara, BSTR secMenu, BSTR trdMenu
-			//params
+
 			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
 			})
@@ -571,7 +578,7 @@ void CefForm::RegisterCppFuncs()
 	//
 	cef_control_->RegisterCppFunc(L"ONDROPFILES",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-			HDROP hDropInfo;
+			HDROP hDropInfo=NULL;
 			UINT count;
 			CHAR filePath[260] = { 0 };
 			count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
@@ -590,7 +597,6 @@ void CefForm::RegisterCppFuncs()
 					{
 						//fix me
 						//SaveMenuSelection(false);
-						//fix me
 						//this->m_pBrowserApp->Refresh();
 					}
 				}
@@ -628,9 +634,6 @@ void CefForm::RegisterCppFuncs()
 						filePath += "\\";
 					if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
 					{
-						//fix me
-						//SaveMenuSelection(false);
-						//this->m_pBrowserApp->Refresh();
 						std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
 						callback(true, nbase::AnsiToUtf8(debugStr));
 						return;
@@ -682,11 +685,26 @@ void CefForm::RegisterCppFuncs()
 			catch (...) {
 				//FATAL<<
 			}
+		})
+	);
 
-
+	cef_control_->RegisterCppFunc(L"NEWVERSION",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			bool newReleased = TellMeNewVersionExistOrNot();
+			if(newReleased)
+				callback(true, R"({ "NewVersion": "true" })");
+			else
+				callback(false, R"({ "NewVersion": "false" })");
 			})
 	);
 
+	cef_control_->RegisterCppFunc(L"ADVERTISES",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			auto advertisement = TellMeAdvertisement();
+			auto u8str = nbase::AnsiToUtf8(advertisement);
+			callback(true, u8str);
+			})
+	);
 
 }
 
@@ -875,7 +893,7 @@ void CefForm::OnRightClickProject(const std::wstring& prjName)
 }
 
 //写得有问题，我应该让前端调用时就把工程路径
-void CefForm::DataFormatTransfer(const std::string& module, const std::string& app)
+void CefForm::DataFormatTransfer(const std::string& module, const std::string& app, const std::string& workdir)
 {
 	if (!prjPaths_.size())
 	{
@@ -886,11 +904,11 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 		ShowWindow(SW_HIDE);
 		char oldWorkPath[256] = { 0 };
 		GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
-		BOOL ret = SetCurrentDirectoryA(oldWorkPath);
+		BOOL ret = SetCurrentDirectoryA(workdir.c_str());
 		if (!ret)
 		{
 			MessageBox(NULL, L"工作目录错误或者没有权限", L"PKPMV51", 1);
-			//return;
+			return;
 		}
 		run_cmd(module.c_str(), app.c_str(), "");
 		//m_WorkPath = prjPaths_[prjSelected].c_str();
@@ -1175,10 +1193,14 @@ void CefForm::InitAdvertisement()
 	func.detach();
 }
 
+#include <chrono>
 //由于前端搞不定，所以逼着我开线程查询广告
 //这样，前端读取所有广告前，需要加锁
 void CefForm::AdvertisementThreadFunc()
 {
+	Sleep(1000000);
+	assert(isWebPageAvailable_ == false);
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 	if (!VersionPage())//获取网页失败
 	{
 		//可以不锁,只是提醒你
@@ -1344,7 +1366,7 @@ std::string CefForm::TellMeAdvertisement()
 	bool isAdvertisementAvailable = false;
 	{
 		//bool是原子的，但我不清楚直接判断会不会被编译器优化。
-		//安全第一
+		//atomic_bool和mutex择其一即可
 		std::lock_guard<std::mutex> guarder(lock_);
 		isAdvertisementAvailable = isWebPageAvailable_;
 	}

@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-
+//由于程序依赖注册表，所以以exe为根
 const std::wstring kRelativePathForPkpmAppMenu = L"CFG\\PKPMAPPMENU\\";
 const std::string kRelativePathForPkpmAppMenuAnsi = "CFG\\PKPMAPPMENU\\";
 

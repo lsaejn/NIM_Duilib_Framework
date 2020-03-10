@@ -50,7 +50,7 @@ private:
 	//打开工程图标
 	WEBINTERFACE void OnRightClickProject(const std::wstring& prjName);
 	//数据转换
-	WEBINTERFACE void DataFormatTransfer(const std::string& module, const std::string& exeName);
+	WEBINTERFACE void DataFormatTransfer(const std::string& module, const std::string& exeName, const std::string& workdir);
 
 	WEBINTERFACE void OnDbClickProject(const std::vector<std::string>& args);
 	WEBINTERFACE void OnListMenu(const std::vector<std::string>& args);
