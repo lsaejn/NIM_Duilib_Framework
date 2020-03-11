@@ -499,9 +499,14 @@ void CefForm::RegisterCppFuncs()
 			nlohmann::json json = nlohmann::json::parse(params);
 			std::string modName=json["modName"];
 			std::string exeName = json["exeName"];
+			int index= json["prjIndex"];		
 			std::string ansiMod=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(modName));
 			std::string ansiExe = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(exeName));
-
+			std::string workDir = prjPaths_[index];
+			DataFormatTransfer(ansiMod, ansiExe, workDir);
+			//deprecated 
+			//由于可以从网页拿索引。回调被废弃
+			/*
 			cef_control_->CallJSFunction(L"currentChosenData",
 				nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
 				ToWeakCallback([this, ansiMod, ansiExe](const std::string& chosenData) {
@@ -512,6 +517,9 @@ void CefForm::RegisterCppFuncs()
 					DataFormatTransfer(ansiMod, ansiExe, wordDir);
 					}
 			));
+			*/
+			std::string debugStr = R"({ "Pass me the projectName or index": "Success." })";
+			callback(true, debugStr);
 			}
 		)
 	);
@@ -892,7 +900,7 @@ void CefForm::OnRightClickProject(const std::wstring& prjName)
 	ShellExecute(NULL, _T("open"), _T("explorer.exe"), prjName.c_str(), NULL, SW_SHOWNORMAL);
 }
 
-//写得有问题，我应该让前端调用时就把工程路径
+//有问题,我应该让前端调用时就把工程路径和索引一块过来
 void CefForm::DataFormatTransfer(const std::string& module, const std::string& app, const std::string& workdir)
 {
 	if (!prjPaths_.size())
@@ -914,6 +922,15 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 		//m_WorkPath = prjPaths_[prjSelected].c_str();
 		//run_cmd(CString(vec.front().c_str()), CString((*++iter).c_str()), "");
 		SetCurrentDirectoryA(oldWorkPath);
+		for (int i = 0; i != prjPaths_.size(); ++i)
+		{
+			if (prjPaths_[i] == workdir)
+			{
+				prjPaths_.moveToFront(i);
+				SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+				break;
+			}
+		}
 		//fix me 
 		//这里需要网页重新读一下工程列表
 		//SaveMenuSelection();

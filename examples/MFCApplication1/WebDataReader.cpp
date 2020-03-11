@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "WebDataReader.h"
 #include "xml2json.h"
+#include "nlohmann/json.hpp"
 
 #include <filesystem>
 
@@ -40,14 +41,48 @@ void WebDataReader::load()
     {
 		std::wstring filePath = p.path().generic_wstring();
         OutputDebugString(filePath.c_str());
-        //if (std::wstring_view(filePath).ends_with(L".xml")); continue;
 		std::string content;
 		bool succ = nbase::ReadFileToString(filePath, content);
 		ASSERT(succ);
+        //这里需要改，不应该存完整路径,，而且还是u8的。
+        //不改主要是懒，其次我忘了前端传递的文件名带了几层路径。
         std::string u8fileName = p.path().filename().generic_u8string();
         u8fileName = kRelativePathForPkpmAppMenuAnsi + u8fileName;
-        xmlData_[u8fileName] = xml2json(nbase::AnsiToUtf8(content).c_str());
-        //std::string ansi_json = xml2json(xmlStr.c_str());
+        //
+        std::string u8Content = xml2json(nbase::AnsiToUtf8(content).c_str());
+        std::string modifiedU8;
+        if (modifyDataWithTag(u8Content, modifiedU8))
+        {
+            xmlData_[u8fileName] = modifiedU8;
+        }
+        else
+        {
+            xmlData_[u8fileName] = u8Content;
+        }          
     }
+}
 
+bool WebDataReader::modifyDataWithTag(const std::string& u8Content, std::string& result)
+{
+    nlohmann::json json = nlohmann::json::parse(u8Content);
+    auto check = json["TOP"].find("CHECK");
+    if (check != json["TOP"].end())
+    {
+        auto& jsonOfPanels = json["TOP"]["CATEGORY"]["PANELS"]["PANEL"];
+#ifdef DEBUG
+        auto debug_ = jsonOfPanels.dump();
+        auto u16 = nbase::UTF8ToUTF16(debug_);
+#endif // DEBUG
+        for (int i = 0; i != jsonOfPanels.size(); ++i)
+        {
+            if (jsonOfPanels[i].find("SHOW") != jsonOfPanels[i].end())
+            {
+                if (jsonOfPanels[i]["SHOW"] == "false")
+                    jsonOfPanels.erase(i);
+            }
+        }
+        result = json.dump();
+        return true;
+    }
+    return false;
 }
