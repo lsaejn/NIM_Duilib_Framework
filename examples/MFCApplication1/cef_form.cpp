@@ -1050,14 +1050,24 @@ void CefForm::OnOpenDocument(const std::string& filename)
 
 void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPaths, const std::string& filename)
 {
+	bool hasAdministratorsRights = true;
 	for (int i = 0; i < maxPrjNum_; ++i)
 	{
 		std::string workPathId = std::string("WorkPath") + std::to_string(i);
+		bool ret = false;
 		if (static_cast<size_t>(i) < prjPaths.size())
-			WritePrivateProfileStringA("WorkPath", workPathId.c_str(), prjPaths[i].c_str(), filename.c_str());
+		{		
+			ret=WritePrivateProfileStringA("WorkPath", workPathId.c_str(), prjPaths[i].c_str(), filename.c_str());
+		}			
 		else//de a bug 
-			WritePrivateProfileStringA("WorkPath", workPathId.c_str(), NULL, filename.c_str());
+		{
+			ret=WritePrivateProfileStringA("WorkPath", workPathId.c_str(), NULL, filename.c_str());
+		}
+		if (!ret)
+			hasAdministratorsRights = false;
 	}
+	if(!hasAdministratorsRights)
+		AfxMessageBox(L"无法保存工程信息，建议使用管理员权限打开本软件");
 }
 
 
@@ -1237,6 +1247,7 @@ void CefForm::AdvertisementThreadFunc()
 	}
 	catch (const std::exception& e)
 	{
+		UNREFERENCED_PARAMETER(e);
 		//LOG_ERROR<<e.what();
 #ifdef DEBUG
 		AfxMessageBox(L"广告内容格式有误，或者编码不正确");
