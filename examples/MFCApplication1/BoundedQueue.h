@@ -119,7 +119,6 @@ namespace collection_utility
 	private:
 		void rangeNoError(const int index)
 		{
-
 			CHECK_ERROR( (index>=0) && (static_cast<size_t>(index)<queue_.size()),"index not in range.");
 		}
 

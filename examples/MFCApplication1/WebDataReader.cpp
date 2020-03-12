@@ -1,5 +1,11 @@
 #include "pch.h"
 #include "WebDataReader.h"
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
 #include "xml2json.h"
 #include "nlohmann/json.hpp"
 
@@ -9,17 +15,17 @@
 const std::wstring kRelativePathForPkpmAppMenu = L"CFG\\PKPMAPPMENU\\";
 const std::string kRelativePathForPkpmAppMenuAnsi = "CFG\\PKPMAPPMENU\\";
 
-void WebDataReader::init()
+void WebDataReader::Init()
 {
-	load();
+	Load();
 }
 
-const std::string WebDataReader::readAll() const
+const std::string WebDataReader::ReadAll() const
 {
 	return{};
 }
 
-const std::string WebDataReader::readSpecific(const std::string& filePath) const
+const std::string WebDataReader::ReadSpecific(const std::string& filePath) const
 {
     auto iter = xmlData_.find(filePath);
     if (iter != xmlData_.end())
@@ -28,7 +34,7 @@ const std::string WebDataReader::readSpecific(const std::string& filePath) const
         return {};
 }
 
-void WebDataReader::load()
+void WebDataReader::Load()
 {
 	//for()
     auto path = nbase::win32::GetCurrentModuleDirectory() + kRelativePathForPkpmAppMenu;
@@ -51,7 +57,7 @@ void WebDataReader::load()
         //
         std::string u8Content = xml2json(nbase::AnsiToUtf8(content).c_str());
         std::string modifiedU8;
-        if (modifyDataWithTag(u8Content, modifiedU8))
+        if (ModifyDataWithTag(u8Content, modifiedU8))
         {
             xmlData_[u8fileName] = modifiedU8;
         }
@@ -62,7 +68,7 @@ void WebDataReader::load()
     }
 }
 
-bool WebDataReader::modifyDataWithTag(const std::string& u8Content, std::string& result)
+bool WebDataReader::ModifyDataWithTag(const std::string& u8Content, std::string& result)
 {
     nlohmann::json json = nlohmann::json::parse(u8Content);
     auto check = json["TOP"].find("CHECK");

@@ -74,9 +74,11 @@ public:
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
 		path += L"PKPM2010V511.dll";
 		auto hDll = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
-		typedef void (*pExport)(void);
+		typedef int (*pExport)(void);
 		pExport func = (pExport)GetProcAddress(hDll, "RegCheck");
-		func();
+		auto ret=func();
+		if (ret != IDOK)
+			return;
 		std::wstring cfgpa = nbase::win32::GetCurrentModuleDirectory()+L"CFG\\"+ _T("RegPKPMCtrl.exe");
 		CString cmdline;
 		cmdline.Format(L"/n,/select,%s", cfgpa.c_str());

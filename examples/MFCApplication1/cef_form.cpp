@@ -93,7 +93,7 @@ CefForm::CefForm()
 	prjPaths_(maxPrjNum_),
 	isWebPageAvailable_(false)
 {
-	webDataReader_.init();
+	webDataReader_.Init();
 	shortCutHandler_.Init();
 	ReadWorkPathFromFile("CFG/pkpm.ini");
 	serverIp_ = L"111.230.143.87";
@@ -422,7 +422,7 @@ void CefForm::RegisterCppFuncs()
 			rapidjson::Document document;
 			document.ParseStream(input);
 			std::string filePath=document["filePath"].GetString();
-			auto re = webDataReader_.readSpecific(filePath);
+			auto re = webDataReader_.ReadSpecific(filePath);
 			callback(true, re);
 			return;
 			}
@@ -666,7 +666,8 @@ void CefForm::RegisterCppFuncs()
 			auto interval = now - lastTick;
 			lastTick = now;
 			if (interval < 500)	
-				return S_OK;
+				return;
+			//旧代码，deleteAt(-1)原定是给js处理的
 			try {
 				if (prjPaths_.size() > 0)
 				{
@@ -685,13 +686,14 @@ void CefForm::RegisterCppFuncs()
 					我这里先对付过去了。
 					你应该判断上一次keyup和这次keydown的间隔
 					*/
-					std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED." })";
+					std::string debugStr = R"({ "Call ONNEWPROJECT": "Success." })";
 					callback(false, nbase::AnsiToUtf8(debugStr));
-					return S_OK;
 				}
 			}
 			catch (...) {
 				//FATAL<<
+				std::string debugStr = R"({ "Call ONNEWPROJECT": "Fail." })";
+				callback(false, nbase::AnsiToUtf8(debugStr));
 			}
 		})
 	);

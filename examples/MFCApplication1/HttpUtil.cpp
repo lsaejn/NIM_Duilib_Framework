@@ -164,7 +164,7 @@ namespace Alime
 		if (!connectedInternet) goto CLEANUP;
 
 		// open request
-		for (int i = 0; i < request.acceptTypes.size(); i++)
+		for (size_t i = 0; i < request.acceptTypes.size(); i++)
 		{
 			acceptTypes.push_back(request.acceptTypes.at(i).data());
 		}
