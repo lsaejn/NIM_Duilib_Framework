@@ -87,16 +87,18 @@ namespace //which will write to configFile
 
 
 const std::wstring CefForm::kClassName = L"PKPM V5.1.1启动界面";
+//我们的广告原页面是https://update.pkpm.cn/PKPM2010/Info/index.html
+//而且是永远不会变的
 
 CefForm::CefForm()
-	:maxPrjNum_(6),
+	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName", 6, FullPathOfPkpmIni().c_str())),
 	prjPaths_(maxPrjNum_),
-	isWebPageAvailable_(false)
+	isWebPageAvailable_(false)	
 {
 	webDataReader_.Init();
 	shortCutHandler_.Init();
 	ReadWorkPathFromFile("CFG/pkpm.ini");
-	serverIp_ = L"111.230.143.87";
+
 	InitAdvertisement();
 	//将被写入log模块
 	//Alime::Console::CreateConsole();
@@ -236,8 +238,15 @@ LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 bool CefForm::OnClicked(ui::EventArgs* msg)
 {
 	std::wstring name = msg->pSender->GetName();
-
-	if (name == L"btn_dev_tool")
+	/*
+		如果你坚持要在本项目使用mfc对话框
+		你有几个选择:
+		1.像下面这样在线程里启动它。我保留了下面这个例子。
+		2.对话框放到动态库的函数里。
+		你可能打算开一个对话框作为godWnd，然后隐藏/关闭它，以便
+		加载mfc资源，但意义不大，原因是mfc消息循环不应该存在。
+	*/
+	if (name == L"btn_testModalDialog")
 	{
 		//我们启动一个模态/非模态对话框,嗯...模态比较简单一些
 		/**/
@@ -1217,10 +1226,25 @@ void CefForm::InitAdvertisement()
 //这样，前端读取所有广告前，需要加锁
 void CefForm::AdvertisementThreadFunc()
 {
-	Sleep(1000000);
 	assert(isWebPageAvailable_ == false);
-	std::this_thread::sleep_for(std::chrono::seconds(10));
-	if (!VersionPage())//获取网页失败
+	//std::this_thread::sleep_for(std::chrono::seconds(20));
+	bool AdPageCanAccess = false;
+	//网页不是我在维护，他们可能犯任何错误
+	//比如,json写错，编码不对
+	try
+	{
+		AdPageCanAccess = VersionPage();
+	}
+	catch (const std::exception& e)
+	{
+		//LOG_ERROR<<e.what();
+#ifdef DEBUG
+		AfxMessageBox(L"广告内容格式有误，或者编码不正确");
+#endif // DEBUG
+		AdPageCanAccess = false;
+	}
+	
+	if (!AdPageCanAccess)//获取网页失败
 	{
 		//可以不锁,只是提醒你
 		std::lock_guard<std::mutex> guarder(lock_);
@@ -1229,19 +1253,29 @@ void CefForm::AdvertisementThreadFunc()
 	}
 	else
 	{
-		//ok,下载到网页了
 		std::lock_guard<std::mutex> guarder(lock_);
 		isWebPageAvailable_ = true;
-		
 	}
 }
-
 
 bool CefForm::VersionPage()
 {
 	HttpRequest req;
-	req.server = serverIp_;
-	req.query = L"/index.html";
+	//111.230.143.87是我自己的云服务器。
+	//广告页面http://111.230.143.87/index.html
+	wchar_t buffer[128] = { 0 };
+	const std::wstring backupServer = L"111.230.143.87";
+	const std::wstring backupQuery = L"/index.html";
+	GetPrivateProfileStringW(L"Html", L"server", backupServer.c_str(), buffer, sizeof(buffer) - 1, FullPathOfPkpmIni().c_str());
+	req.server = buffer;
+	memset(buffer, 0, sizeof(buffer));
+	if (req.server == backupServer)
+		req.query = backupQuery;
+	else
+	{
+		GetPrivateProfileStringW(L"Html", L"query", L"/PKPM2010/Info/index.html", buffer, sizeof(buffer) - 1, FullPathOfPkpmIni().c_str());
+		req.query = buffer;
+	}
 	req.acceptTypes.push_back(L"text/html");
 	req.acceptTypes.push_back(L"application/xhtml+xml");
 	req.method = L"Get";
@@ -1263,10 +1297,12 @@ bool CefForm::VersionPage()
 	{
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
-		//tr版本的正则表达式无法匹配"空白符"和字符串的组合
-		//***这么处理，字面量中不允许出现空格
+		//vs2010下，tr版本的正则表达式无法匹配"空白符"和字符串的组合
+		//字面量中不允许出现空格
 		if (_MSC_VER <= 1600)
-			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {return c == '\n' || c == '\r' || c == ' '; }), astring.end());
+			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {
+			return c == '\n' || c == '\r' || c == ' ';}), 
+				astring.end());
 		auto re = std::regex_search(astring, reg);
 		std::smatch match;
 		if (std::regex_search(astring, match, reg))

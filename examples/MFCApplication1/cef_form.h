@@ -90,6 +90,5 @@ private:
 	std::mutex lock_;//fix me改成原子变量后，锁可以去掉了
 	std::atomic<bool> isWebPageAvailable_;
 	std::string PageInfo_;
-	std::wstring serverIp_;
 };
 
