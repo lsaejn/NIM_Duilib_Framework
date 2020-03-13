@@ -241,12 +241,10 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	/*
 		如果你坚持要在本项目使用mfc对话框
 		你有几个选择:
-		1.像下面这样在线程里启动它。我保留了下面这个例子。
-		2.对话框放到动态库的函数里。
-		你可能打算开一个对话框作为godWnd，然后隐藏/关闭它，以便
-		加载mfc资源，但意义不大，原因是mfc消息循环不应该存在。
+		1.像下面这样在线程里启动模态/非模态对话框。我保留了下面这个例子。
+		2.将模态对话框放到动态库的函数里。
 	*/
-	if (name == L"btn_testModalDialog")
+	if (name == L"btn_dev_tool")
 	{
 		//我们启动一个模态/非模态对话框,嗯...模态比较简单一些
 		/**/
@@ -508,9 +506,10 @@ void CefForm::RegisterCppFuncs()
 			nlohmann::json json = nlohmann::json::parse(params);
 			std::string modName=json["modName"];
 			std::string exeName = json["exeName"];
-			int index= json["prjIndex"];		
+				
 			std::string ansiMod=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(modName));
 			std::string ansiExe = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(exeName));
+			int index = json["prjIndex"];
 			std::string workDir = prjPaths_[index];
 			DataFormatTransfer(ansiMod, ansiExe, workDir);
 			//deprecated 
@@ -553,7 +552,7 @@ void CefForm::RegisterCppFuncs()
 				nlohmann::json json;
 				json["pathSelected"] = nbase::AnsiToUtf8(strAnsi);
 				auto str = json.dump();
-				std::string debugStr = R"({ "call ONNEWPROJECT": "Failed." })";
+				std::string debugStr = R"({ "call ONNEWPROJECT": "successed." })";
 				callback(true, str);
 				return;
 			}
@@ -696,7 +695,7 @@ void CefForm::RegisterCppFuncs()
 					你应该判断上一次keyup和这次keydown的间隔
 					*/
 					std::string debugStr = R"({ "Call ONNEWPROJECT": "Success." })";
-					callback(false, nbase::AnsiToUtf8(debugStr));
+					callback(true, nbase::AnsiToUtf8(debugStr));
 				}
 			}
 			catch (...) {
@@ -729,7 +728,7 @@ void CefForm::RegisterCppFuncs()
 
 //fileName一般就是CFG/PKPM.ini了
 /*
-这个函数写得有问题，但是也没办法改...
+这个函数写得有问题，但是改也不好改...
 */
 std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 {

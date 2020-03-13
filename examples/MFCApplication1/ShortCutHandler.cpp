@@ -109,6 +109,12 @@ public:
 
 	void OnParameterSettings()
 	{
+		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
+		path += L"PKPM2010V511.dll";
+		auto hDll = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
+		typedef void (*pExport)(void);
+		pExport func = (pExport)GetProcAddress(hDll, "OpenPkpmInfoSheet");
+		func();
 		//{
 		//	CString strFullName;
 		//	GetAppPathByCFGPATHMarker(get_cfg_path_reg_key(), strFullName);

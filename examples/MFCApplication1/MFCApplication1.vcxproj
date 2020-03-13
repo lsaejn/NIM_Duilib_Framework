@@ -109,6 +109,7 @@
       <AdditionalDependencies>base_d.lib;duilib_d.lib;ui_components.lib;libcef_dll_wrapper_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>nim_libcef.dll</DelayLoadDLLs>
       <AdditionalLibraryDirectories>../../libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
