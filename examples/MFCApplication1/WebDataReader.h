@@ -3,7 +3,6 @@
 #include <unordered_map>
 /*
 前端要的菜单一次性加载到这里。
-注意，数据是ansi的。
 */
 class WebDataReader
 {

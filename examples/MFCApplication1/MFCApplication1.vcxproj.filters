@@ -171,12 +171,6 @@
     <ClInclude Include="svr.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="json\json-forwards.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="json\json.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="CDirSelectThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -202,6 +196,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="HttpUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -230,9 +227,6 @@
     <ClCompile Include="svr.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="json\jsoncpp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="CDirSelectThread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -255,6 +249,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="string_util.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

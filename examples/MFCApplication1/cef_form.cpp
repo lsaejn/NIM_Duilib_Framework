@@ -37,9 +37,7 @@ using rapidjson::StringBuffer;
 using rapidjson::Writer;
 using namespace rapidjson;
 using namespace Alime::HttpUtility;
-//#include "CppFuncRegister.h"
 
-HWND mainWnd=NULL;
 //CString cfg_key_str;
 //CString get_cfg_path_reg_key()
 //{
@@ -58,7 +56,7 @@ namespace //which will write to configFile
 
 	std::wstring FullPathOfPkpmIni()
 	{
-		auto re = nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini";
+		static auto re = nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini";
 		return re;
 	}
 
@@ -96,9 +94,7 @@ CefForm::CefForm()
 	isWebPageAvailable_(false)	
 {
 	webDataReader_.Init();
-	shortCutHandler_.Init();
 	ReadWorkPathFromFile("CFG/pkpm.ini");
-
 	InitAdvertisement();
 	//将被写入log模块
 	//Alime::Console::CreateConsole();
@@ -193,19 +189,22 @@ void CefForm::InitWindow()
 	
 	cef_control_->AttachDevTools(cef_control_dev_);
 
-	auto path= nbase::win32::GetCurrentModuleDirectory()+ RelativePathForHtmlRes;
-	cef_control_->LoadURL(path);
+	wchar_t buffer[128] = { 0 };
+	auto nRead = GetPrivateProfileStringW(L"Html", L"PathOfCefHtml", 
+		RelativePathForHtmlRes.c_str(), buffer, ArraySize(buffer), FullPathOfPkpmIni().c_str());
+	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ buffer;
+	cef_control_->LoadURL(cefHtmlPath);
 	if (!nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
 		cef_control_dev_->SetVisible(false);
 
 	auto hwnd = GetHWND();
-	mainWnd = hwnd;
+	this->shortCutHandler_.SetHwnd(hwnd);
+	shortCutHandler_.Init();
 	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);//获取原窗体的样式
 	auto hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
 	style |= WS_EX_ACCEPTFILES;//更改样式
 	hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
 	::SetWindowLongW(hwnd, GWL_EXSTYLE, style);//重新设置窗体样式
-	SetSizeBox({ 5,5,5,5 });
 
 	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
 	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    调用接口OnSetCaption修改软件标题");
@@ -242,7 +241,7 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 		如果你坚持要在本项目使用mfc对话框
 		你有几个选择:
 		1.像下面这样在线程里启动模态/非模态对话框。我保留了下面这个例子。
-		2.将模态对话框放到动态库的函数里。
+		2.将对话框放到动态库的函数里。
 	*/
 	if (name == L"btn_dev_tool")
 	{
@@ -404,6 +403,8 @@ void CefForm::OnLoadEnd(int httpStatusCode)
 
 void CefForm::RegisterCppFuncs()
 {
+	//debug
+	//不要继续使用。为了节省空间，我删除了资源。
 	cef_control_->RegisterCppFunc(L"ShowMessageBox", 
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
@@ -458,6 +459,7 @@ void CefForm::RegisterCppFuncs()
 			//projectIndex
 			int project= document["projectIndex"].GetInt();
 			assert(nbase::AnsiToUtf8(prjPaths_[project]) == captionName);
+			//fix me,写入配置文件
 			std::string captionU8 = u8"PKPM结构设计软件 10版 V5.1.1   ";
 			captionU8 += captionName;
 			SetCaption(captionU8);
@@ -1138,7 +1140,7 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 	CStringA appName1(appName1_);
 	ASSERT(!moduleName.IsEmpty());
 	ASSERT(!appName1.IsEmpty());
-
+	//需要提醒他们改配置文件。
 	if (moduleName == "数据转换")
 	{
 		if (appName1 == "SP3D/PDS")

@@ -39,7 +39,7 @@ namespace Alime
 			{
 				std::vector<wchar_t> buffer(fullPath.length() + 1);
 				wcscpy_s(&buffer[0], fullPath.length() + 1, fullPath.c_str());
-				for (int i = 0; i < buffer.size(); i++)
+				for (size_t i = 0; i < buffer.size(); i++)
 				{
 					if (buffer[i] == L'\\' || buffer[i] == L'/')
 					{

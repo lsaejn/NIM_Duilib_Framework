@@ -26,9 +26,10 @@ BOOL CDirSelectThread::InitInstance()
 
 int CDirSelectThread::Run()
 {
-    auto hDll = LoadLibrary(_T("D:\\works\\NimDuilibFramework\\bin\\MFCLibrary1.dll"));// 加载DLL库文件，DLL名称和路径用自己的
+    //// 加载DLL库文件，DLL名称和路径请用自己的
+    auto hDll = LoadLibrary(_T("D:\\works\\NimDuilibFramework\\bin\\MFCLibrary1.dll"));
     typedef void (*pExport)(void);
-    pExport f= (pExport)GetProcAddress(hDll, "fuck");
+    pExport f= (pExport)GetProcAddress(hDll, "foo");
     f();
     Notify();
     return 1;

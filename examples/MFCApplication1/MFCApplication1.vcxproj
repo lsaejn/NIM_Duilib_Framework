@@ -208,9 +208,8 @@
     <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HttpUtil.h" />
-    <ClInclude Include="json\json-forwards.h" />
-    <ClInclude Include="json\json.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="pkpm2014svr.h" />
     <ClInclude Include="rapidjson\allocators.h" />
@@ -272,10 +271,10 @@
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="Console.cpp" />
-    <ClCompile Include="HttpUtil.cpp" />
-    <ClCompile Include="json\jsoncpp.cpp">
+    <ClCompile Include="FileSystem.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="HttpUtil.cpp" />
     <ClCompile Include="pkpm2014svr.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
     <ClCompile Include="string_util.cpp" />

@@ -9,7 +9,6 @@ const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=s
 const wchar_t* urlAboutPkpm = L"https://www.pkpm.cn";
 
 
-extern HWND mainWnd;
 TCHAR* m_ini_file = _T("PKPM2010V51.ini");
 
 
@@ -144,7 +143,7 @@ public:
 		//}
 	}
 
-	void OnSwitchToNetVersion()
+	void OnSwitchToNetVersion(HWND mainWnd)
 	{
 		CString cfgpath = GetCfgPath_Inner().c_str();
 
@@ -172,7 +171,7 @@ public:
 			AfxMessageBox(L"主窗口尚未初始化完成");
 			std::abort();
 		}
-			
+		//fix me,隐藏/显示应该封装	
 		GetWindowRect(mainWnd, rc);
 		ShowWindow(mainWnd, SW_HIDE);
 		CreateProcess(NULL, STRPATH, NULL, NULL, FALSE, 0, NULL, NULL, &info, &prinfo);
@@ -255,14 +254,42 @@ public:
 
 
 //我删掉了了旧代码里的宏，以避免以后维护者的不适
-#define SHORTCUTFUNCS(className,JsName,InnerFuncs) \
-	funcMap_.insert(std::make_pair(##JsName,&className::InnerFuncs));
+//#define SHORTCUTFUNCS(className,JsName,InnerFuncs) \
+//	funcMap_.insert(std::make_pair(##JsName,&className::InnerFuncs));
+
+#define SHORTCUTFUNCS_(className,JsName,InnerFuncs) \
+	funcMaps_.insert(std::make_pair(##JsName,std::bind(&className::InnerFuncs,this->impl_)));
+
+#define SHORTCUTFUNCS_WITHWND(className,JsName,InnerFuncs) \
+	funcMaps_.insert(std::make_pair(##JsName,std::bind(&className::InnerFuncs,this->impl_,this->mainWnd_)));
+
+template<typename R, typename... Args, typename Class>
+constexpr int getCountOfPara(R(Class::*)(Args...))
+{
+	return sizeof...(Args);
+};
+
+template <typename F, typename Tuple, std::size_t... Indices>
+decltype(auto) forward_to_f(F f, Tuple&& args,
+	std::index_sequence<Indices...>) {
+	return std::bind(f, std::get<Indices>(std::move(args))...);
+}
+
+template <size_t count, typename F, typename ...Args>
+std::function<void(void)> makeFunc(F&& f, Args... args)
+{
+	auto tuple = std::forward_as_tuple(args...);
+	auto seq = std::make_index_sequence<count>{};
+	return forward_to_f(f, tuple, seq);
+}
+
+#define SHORTCUTFUNC(className,JsName,InnerFuncs) \
+	funcMaps_.insert(std::make_pair(##JsName,makeFunc<getCountOfPara(&className::InnerFuncs)+1>(&className::InnerFuncs,this->impl_,this->mainWnd_)));
 
 
 ShortCutHandler::ShortCutHandler()
 	:impl_(new ShortCutHandlerImpl)
 {
-	Init();
 }
 
 ShortCutHandler::~ShortCutHandler()
@@ -272,27 +299,35 @@ ShortCutHandler::~ShortCutHandler()
 
 void ShortCutHandler::Init()
 {
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "关于PKPM", OnAboutPkpm)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "改进说明", OnImprovement)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "模型打包", OnModelPacking)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "注册控件", OnRegiser)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "联系我们", OnContactUs)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "完整性检查", OnIntegrityCheck)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "参数设置", OnParameterSettings)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "用户手册", OnUserManual)
-	SHORTCUTFUNCS(ShortCutHandlerImpl, "在线更新", OnUpdateOnline)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "关于PKPM", OnAboutPkpm)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "改进说明", OnImprovement)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "模型打包", OnModelPacking)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "注册控件", OnRegiser)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "联系我们", OnContactUs)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "完整性检查", OnIntegrityCheck)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "参数设置", OnParameterSettings)
+	//SHORTCUTFUNCS_WITHWND(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
+	//makeFunc<getCountOfPara(&ShortCutHandlerImpl::OnUserManual)+1>(&ShortCutHandlerImpl::OnUserManual, this->impl_, this->mainWnd_);
+	//makeFunc<getCountOfPara(&ShortCutHandlerImpl::OnSwitchToNetVersion)+1>(&ShortCutHandlerImpl::OnSwitchToNetVersion, this->impl_, this->mainWnd_);
+	SHORTCUTFUNC(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "用户手册", OnUserManual)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "在线更新", OnUpdateOnline)
 }
 
 void ShortCutHandler::CallFunc(const std::string& cutName)
 {
 	if (Contains(cutName))
-		(impl_->*funcMap_[cutName])();
+		(funcMaps_[cutName])();
 	else
 		throw std::invalid_argument("invalid event name");
 }
 
 bool ShortCutHandler::Contains(const std::string& cutName) const
 {
-	return funcMap_.find(cutName) != funcMap_.end();
+	return funcMaps_.find(cutName) != funcMaps_.end();
+}
+
+void ShortCutHandler::SetHwnd(HWND wnd)
+{
+	mainWnd_ = wnd;
 }

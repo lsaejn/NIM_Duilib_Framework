@@ -305,54 +305,6 @@ void svr::parse_module_path( const BYTE*buf,CArray<MODULE_PATH>& modPaths )
 		modPaths.Add(mp);
 	}
 }
-bool svr::isXpSerial()
-{
-	OSVERSIONINFO osv;
-	osv.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&osv);
-	if (5 == osv.dwMajorVersion )
-	{
-		return true;
-	}
-
-	return false;
-}
-bool svr::isWin7()
-{
-	OSVERSIONINFO osv;
-	osv.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&osv);
-	if (6 == osv.dwMajorVersion&&osv.dwMinorVersion==1)
-	{
-		return true;
-	}
-
-	return false;
-}
-bool svr::isWin8()
-{
-	OSVERSIONINFO osv;
-	osv.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&osv);
-	if (6 == osv.dwMajorVersion&&osv.dwMinorVersion==2)
-	{
-		return true;
-	}
-
-	return false;
-}
-bool svr::isWin8dot1()
-{
-	OSVERSIONINFO osv;
-	osv.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&osv);
-	if (6 == osv.dwMajorVersion&&osv.dwMinorVersion==3)
-	{
-		return true;
-	}
-
-	return false;
-}
 
 bool svr::getPathByMaker(CString maker,CString& path)
 {

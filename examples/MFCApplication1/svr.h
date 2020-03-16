@@ -21,8 +21,4 @@ public:
 	static bool getModulePath(CArray<MODULE_PATH>& modPaths);
 	static bool getPathByMaker(CString maker,CString& path);
 	static void parse_module_path( const BYTE*buf,CArray<MODULE_PATH>& modPaths );
-	static bool isXpSerial();
-	static bool isWin7();
-	static bool isWin8();
-	static bool isWin8dot1();
 };
