@@ -730,7 +730,11 @@ void CefForm::RegisterCppFuncs()
 
 //fileName一般就是CFG/PKPM.ini了
 /*
-这个函数写得有问题，但是改也不好改...
+这是个旧函数，每次都读配置文件，之所以没有
+删除是因为，它曾经帮了大忙0.0
+(比方说，它意外地处理了网页刷新造成的内存/文件不匹配，用户使用程序过程中手动改配置文件)，
+我保留它大概是希望获得额外的心理安慰。
+正确的做法是检查一次配置文件，读到内存，然后维护内存即可。
 */
 std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 {
