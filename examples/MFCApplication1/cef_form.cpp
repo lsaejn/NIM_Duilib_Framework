@@ -91,7 +91,8 @@ const std::wstring CefForm::kClassName = L"PKPM V5.1.1启动界面";
 CefForm::CefForm()
 	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName", 6, FullPathOfPkpmIni().c_str())),
 	prjPaths_(maxPrjNum_),
-	isWebPageAvailable_(false)	
+	isWebPageAvailable_(false),
+	cef_control_(NULL)
 {
 	webDataReader_.Init();
 	ReadWorkPathFromFile("CFG/pkpm.ini");
@@ -198,6 +199,7 @@ void CefForm::InitWindow()
 		cef_control_dev_->SetVisible(false);
 
 	auto hwnd = GetHWND();
+
 	this->shortCutHandler_.SetHwnd(hwnd);
 	shortCutHandler_.Init();
 	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);//获取原窗体的样式
@@ -224,6 +226,14 @@ void CefForm::InitWindow()
 		pMenu->Init(xml, _T("xml"), point);
 		return true;
 		});
+	//::SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE);
+	//CPoint point;
+	//GetCursorPos(&point);
+	//CRect rc;
+	//::GetWindowRect(hwnd, &rc);
+	//mouse_event(MOUSEEVENTF_LEFTDOWN, rc.left+5, rc.top+5, 0, 0);
+	//::SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	//::SetFocus(cef_control_->GetWindow());
 }
 
 
@@ -350,7 +360,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 		if (count != 1)
 		{
-			AfxMessageBox(L"仅支持拖拽单个目录");
+			AfxMessageBox(L"仅支持拖拽单个目录", MB_SYSTEMMODAL);
 		}
 		else
 		{
@@ -368,7 +378,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				));
 			}
 			else
-				AfxMessageBox(L"仅支持拖拽目录");
+				AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
 		}
 		DragFinish(hDropInfo);
 	}
@@ -378,6 +388,93 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			cef_control_->Refresh();
 		}
+		//出现过一个问题，就是网页无法获得焦点
+		//我不得已，自己处理了ctrlv和delete事件
+		//直到我意识到可以在WM_SIZE里加入SetFocus。
+		//然而这段代码页需还会有用。我会保留到发盘为止。
+		if(0)if (0x80 == (0x80 & GetKeyState(VK_CONTROL)))
+		{
+			if ('V' == wParam || 'v' == wParam)
+			{
+				std::string filePath;
+				if (OpenClipboard(GetHWND()))
+				{
+					if (IsClipboardFormatAvailable(CF_TEXT))
+					{
+						HANDLE hclip = GetClipboardData(CF_TEXT);
+						char* pBuf = static_cast<char*>(GlobalLock(hclip));
+						LocalUnlock(hclip);
+						USES_CONVERSION;
+						filePath = std::move(std::string(pBuf));
+					}
+					CloseClipboard();
+				}
+				if (!filePath.empty())
+				{
+					if (PathFileExistsA(filePath.c_str()) && PathIsDirectoryA(filePath.c_str()))
+					{
+						if (filePath.back() != '\\')
+							filePath += "\\";
+						if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
+						{
+							cef_control_->CallJSFunction(L"flush",
+								nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+								ToWeakCallback([this](const std::string& chosenData) {
+									}
+							));
+							return TRUE;
+						}
+					}
+					else
+					{
+						//LOG_ERROR<<"invalid path";
+					}
+				}
+				return TRUE;
+			}
+		}
+		if(0)if (wParam == VK_DELETE)
+		{
+			cef_control_->CallJSFunction(L"currentChosenData",
+				nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+				ToWeakCallback([this](const std::string& chosenData) {
+					std::string str(nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(chosenData)));
+					nlohmann::json jsonstr = nlohmann::json::parse(str);
+					int index = jsonstr["projectIndex"];
+					{
+						static unsigned long long  lastTick = 0;
+						auto now = GetTickCount();
+						auto interval = now - lastTick;
+						lastTick = now;
+						if (interval < 500)
+							return;
+						try {
+							if (prjPaths_.size() > 0)
+							{
+								int prjSelected = index;
+								prjPaths_.deleteAt(prjSelected);
+								SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+								cef_control_->CallJSFunction(L"flush",
+									nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+									ToWeakCallback([this](const std::string& chosenData) {
+										}
+								));
+							}
+						}
+						catch (...) {
+							//FATAL<<
+							std::string debugStr = R"({ "Call ONNEWPROJECT": "Fail." })";
+						}
+					}
+					}
+			));
+			
+		}
+	}
+	if (uMsg == WM_SIZE)
+	{
+		if(cef_control_)
+			cef_control_->SetFocus();
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
@@ -586,6 +683,7 @@ void CefForm::RegisterCppFuncs()
 			vec.push_back(coreWithPara);
 			vec.push_back(secMenu);
 			vec.push_back(trdMenu);
+			//cef_control_->HideToolTip();
 			OnDbClickProject(vec);
 
 			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
@@ -602,7 +700,7 @@ void CefForm::RegisterCppFuncs()
 			count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 			if (count != 1)
 			{
-				::AfxMessageBox(L"仅支持拖拽单个目录");
+				::AfxMessageBox(L"仅支持拖拽单个目录", MB_OK | MB_SYSTEMMODAL);
 				return;
 			}
 			else
@@ -620,7 +718,7 @@ void CefForm::RegisterCppFuncs()
 				}
 				else
 				{
-					::AfxMessageBox(L"仅支持拖拽目录");
+					::AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
 					return;
 				}
 			}
@@ -671,7 +769,7 @@ void CefForm::RegisterCppFuncs()
 
 	cef_control_->RegisterCppFunc(L"ONDELETE",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-			static unsigned long  lastTick = 0;
+			static unsigned long long  lastTick = 0;
 			auto now = GetTickCount();
 			auto interval = now - lastTick;
 			lastTick = now;
@@ -723,6 +821,16 @@ void CefForm::RegisterCppFuncs()
 			auto advertisement = TellMeAdvertisement();
 			auto u8str = nbase::AnsiToUtf8(advertisement);
 			callback(true, u8str);
+			})
+	);
+
+	cef_control_->RegisterCppFunc(L"OPENURL",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			nlohmann::json json = nlohmann::json::parse(params);
+			std::wstring url = nbase::UTF8ToUTF16(json["url"]);
+			::ShellExecute(NULL, L"open", url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+			std::string debugStr = R"({ "OPENURL": "Always Success." })";
+			callback(true, debugStr);
 			})
 	);
 
@@ -921,7 +1029,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 {
 	if (!prjPaths_.size())
 	{
-		::AfxMessageBox(L"请先选择工作目录");
+		::AfxMessageBox(L"请先选择工作目录", MB_OK | MB_SYSTEMMODAL);
 		return;
 	}
 	{
@@ -989,10 +1097,10 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
 	if(args.size()!=5)
-		::AfxMessageBox(L"严重错误");
+		::AfxMessageBox(L"严重错误", MB_OK | MB_SYSTEMMODAL);
 	if (!prjPaths_.size())
 	{//不应该再出现这个错误
-		::AfxMessageBox(L"工作目录不存在");
+		::AfxMessageBox(L"工作目录不存在", MB_OK | MB_SYSTEMMODAL);
 		return;
 	}
 	std::string path(args[0]);
@@ -1003,7 +1111,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
 		{
-			::AfxMessageBox(L"工作目录错误或者没有权限");
+			::AfxMessageBox(L"工作目录错误或者没有权限", MB_OK | MB_SYSTEMMODAL);
 			//return;
 		}
 		run_cmd(args[3].c_str(), args[4].c_str(),"");
@@ -1026,7 +1134,7 @@ void CefForm::OnListMenu(const std::vector<std::string>& args)
 	//坑爹啊
 	if (!prjPaths_.size())
 	{
-		AfxMessageBox(L"没有选择工作目录");
+		AfxMessageBox(L"没有选择工作目录", MB_OK | MB_SYSTEMMODAL);
 		return;
 	}
 	//auto prjSelected = std::stoi(MenuSelectionOnHtml().back().second);
@@ -1072,7 +1180,7 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 			hasAdministratorsRights = false;
 	}
 	if(!hasAdministratorsRights)
-		AfxMessageBox(L"无法保存工程信息，建议使用管理员权限打开本软件");
+		AfxMessageBox(L"无法保存工程信息，建议使用管理员权限打开本软件", MB_OK | MB_SYSTEMMODAL);
 }
 
 
@@ -1185,12 +1293,13 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 
 bool CefForm::SetCfgPmEnv()
 {
-	const int LENGTH_OF_ENV = 1024 * 4;
+	const int LENGTH_OF_ENV = 1024 * 8;
+	//哔了狗了，unique_ptr知道吗?
 	TCHAR* szOriEnvPath = new  TCHAR[LENGTH_OF_ENV];//所以这片内存去哪了....?
 	DWORD dwRet = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, LENGTH_OF_ENV);
 	if (!dwRet)
 	{
-		AfxMessageBox(L"Error! Can not find Path");
+		AfxMessageBox(L"Error! Can not find Path", MB_OK | MB_SYSTEMMODAL);
 		return false;
 	}
 	else if (LENGTH_OF_ENV < dwRet)//需要重新分配内存
@@ -1215,17 +1324,18 @@ bool CefForm::SetCfgPmEnv()
 	strPath += strPM + L";";
 	strPath += szOriEnvPath;
 	strPath.Trim();
-	int	iv = SetEnvironmentVariable(_T("PATH"), strPath);
+	int iv = SetEnvironmentVariable(_T("PATH"), strPath);
 	if (iv == 0)
 	{
-		AfxMessageBox(L"无法设置PATH路径");
+		AfxMessageBox(L"无法设置PATH路径", MB_OK | MB_SYSTEMMODAL);
+		delete[] szOriEnvPath;
 		return false;
 	}
 	else
 	{
+		delete[] szOriEnvPath;
 		return true;
 	}
-	return false;
 }
 
 
@@ -1255,7 +1365,7 @@ void CefForm::AdvertisementThreadFunc()
 		UNREFERENCED_PARAMETER(e);
 		//LOG_ERROR<<e.what();
 #ifdef DEBUG
-		AfxMessageBox(L"广告内容格式有误，或者编码不正确");
+		AfxMessageBox(L"广告内容格式有误，或者编码不正确", MB_OK | MB_SYSTEMMODAL);
 #endif // DEBUG
 		AdPageCanAccess = false;
 	}
@@ -1302,7 +1412,7 @@ bool CefForm::VersionPage()
 	if (200 != res.statusCode)
 	{
 #ifdef _DEBUG
-		AfxMessageBox(L"请检查联网功能");
+		AfxMessageBox(L"请检查联网功能",MB_OK | MB_SYSTEMMODAL);
 #endif // _DEBUG
 		return false;
 	}

@@ -94,7 +94,11 @@ BOOL CMFCApplication1App::InitInstance()
 	return FALSE;
 }
 
-
+/*
+MFC的部分可以删除。
+关于内存泄露:是正常的，
+见LazyInstance的注释。
+*/
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR    lpCmdLine,

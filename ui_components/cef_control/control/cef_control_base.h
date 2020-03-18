@@ -21,6 +21,18 @@ public:
 	virtual ~CefControlBase(void);	
 
 public:
+	//
+	//void HideToolTip()
+	//{
+	//	browser_handler_->HideToolTip();
+	//}
+
+	//void DestroyToolTip()
+	//{
+	//	browser_handler_->DestroyToolTip();
+	//}
+
+
 	/**
 	* @brief 加载一个地址
 	* @param[in] url 网站地址

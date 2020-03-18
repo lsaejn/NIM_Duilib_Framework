@@ -110,6 +110,7 @@ public:
 	{
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
 		path += L"PKPM2010V511.dll";
+		//hDll遍布各个函数，因为我懒得改了。甚至释放它也没有0.0
 		auto hDll = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
 		typedef void (*pExport)(void);
 		pExport func = (pExport)GetProcAddress(hDll, "OpenPkpmInfoSheet");

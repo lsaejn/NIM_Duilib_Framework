@@ -27,7 +27,7 @@ CefControl::~CefControl(void)
 		browser_handler_->CloseAllBrowser();
 		browser_handler_->SetHostWindow(NULL);
 		browser_handler_->SetHandlerDelegate(NULL);	
-
+		//browser_handler_->DestroyToolTip();
 		m_pWindow->RemoveMessageFilter(this);
 	}
 }
