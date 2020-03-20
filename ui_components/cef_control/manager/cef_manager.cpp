@@ -75,9 +75,9 @@ void CefManager::AddCefDllToPath()
 	std::wstring cef_path = nbase::win32::GetCurrentModuleDirectory();
 #ifdef _DEBUG
 	//cef_path += L"cef_debug"; // 现在即使在debug模式下也使用cef release版本的dll，为了屏蔽掉cef退出时的中断，如果不需要调试cef的功能不需要使用debug版本的dll
-	cef_path += L"cef";
+	cef_path += L"resources\\cef";
 #else
-	cef_path += L"cef";
+	cef_path += L"resources\\cef";
 #endif
 	if (!nbase::FilePathIsExist(cef_path, true))
 	{
@@ -195,12 +195,13 @@ void CefManager::GetCefSetting(const std::wstring& app_data_dir, CefSettings &se
 		nbase::CreateDirectory(app_data_dir);
 
 	settings.no_sandbox = true;
-
+	settings.log_severity = LOGSEVERITY_DISABLE;
+	//这个修改是因为用户会安装在敏感路径下。我不希望问题卡在这里。
 	// 设置localstorage，不要在路径末尾加"\\"，否则运行时会报错
-	CefString(&settings.cache_path) = app_data_dir + L"CefLocalStorage";
+	//CefString(&settings.cache_path) = app_data_dir + L"CefLocalStorage";
 
 	// 设置debug log文件位置
-	CefString(&settings.log_file) = app_data_dir + L"cef.log";
+	//CefString(&settings.log_file) = app_data_dir + L"cef.log";
 
 	// 调试模型下使用单进程，但是千万不要在release发布版本中使用，官方已经不推荐使用单进程模式
 	// cef1916版本debug模式:在单进程模式下程序退出时会触发中断

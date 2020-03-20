@@ -47,7 +47,7 @@ using namespace Alime::HttpUtility;
 namespace //which will write to configFile
 {
 	//exe为起点
-	const std::wstring RelativePathForHtmlRes = L"Ribbon\\HtmlRes\\index.html";
+	const std::wstring RelativePathForHtmlRes = L"resources\\HtmlRes\\index.html";
 	const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
 	const char* defaultAdvertise = "{data:[ \
 {\"key\":\"官方网站: www.pkpm.cn\", \"value\":\"www.pkpm.cn\"}, "
@@ -187,7 +187,6 @@ void CefForm::InitWindow()
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
-	
 	cef_control_->AttachDevTools(cef_control_dev_);
 
 	wchar_t buffer[128] = { 0 };
@@ -199,9 +198,10 @@ void CefForm::InitWindow()
 		cef_control_dev_->SetVisible(false);
 
 	auto hwnd = GetHWND();
-
 	this->shortCutHandler_.SetHwnd(hwnd);
 	shortCutHandler_.Init();
+
+	//我不太确定是不是需要自己增加拖放支持。
 	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);//获取原窗体的样式
 	auto hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
 	style |= WS_EX_ACCEPTFILES;//更改样式
@@ -209,15 +209,19 @@ void CefForm::InitWindow()
 	::SetWindowLongW(hwnd, GWL_EXSTYLE, style);//重新设置窗体样式
 
 	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
-	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    调用接口OnSetCaption修改软件标题");
-	SetCfgPmEnv();
+	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1");
+
+	//旧代码
+	SetCfgPmEnv();//增加pm环境
 	appDll_.InitPkpmAppFuncPtr();
 	appDll_.Invoke_InitPkpmApp();
+
+	//换肤按钮的响应
 	ui::Button* settings = dynamic_cast<ui::Button*>(FindControl(L"settings"));
 	settings->AttachClick([this](ui::EventArgs* args) {
 		RECT rect = args->pSender->GetPos();
 		ui::CPoint point;
-		point.x = rect.left - 175;
+		point.x = rect.left- 130 ;
 		point.y = rect.top + 10;
 		ClientToScreen(m_hWnd, &point);
 
@@ -226,14 +230,6 @@ void CefForm::InitWindow()
 		pMenu->Init(xml, _T("xml"), point);
 		return true;
 		});
-	//::SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE);
-	//CPoint point;
-	//GetCursorPos(&point);
-	//CRect rc;
-	//::GetWindowRect(hwnd, &rc);
-	//mouse_event(MOUSEEVENTF_LEFTDOWN, rc.left+5, rc.top+5, 0, 0);
-	//::SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	//::SetFocus(cef_control_->GetWindow());
 }
 
 
@@ -338,8 +334,19 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
+
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (uMsg == WM_LBUTTONDOWN)
+	{
+		OutputDebugString(L"WM_LBUTTONDOWN");
+		PostMessage(WM_TEST, 0, 0);
+	}
+	if (uMsg == WM_TEST)
+	{
+		OutputDebugString(L"WM_LBUTTONDOWN");
+		PostMessage(WM_TEST, 0, 0);
+	}
 	if (uMsg == WM_LBUTTONDBLCLK)
 	{
 		OutputDebugString(L"WM_NCLBUTTONDBLCLK");
@@ -684,6 +691,7 @@ void CefForm::RegisterCppFuncs()
 			vec.push_back(secMenu);
 			vec.push_back(trdMenu);
 			//cef_control_->HideToolTip();
+			//你可以像shortCutHandler.cpp那样处理参数，避免写出现在这样的代码
 			OnDbClickProject(vec);
 
 			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
@@ -827,7 +835,7 @@ void CefForm::RegisterCppFuncs()
 	cef_control_->RegisterCppFunc(L"OPENURL",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nlohmann::json json = nlohmann::json::parse(params);
-			std::wstring url = nbase::UTF8ToUTF16(json["url"]);
+			std::wstring url = nbase::UTF8ToUTF16(json["adUrl"]);
 			::ShellExecute(NULL, L"open", url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
 			std::string debugStr = R"({ "OPENURL": "Always Success." })";
 			callback(true, debugStr);
@@ -1412,7 +1420,7 @@ bool CefForm::VersionPage()
 	if (200 != res.statusCode)
 	{
 #ifdef _DEBUG
-		AfxMessageBox(L"请检查联网功能",MB_OK | MB_SYSTEMMODAL);
+		OutputDebugStringW(L"没有联网功能");
 #endif // _DEBUG
 		return false;
 	}
