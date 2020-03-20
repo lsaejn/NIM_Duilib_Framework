@@ -4,7 +4,11 @@
 
 class ShortCutHandlerImpl;
 typedef std::function<void()> InnerFunction;
-
+typedef std::function<void()> CallBack;
+/*
+由于快捷菜单很少被使用到
+程序并没有持有dll的句柄
+*/
 class ShortCutHandler
 {
 public:
@@ -16,9 +20,9 @@ public:
 	void SetHwnd(HWND);
 	void CallFunc(const std::string &funcName);
 	bool Contains(const std::string& funcName) const;
+
 private:
 	ShortCutHandlerImpl* impl_;
-	//std::unordered_map<std::string, void (ShortCutHandlerImpl::*)()> funcMap_;
 	std::unordered_map<std::string, InnerFunction> funcMaps_;
 	HWND mainWnd_;
 };

@@ -345,7 +345,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if (uMsg == WM_TEST)
 	{
 		OutputDebugString(L"WM_LBUTTONDOWN");
-		PostMessage(WM_TEST, 0, 0);
+		//PostMessage(WM_TEST, 0, 0);
 	}
 	if (uMsg == WM_LBUTTONDBLCLK)
 	{
@@ -720,8 +720,8 @@ void CefForm::RegisterCppFuncs()
 					if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
 					{
 						//fix me
-						//SaveMenuSelection(false);
-						//this->m_pBrowserApp->Refresh();
+						//我也不知道说什么了，这个前端的同事很多工作都是我代劳的
+						//她压根不检查返回值，无论有没有新建成功，她都重读一次工程列表
 					}
 				}
 				else
@@ -768,6 +768,8 @@ void CefForm::RegisterCppFuncs()
 				{
 					//可以崩溃了
 					//LOG_ERROR<<"invalid path";
+					std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED." })";
+					callback(false, nbase::AnsiToUtf8(debugStr));
 				}
 			}
 			std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED." })";

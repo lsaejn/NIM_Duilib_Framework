@@ -269,6 +269,7 @@
     <ClInclude Include="ShortCutHandler.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="svr.h" />
+    <ClInclude Include="templates.h" />
     <ClInclude Include="WebDataReader.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MessageLoop.h" />

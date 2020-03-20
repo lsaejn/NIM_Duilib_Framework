@@ -3,6 +3,7 @@
 #include "MFCApplication1Dlg.h"
 #include "svr.h"
 #include "pkpm2014svr.h"
+#include "templates.h"
 
 const wchar_t* separator = L"\\";
 const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112";
@@ -30,12 +31,32 @@ CString get_cfg_path_reg_key()
 }
 
 
+
 class ShortCutHandlerImpl
 {
 public:
+	class DllScopeGuarder
+	{
+	public:
+		void SetDll(HMODULE dll)
+		{
+			dll_ = dll;
+		}
+		~DllScopeGuarder()
+		{
+			if(dll_)
+				FreeLibrary(dll_);
+		}
+		HMODULE dll_;
+	};
+private:
 	CString m_strNameOfIntegrity;
 	CString m_strNameOfPManager;
-
+	HMODULE dll_;
+	DllScopeGuarder guard_;
+	CallBack DoBeforeCallFunc_;
+	CallBack DoAfterCallFunc_;
+public:
 	ShortCutHandlerImpl()
 	{
 		TCHAR filename_Integrity[128] = { 0 };
@@ -49,8 +70,33 @@ public:
 			filename_PManager, sizeof(filename_PManager), m_ini_file);
 		m_strNameOfPManager = filename_PManager;
 		m_strNameOfPManager.Trim();
+
+		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
+		path += L"PKPM2010V511.dll";
+		dll_ = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
+		if (!dll_)
+		{
+			OutputDebugString(L"动态库加载失败");
+			return;
+		}
+		guard_.SetDll(dll_);
 	}
 
+	~ShortCutHandlerImpl()
+	{
+		//delete
+	}
+
+
+	void SetBeforeFunc(CallBack _f)
+	{
+		DoBeforeCallFunc_ = std::move(_f);
+	}
+
+	void SetAferFunc(CallBack _f)
+	{
+		DoAfterCallFunc_ = std::move(_f);
+	}
 
 	void OnAboutPkpm()
 	{
@@ -70,11 +116,8 @@ public:
 
 	void OnRegiser()
 	{
-		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
-		path += L"PKPM2010V511.dll";
-		auto hDll = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
 		typedef int (*pExport)(void);
-		pExport func = (pExport)GetProcAddress(hDll, "RegCheck");
+		pExport func = (pExport)GetProcAddress(dll_, "RegCheck");
 		auto ret=func();
 		if (ret != IDOK)
 			return;
@@ -108,12 +151,8 @@ public:
 
 	void OnParameterSettings()
 	{
-		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
-		path += L"PKPM2010V511.dll";
-		//hDll遍布各个函数，因为我懒得改了。甚至释放它也没有0.0
-		auto hDll = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
 		typedef void (*pExport)(void);
-		pExport func = (pExport)GetProcAddress(hDll, "OpenPkpmInfoSheet");
+		pExport func = (pExport)GetProcAddress(dll_, "OpenPkpmInfoSheet");
 		func();
 		//{
 		//	CString strFullName;
@@ -144,10 +183,17 @@ public:
 		//}
 	}
 
+	//fix me, 参数可以去掉了
 	void OnSwitchToNetVersion(HWND mainWnd)
 	{
-		CString cfgpath = GetCfgPath_Inner().c_str();
+		if (!mainWnd)
+		{
+			//不应该出现这种情况
+			AfxMessageBox(L"主窗口尚未初始化完成", MB_SYSTEMMODAL);
+			std::abort();
+		}
 
+		CString cfgpath = GetCfgPath_Inner().c_str();
 		CString exePathName = cfgpath + _T("PKPMAuthorize.exe");
 		if (-1 == _taccess(exePathName, 0))
 		{
@@ -164,22 +210,15 @@ public:
 		STARTUPINFO info = { 0 };
 		info.cb = sizeof(STARTUPINFO);
 		PROCESS_INFORMATION prinfo;
-
-		CRect rc;
-		if (!mainWnd)
-		{
-			//for debug不应该出现这种情况
-			AfxMessageBox(L"主窗口尚未初始化完成");
-			std::abort();
-		}
-		//fix me,隐藏/显示应该封装	
-		GetWindowRect(mainWnd, rc);
-		ShowWindow(mainWnd, SW_HIDE);
+		//CRect rc;
+		//GetWindowRect(mainWnd, rc);
+		//ShowWindow(mainWnd, SW_HIDE);
+		DoBeforeCallFunc_();
 		CreateProcess(NULL, STRPATH, NULL, NULL, FALSE, 0, NULL, NULL, &info, &prinfo);
 		WaitForSingleObject(prinfo.hProcess, -1);
-		//ShowWindow(SW_SHOWNORMAL);
-		MoveWindow(mainWnd,rc.left, rc.top, rc.Width(), rc.Height(), 0);
-		::ShowWindow(mainWnd, SW_SHOW);
+		DoAfterCallFunc_();	
+		//MoveWindow(mainWnd,rc.left, rc.top, rc.Width(), rc.Height(), 0);
+		//::ShowWindow(mainWnd, SW_SHOW);
 		//::SetWindowPos(this->m_hWnd,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 		CloseHandle(prinfo.hThread);
 		CloseHandle(prinfo.hProcess);
@@ -253,37 +292,6 @@ public:
 	}
 };
 
-
-//我删掉了了旧代码里的宏，以避免以后维护者的不适
-//#define SHORTCUTFUNCS(className,JsName,InnerFuncs) \
-//	funcMap_.insert(std::make_pair(##JsName,&className::InnerFuncs));
-
-#define SHORTCUTFUNCS_(className,JsName,InnerFuncs) \
-	funcMaps_.insert(std::make_pair(##JsName,std::bind(&className::InnerFuncs,this->impl_)));
-
-#define SHORTCUTFUNCS_WITHWND(className,JsName,InnerFuncs) \
-	funcMaps_.insert(std::make_pair(##JsName,std::bind(&className::InnerFuncs,this->impl_,this->mainWnd_)));
-
-template<typename R, typename... Args, typename Class>
-constexpr int getCountOfPara(R(Class::*)(Args...))
-{
-	return sizeof...(Args);
-};
-
-template <typename F, typename Tuple, std::size_t... Indices>
-decltype(auto) forward_to_f(F f, Tuple&& args,
-	std::index_sequence<Indices...>) {
-	return std::bind(f, std::get<Indices>(std::move(args))...);
-}
-
-template <size_t count, typename F, typename ...Args>
-std::function<void(void)> makeFunc(F&& f, Args... args)
-{
-	auto tuple = std::forward_as_tuple(args...);
-	auto seq = std::make_index_sequence<count>{};
-	return forward_to_f(f, tuple, seq);
-}
-
 #define SHORTCUTFUNC(className,JsName,InnerFuncs) \
 	funcMaps_.insert(std::make_pair(##JsName,makeFunc<getCountOfPara(&className::InnerFuncs)+1>(&className::InnerFuncs,this->impl_,this->mainWnd_)));
 
@@ -307,9 +315,6 @@ void ShortCutHandler::Init()
 	SHORTCUTFUNC(ShortCutHandlerImpl, "联系我们", OnContactUs)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "完整性检查", OnIntegrityCheck)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "参数设置", OnParameterSettings)
-	//SHORTCUTFUNCS_WITHWND(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
-	//makeFunc<getCountOfPara(&ShortCutHandlerImpl::OnUserManual)+1>(&ShortCutHandlerImpl::OnUserManual, this->impl_, this->mainWnd_);
-	//makeFunc<getCountOfPara(&ShortCutHandlerImpl::OnSwitchToNetVersion)+1>(&ShortCutHandlerImpl::OnSwitchToNetVersion, this->impl_, this->mainWnd_);
 	SHORTCUTFUNC(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "用户手册", OnUserManual)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "在线更新", OnUpdateOnline)
@@ -331,4 +336,14 @@ bool ShortCutHandler::Contains(const std::string& cutName) const
 void ShortCutHandler::SetHwnd(HWND wnd)
 {
 	mainWnd_ = wnd;
+	//then
+	if (mainWnd_)
+	{
+		impl_->SetBeforeFunc([this]() {
+			ShowWindow(this->mainWnd_, SW_HIDE);
+			});
+		impl_->SetAferFunc([this]() {
+			ShowWindow(this->mainWnd_, SW_SHOW);
+			});
+	}
 }
