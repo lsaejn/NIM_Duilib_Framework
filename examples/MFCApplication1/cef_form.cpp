@@ -31,6 +31,7 @@
 #include "rapidjson/memorystream.h"
 
 #include "nlohmann/json.hpp"
+#include "../../duilib/Core/Markup.h"
 
 using rapidjson::Document;
 using rapidjson::StringBuffer;
@@ -209,7 +210,8 @@ void CefForm::InitWindow()
 	::SetWindowLongW(hwnd, GWL_EXSTYLE, style);//重新设置窗体样式
 
 	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
-	SetCaption(u8"PKPM结构设计软件 10版 V5.1.1");
+	defaultCaption_ =label_->GetText();
+	//SetCaption(u8"PKPM结构设计软件 10版 V5.1.1");
 
 	//旧代码
 	SetCfgPmEnv();//增加pm环境
@@ -228,6 +230,15 @@ void CefForm::InitWindow()
 		nim_comp::CMenuWnd* pMenu = new nim_comp::CMenuWnd(NULL);
 		ui::STRINGorID xml(L"settings_menu.xml");
 		pMenu->Init(xml, _T("xml"), point);
+		ui::ListBox* pVbox = dynamic_cast<ui::ListBox*>(pMenu->FindControl(L"themeWindow"));
+		pVbox->AttachSelect([this](ui::EventArgs* args) {
+			auto themeType=args->pSender->GetName();
+			int current = args->wParam;
+			//我们只关心用户本次选择
+			assert(args->lParam==-1);
+			PostMessage(WM_THEME_SELECTED, current, -1);
+			return true;
+			});
 		return true;
 		});
 }
@@ -339,17 +350,17 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_LBUTTONDOWN)
 	{
-		OutputDebugString(L"WM_LBUTTONDOWN");
-		PostMessage(WM_TEST, 0, 0);
+		OutputDebugString(L"Receive WM_LBUTTONDOWN");
+		//PostMessage(WM_TEST, 0, 0);
 	}
 	if (uMsg == WM_TEST)
 	{
-		OutputDebugString(L"WM_LBUTTONDOWN");
+		OutputDebugString(L"Receive WM_TEST");
 		//PostMessage(WM_TEST, 0, 0);
 	}
 	if (uMsg == WM_LBUTTONDBLCLK)
 	{
-		OutputDebugString(L"WM_NCLBUTTONDBLCLK");
+		OutputDebugString(L"Receive WM_NCLBUTTONDBLCLK");
 		//{
 		//	cef_control_->CallJSFunction(L"showJsMessage", nbase::UTF8ToUTF16("{\"msg\":\"hello!!!\"}"),
 		//		ToWeakCallback([this](const std::string& json_result) {
@@ -360,7 +371,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	if (uMsg == WM_DROPFILES)
 	{
-		OutputDebugString(L"receive WM_DROPFILES");
+		OutputDebugString(L"Receive WM_DROPFILES");
 		HDROP hDropInfo = (HDROP)wParam;
 		UINT count;
 		TCHAR filePath[MAX_PATH] = { 0 };
@@ -483,7 +494,33 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if(cef_control_)
 			cef_control_->SetFocus();
 	}
+	if (uMsg == WM_THEME_SELECTED)
+	{
+		OutputDebugString(std::to_wstring(wParam).c_str());
+		assert(lParam == -1);
+		SwicthThemeTo(wParam);
+	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
+}
+
+void CefForm::SwicthThemeTo(int index)
+{
+	//尴尬的事情发生了，我需要切换标题栏的配色方案
+	//这意味着我又要准备一个配置文件，这本来就很fuck了
+	//更fuck的是，业务决定了我的最佳方案是用工厂来出处理皮肤的加载
+	//我是打心底里痛恨设计模式那套东西
+	/*
+	云信的tab
+	*/
+	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
+	vistual_caption->SetBkColor(L"bk_wnd_lightcolor");
+	label_->SetAttribute(L"normaltextcolor", L"darkcolor");
+	SaveThemeIndex(index);
+}
+
+void CefForm::SaveThemeIndex(int index)
+{
+
 }
 
 bool CefForm::OnNavigate(ui::EventArgs* msg)
@@ -564,7 +601,9 @@ void CefForm::RegisterCppFuncs()
 			int project= document["projectIndex"].GetInt();
 			assert(nbase::AnsiToUtf8(prjPaths_[project]) == captionName);
 			//fix me,写入配置文件
-			std::string captionU8 = u8"PKPM结构设计软件 10版 V5.1.1   ";
+			std::string captionU8 = nbase::UTF16ToUTF8(defaultCaption_);
+			if(captionU8.empty())
+				captionU8 = u8"PKPM结构设计软件 10版 V5.1.1   ";
 			captionU8 += captionName;
 			SetCaption(captionU8);
 #ifdef DEBUG
@@ -678,7 +717,7 @@ void CefForm::RegisterCppFuncs()
 	cef_control_->RegisterCppFunc(L"DBCLICKPROJECT",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nlohmann::json json = nlohmann::json::parse(params);
-			//实际上只需要3个参数, 为了不给前端造成疑惑，就不改了
+			//旧代码，实际上只需要3个参数, 为了不给前端造成疑惑，就不改了
 			std::string prjPath_ansi = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathSelected"]));
 			std::string pathOfCore = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathOfCore"]));
 			std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));
@@ -1141,13 +1180,6 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 
 void CefForm::OnListMenu(const std::vector<std::string>& args)
 {
-	//坑爹啊
-	if (!prjPaths_.size())
-	{
-		AfxMessageBox(L"没有选择工作目录", MB_OK | MB_SYSTEMMODAL);
-		return;
-	}
-	//auto prjSelected = std::stoi(MenuSelectionOnHtml().back().second);
 	OnDbClickProject(args);
 }
 

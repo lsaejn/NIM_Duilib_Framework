@@ -3,9 +3,6 @@
 // 供 MFCApplication1.rc 使用
 //
 #define IDR_MAINFRAME                   128
-#define IDD_DLGREGRUNASHINT             152
-#define IDD_MFCAPPLICATION1_DIALOG      152
-#define IDC_STATIC_PIC                  1089
 
 // Next default values for new objects
 // 
