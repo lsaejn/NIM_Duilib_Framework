@@ -17,7 +17,7 @@ public:
 	ShortCutHandler(const ShortCutHandler&) = delete;
 	ShortCutHandler& operator=(const ShortCutHandler&) = delete;
 	void Init();
-	void SetHwnd(HWND);
+	void SetCallBacks(HWND, CallBack);
 	void CallFunc(const std::string &funcName);
 	bool Contains(const std::string& funcName) const;
 

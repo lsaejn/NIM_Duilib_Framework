@@ -201,6 +201,12 @@
     <ClInclude Include="WinMain.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="SkinSwitcher.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NoCopyable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

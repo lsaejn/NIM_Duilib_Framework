@@ -226,6 +226,7 @@
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HttpUtil.h" />
     <ClInclude Include="nlohmann\json.hpp" />
+    <ClInclude Include="NoCopyable.h" />
     <ClInclude Include="pkpm2014svr.h" />
     <ClInclude Include="rapidjson\allocators.h" />
     <ClInclude Include="rapidjson\document.h" />
@@ -267,6 +268,7 @@
     <ClInclude Include="rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="ShortCutHandler.h" />
+    <ClInclude Include="SkinSwitcher.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="svr.h" />
     <ClInclude Include="templates.h" />

@@ -4,6 +4,7 @@
 #include "Console.h"
 #include "string_util.h"
 #include "HttpUtil.h"
+#include "FileSystem.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -11,9 +12,10 @@
 #include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <filesystem>
 
+#include <filesystem>
 #include <regex>
+#include <string_view>
 
 
 #ifdef max
@@ -31,7 +33,7 @@
 #include "rapidjson/memorystream.h"
 
 #include "nlohmann/json.hpp"
-#include "../../duilib/Core/Markup.h"
+
 
 using rapidjson::Document;
 using rapidjson::StringBuffer;
@@ -57,8 +59,13 @@ namespace //which will write to configFile
 
 	std::wstring FullPathOfPkpmIni()
 	{
-		static auto re = nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini";
-		return re;
+		static auto path = nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini";
+		return path;
+	}
+	std::string FullPathOfPkpmIniA()
+	{
+		static auto path = nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini");
+		return path;
 	}
 
 	std::string DictToJson(const std::vector<std::pair<std::string, std::string>>& dict)
@@ -93,11 +100,16 @@ CefForm::CefForm()
 	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName", 6, FullPathOfPkpmIni().c_str())),
 	prjPaths_(maxPrjNum_),
 	isWebPageAvailable_(false),
-	cef_control_(NULL)
+	cef_control_(NULL),
+	indexHeightLighted_(-1)
 {
 	webDataReader_.Init();
 	ReadWorkPathFromFile("CFG/pkpm.ini");
 	InitAdvertisement();
+	size_t numofPrj=CorrectWorkPath();
+	if (numofPrj > 0)
+		indexHeightLighted_ = 0;
+	//一个控制台，以命令方式模拟网页点击事件
 	//将被写入log模块
 	//Alime::Console::CreateConsole();
 	//Alime::Console::SetTitle(L"Alime");
@@ -199,7 +211,16 @@ void CefForm::InitWindow()
 		cef_control_dev_->SetVisible(false);
 
 	auto hwnd = GetHWND();
-	this->shortCutHandler_.SetHwnd(hwnd);
+	CallBack f = [this]() {
+		prjPaths_.moveToFront(indexHeightLighted_);
+		SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+		cef_control_->CallJSFunction(L"flush",
+			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+			ToWeakCallback([this](const std::string& chosenData) {
+				}
+		));
+	};
+	this->shortCutHandler_.SetCallBacks(hwnd, f);
 	shortCutHandler_.Init();
 
 	//我不太确定是不是需要自己增加拖放支持。
@@ -281,7 +302,7 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 		//		{
 		//			if (msg.message == WM_LBUTTONDOWN)
 		//			{
-		//				MessageBox(NULL,L"fuck",L"ananann",1);
+		//				MessageBox(NULL,L"...",L"ananann",1);
 		//			}
 		//			else
 		//			{
@@ -503,18 +524,15 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
 
+#include "SkinSwitcher.h"
 void CefForm::SwicthThemeTo(int index)
 {
-	//尴尬的事情发生了，我需要切换标题栏的配色方案
-	//这意味着我又要准备一个配置文件，这本来就很fuck了
-	//更fuck的是，业务决定了我的最佳方案是用工厂来出处理皮肤的加载
-	//我是打心底里痛恨设计模式那套东西
-	/*
-	云信的tab
-	*/
+	//我是打心底里痛恨设计模式
+	//云信的tab可以把消息写到xml里
+	//可是我们这里是个menuitem来执行皮肤切换
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
-	vistual_caption->SetBkColor(L"bk_wnd_lightcolor");
-	label_->SetAttribute(L"normaltextcolor", L"darkcolor");
+	auto sw=SkinSwitcherFatctory::Get(index);
+	sw->Switch(vistual_caption, label_);
 	SaveThemeIndex(index);
 }
 
@@ -600,6 +618,8 @@ void CefForm::RegisterCppFuncs()
 			//projectIndex
 			int project= document["projectIndex"].GetInt();
 			assert(nbase::AnsiToUtf8(prjPaths_[project]) == captionName);
+			//....
+			SetHeightLightIndex(project);
 			//fix me,写入配置文件
 			std::string captionU8 = nbase::UTF16ToUTF8(defaultCaption_);
 			if(captionU8.empty())
@@ -1035,7 +1055,8 @@ std::string CefForm::OnNewProject()
 		return {};
 	}	
 	char result[MAX_PATH] = { 0 };
-	ptr("", result);
+	std::string defaultPath = prjPaths_[indexHeightLighted_];
+	ptr(defaultPath.c_str(), result);
 	FreeLibrary(hdll);
 	return result;
 	///////////////////////////////////////////////////
@@ -1304,7 +1325,7 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 			appName1 = "导出Revit";
 		}
 	}
-	char str[400];
+	char str[128] = { 0 };
 	if (appName2.IsEmpty())
 	{
 		sprintf(str, "%s|%s", moduleName.GetString(), appName1.GetString());
@@ -1313,23 +1334,10 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 	{
 		sprintf(str, "%s|%s_%s", moduleName.GetString(), appName1.GetString(), appName2.GetString());
 	}
-
 	//CWnd* mainWnd = ::AfxGetMainWnd();
 	//ASSERT(mainWnd);
 	//ASSERT(SetCurrentDirectory(m_WorkPath));
 	appDll_.Invoke_RunCommand(str);
-	try
-	{
-		//appDll_.
-		//appDll_.
-		//appDll_.fuc_RunCommand(str);
-	}
-	catch (...)
-	{
-	}
-
-	//恢复工作目录
-	//ASSERT(SetCurrentDirectory(m_WorkPath));//?
 }
 
 
@@ -1432,8 +1440,8 @@ bool CefForm::VersionPage()
 	//111.230.143.87是我自己的云服务器。
 	//广告页面http://111.230.143.87/index.html
 	wchar_t buffer[128] = { 0 };
-	const std::wstring backupServer = L"111.230.143.87";
-	const std::wstring backupQuery = L"/index.html";
+	const std::wstring backupServer = L"update.pkpm.cn";
+	const std::wstring backupQuery = L"/PKPM2010/Info/index.html";
 	GetPrivateProfileStringW(L"Html", L"server", backupServer.c_str(), buffer, sizeof(buffer) - 1, FullPathOfPkpmIni().c_str());
 	req.server = buffer;
 	memset(buffer, 0, sizeof(buffer));
@@ -1475,7 +1483,7 @@ bool CefForm::VersionPage()
 		std::smatch match;
 		if (std::regex_search(astring, match, reg))
 		{
-			PageInfo_ = match[3];
+			pageInfo_ = match[3];
 			return true;
 		}
 	}
@@ -1494,7 +1502,7 @@ bool CefForm::TellMeNewVersionExistOrNot()
 	else
 	{
 		Document document;
-		document.Parse(PageInfo_.c_str());
+		document.Parse(pageInfo_.c_str());
 		assert(document.HasMember("UpdateUrl"));//旧代码，觉得没用就删除吧
 		assert(document.HasMember("Advertise"));
 		auto& arr = document["Advertise"]["NationWide"];
@@ -1597,14 +1605,13 @@ std::string CefForm::TellMeAdvertisement()
 		return defaultAdvertise;
 	else
 	{
-		if (PageInfo_.empty())
+		if (pageInfo_.empty())
 			return defaultAdvertise;
 		else
 		{
 			std::vector<std::pair<std::string, std::string>> data;
-			//////分成两部分~,方便调试//////////////////////
 			Document document;
-			document.Parse(PageInfo_.c_str());
+			document.Parse(pageInfo_.c_str());
 			auto& arr = document["Advertise"]["NationWide"];
 			assert(arr.IsArray());
 			for (size_t i = 0; i < arr.Size(); ++i)
@@ -1640,4 +1647,51 @@ std::string CefForm::TellMeAdvertisement()
 		}
 	}
 	return defaultAdvertise;
+}
+
+/*
+程序不可能每次新建工程都检查全部的路径，
+我们只需要保证打开文件时，拿到的路径是有效的，
+并且每次新建的新工程路径是有效的。这样就可以了。
+FileSystem里可能有bug,0.0，但也没人帮测
+*/
+size_t CefForm::CorrectWorkPath()
+{
+	std::vector<std::wstring> vec;
+	wchar_t prjPathStr[256] = { 0 };
+	for (int i = 0; i < maxPrjNum_; ++i)
+	{
+		auto workPathId = L"WorkPath" + std::to_wstring(i);
+		memset(prjPathStr, 0, ArraySize(prjPathStr)*sizeof(wchar_t));
+		GetPrivateProfileString(L"WorkPath", workPathId.c_str(), L"error", prjPathStr, ArraySize(prjPathStr), FullPathOfPkpmIni().c_str());
+		if (std::wstring_view(prjPathStr) != L"error")
+		{
+			//fix me, 去掉这个判断
+			if (PathFileExists(prjPathStr) && PathIsDirectory(prjPathStr))
+			{
+				Alime::FileSystem::Folder folder(prjPathStr);
+				if (!folder.Exists())	continue;
+				std::wstring destPath;
+				if (!Alime::FileSystem::PathNameCaseSensitive(folder, destPath))  continue;
+				if (destPath.back() != L'\\')
+					destPath += L'\\';
+				if (std::find(vec.cbegin(), vec.cend(), destPath) == vec.cend())
+					vec.push_back(destPath);
+			}
+		}
+	}
+	for (int i = 0; i < 2*maxPrjNum_; ++i)
+	{
+		std::wstring workPathId = L"WorkPath"+std::to_wstring(i);
+		if (static_cast<size_t>(i) < vec.size())
+			WritePrivateProfileString(L"WorkPath", workPathId.c_str(), vec[i].c_str(), FullPathOfPkpmIni().c_str());
+		else//又人可能从12宫格升上来，我们保留前6个有效工程，剩下的删除
+			WritePrivateProfileString(L"WorkPath", workPathId.c_str(), NULL, FullPathOfPkpmIni().c_str());
+	}
+	return vec.size();
+}
+
+void CefForm::SetHeightLightIndex(int i)
+{
+	indexHeightLighted_ = i;
 }

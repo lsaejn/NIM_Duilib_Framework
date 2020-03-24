@@ -10,11 +10,7 @@
 #define WM_THEME_SELECTED (WM_USER + 2)
 
 const bool kEnableOffsetRender = true;
-class CppFuncRegister;
 
-/// <summary>path是否有效</summary>
-///<param name="timestamp">path有效,则返回时间</param >
-///<return>path是否有效</return>
 class CefForm : public std::conditional<kEnableOffsetRender, ui::WindowImplBase, nim_comp::ShadowWndBase>::type
 {
 public:
@@ -164,6 +160,9 @@ private:
 	/// <summary>老函数，设置PM环境变量</summary>
 	bool SetCfgPmEnv();
 
+	/// <summary>用户删掉工程文件夹，然后新建大小写错误的文件夹再打开程序。这就导致配置文件里的工程路径是一个非大小写敏感的路径</summary>
+	size_t CorrectWorkPath();
+	void SetHeightLightIndex(int i);
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;
@@ -177,7 +176,8 @@ private:
 	AppDllAdaptor appDll_;
 	std::mutex lock_;//fix me改成原子变量后，锁可以去掉了
 	std::atomic<bool> isWebPageAvailable_;
-	std::string PageInfo_;//大写表明这是个被保护变量
+	std::string pageInfo_;
 	std::wstring defaultCaption_;
+	int indexHeightLighted_;//由于是异步通信，而很多旧代码需要直接拿加亮索引工作。你必须要出此下策。
 };
 

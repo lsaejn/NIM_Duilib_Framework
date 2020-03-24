@@ -53,8 +53,9 @@ private:
 	CString m_strNameOfPManager;
 	HMODULE dll_;
 	DllScopeGuarder guard_;
-	CallBack DoBeforeCallFunc_;
-	CallBack DoAfterCallFunc_;
+	CallBack DoBeforeCallFunc_;//调用前的函数,一般是隐藏主窗口
+	CallBack DoAfterCallFunc_;//显示主窗口
+	CallBack RefreshConfigFileFunc_;//给模型打包用的，它们需要读工程路径，而这个路径是从配置文件里去读。人才!
 public:
 	ShortCutHandlerImpl()
 	{
@@ -86,6 +87,10 @@ public:
 		//delete
 	}
 
+	void SetFreshFunc(CallBack _f)
+	{
+		RefreshConfigFileFunc_ = std::move(_f);
+	}
 
 	void SetBeforeFunc(CallBack _f)
 	{
@@ -110,6 +115,8 @@ public:
 
 	void OnModelPacking()
 	{
+		if(RefreshConfigFileFunc_)
+			RefreshConfigFileFunc_();
 		OnBnClickedBtnFileMgr();
 	}
 
@@ -263,6 +270,8 @@ public:
 		CString strCfgPa;
 		cfgpathsvr::GetAppPathByCFGPATHMarker(get_cfg_path_reg_key(), strCfgPa);
 		toolsvr::FixPathStr(strCfgPa);
+		if (strCfgPa.IsEmpty())
+			strCfgPa = svr::GetRegCFGPath();
 
 		CString regcmd = strPatTDGL + m_strNameOfPManager;
 		if (!PathFileExists(regcmd))
@@ -332,7 +341,8 @@ bool ShortCutHandler::Contains(const std::string& cutName) const
 	return funcMaps_.find(cutName) != funcMaps_.end();
 }
 
-void ShortCutHandler::SetHwnd(HWND wnd)
+//copy一份然后move
+void ShortCutHandler::SetCallBacks(HWND wnd, CallBack _f)
 {
 	mainWnd_ = wnd;
 	//then
@@ -344,5 +354,6 @@ void ShortCutHandler::SetHwnd(HWND wnd)
 		impl_->SetAferFunc([this]() {
 			ShowWindow(this->mainWnd_, SW_SHOW);
 			});
+		impl_->SetFreshFunc(std::move(_f));
 	}
 }
