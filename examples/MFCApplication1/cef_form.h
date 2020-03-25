@@ -8,6 +8,7 @@
 
 #define WEBINTERFACE
 #define WM_THEME_SELECTED (WM_USER + 2)
+#define WM_SHOWMAINWINDOW (WM_USER + 3)
 
 const bool kEnableOffsetRender = true;
 

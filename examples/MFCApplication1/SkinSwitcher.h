@@ -23,16 +23,16 @@ struct SkinInfo
 	std::string normaltextcolor_;
 };
 
-class SkinInfoManager
+class SkinInfoLoader
 {
 public:
-	SkinInfoManager& Get()
+	SkinInfoLoader& Get()
 	{
-		static SkinInfoManager sm;
+		static SkinInfoLoader sm;
 		return sm;
 	}
 private:
-	SkinInfoManager()
+	SkinInfoLoader()
 	{
 		auto pathOfSkinXml = nbase::win32::GetCurrentModuleDirectory() + L"resources\\themes\\default\\cef\\caption_style.xml";
 		ui::CMarkup cm;

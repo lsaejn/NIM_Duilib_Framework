@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "cef_form.h"
-#include "CDirSelectThread.h"
-#include "Console.h"
 #include "string_util.h"
 #include "HttpUtil.h"
 #include "FileSystem.h"
@@ -10,13 +8,12 @@
 #include <stdlib.h>
 #include <tchar.h>
 #include <io.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 
 #include <filesystem>
 #include <regex>
 #include <string_view>
-
+//#include <chrono>
 
 #ifdef max
 #undef max
@@ -47,7 +44,13 @@ using namespace Alime::HttpUtility;
 //	return cfg_key_str;
 //}
 //details
-namespace //which will write to configFile
+/*
+本程序作为补丁包发行，所以不能覆盖配置文件。
+硬编码的变量是无奈之举。
+pkpm的部署可以说是典型的反面教材。程序+程序配置+用户配置+用户工程管理
+全都放在一起。直接导致了程序不能装在敏感盘，配置文件升级只能通过发新程序。
+*/
+namespace
 {
 	//exe为起点
 	const std::wstring RelativePathForHtmlRes = L"resources\\HtmlRes\\index.html";
@@ -374,23 +377,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		OutputDebugString(L"Receive WM_LBUTTONDOWN");
 		//PostMessage(WM_TEST, 0, 0);
 	}
-	if (uMsg == WM_TEST)
-	{
-		OutputDebugString(L"Receive WM_TEST");
-		//PostMessage(WM_TEST, 0, 0);
-	}
-	if (uMsg == WM_LBUTTONDBLCLK)
-	{
-		OutputDebugString(L"Receive WM_NCLBUTTONDBLCLK");
-		//{
-		//	cef_control_->CallJSFunction(L"showJsMessage", nbase::UTF8ToUTF16("{\"msg\":\"hello!!!\"}"),
-		//		ToWeakCallback([this](const std::string& json_result) {
-		//			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(json_result), 3000, GetHWND());
-		//		}
-		//	));
-		//}
-	}
-	if (uMsg == WM_DROPFILES)
+	else if (uMsg == WM_DROPFILES)
 	{
 		OutputDebugString(L"Receive WM_DROPFILES");
 		HDROP hDropInfo = (HDROP)wParam;
@@ -421,7 +408,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		DragFinish(hDropInfo);
 	}
-	if (uMsg == WM_KEYDOWN)
+	else if (uMsg == WM_KEYDOWN)
 	{
 		if (116 == wParam)
 		{
@@ -510,16 +497,22 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			
 		}
 	}
-	if (uMsg == WM_SIZE)
+	else if (uMsg == WM_SIZE)
 	{
 		if(cef_control_)
 			cef_control_->SetFocus();
 	}
-	if (uMsg == WM_THEME_SELECTED)
+	else if (uMsg == WM_THEME_SELECTED)
 	{
 		OutputDebugString(std::to_wstring(wParam).c_str());
 		assert(lParam == -1);
 		SwicthThemeTo(wParam);
+	}
+	else if (uMsg == WM_SHOWMAINWINDOW)
+	{
+		auto appPath = nbase::win32::GetCurrentModuleDirectory();
+		SetCurrentDirectory(appPath.c_str());
+		ShowWindow();
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
@@ -527,9 +520,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "SkinSwitcher.h"
 void CefForm::SwicthThemeTo(int index)
 {
-	//我是打心底里痛恨设计模式
 	//云信的tab可以把消息写到xml里
-	//可是我们这里是个menuitem来执行皮肤切换
+	//可是我们这里需要用跨窗口的menuitem来执行皮肤切换
+	//我还没找到这么做的例子。
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
 	auto sw=SkinSwitcherFatctory::Get(index);
 	sw->Switch(vistual_caption, label_);
@@ -538,7 +531,7 @@ void CefForm::SwicthThemeTo(int index)
 
 void CefForm::SaveThemeIndex(int index)
 {
-
+	//fix me
 }
 
 bool CefForm::OnNavigate(ui::EventArgs* msg)
@@ -752,7 +745,7 @@ void CefForm::RegisterCppFuncs()
 			//cef_control_->HideToolTip();
 			//你可以像shortCutHandler.cpp那样处理参数，避免写出现在这样的代码
 			OnDbClickProject(vec);
-
+			//fix me
 			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
 			})
@@ -804,7 +797,6 @@ void CefForm::RegisterCppFuncs()
 					HANDLE hclip = GetClipboardData(CF_TEXT);
 					char* pBuf = static_cast<char*>(GlobalLock(hclip));
 					LocalUnlock(hclip);
-					USES_CONVERSION;
 					filePath = std::move(std::string(pBuf));
 				}
 				CloseClipboard();
@@ -831,7 +823,7 @@ void CefForm::RegisterCppFuncs()
 					callback(false, nbase::AnsiToUtf8(debugStr));
 				}
 			}
-			std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED." })";
+			std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED. empty Path" })";
 			callback(false, nbase::AnsiToUtf8(debugStr));
 			})
 		);
@@ -1185,7 +1177,16 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			//return;
 		}
 		run_cmd(args[3].c_str(), args[4].c_str(),"");
-		SetCurrentDirectoryA(oldWorkPath);
+		//fix me, 线程里启动main
+		//begin
+		std::thread t([=]() {
+			SetCurrentDirectoryA(path.c_str());
+			run_cmd(args[3].c_str(), args[4].c_str(), "");
+			::PostMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+			});
+		t.detach();
+		//end
+		//SetCurrentDirectoryA(oldWorkPath);
 		for (int i = 0; i != prjPaths_.size(); ++i)
 		{
 			if (prjPaths_[i] == path)
@@ -1195,7 +1196,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 				break;
 			}
 		}
-		ShowWindow();
+		//ShowWindow();
 	}
 }
 
@@ -1396,7 +1397,7 @@ void CefForm::InitAdvertisement()
 	func.detach();
 }
 
-#include <chrono>
+
 //由于前端搞不定，所以逼着我开线程查询广告
 //这样，前端读取所有广告前，需要加锁
 void CefForm::AdvertisementThreadFunc()

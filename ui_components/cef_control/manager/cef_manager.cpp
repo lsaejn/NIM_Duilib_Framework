@@ -198,10 +198,10 @@ void CefManager::GetCefSetting(const std::wstring& app_data_dir, CefSettings &se
 	settings.log_severity = LOGSEVERITY_DISABLE;
 	//这个修改是因为用户会安装在敏感路径下。我不希望问题卡在这里。
 	// 设置localstorage，不要在路径末尾加"\\"，否则运行时会报错
-	//CefString(&settings.cache_path) = app_data_dir + L"CefLocalStorage";
+	CefString(&settings.cache_path) = app_data_dir + L"CefLocalStorage";
 
 	// 设置debug log文件位置
-	//CefString(&settings.log_file) = app_data_dir + L"cef.log";
+	CefString(&settings.log_file) = app_data_dir + L"cef.log";
 
 	// 调试模型下使用单进程，但是千万不要在release发布版本中使用，官方已经不推荐使用单进程模式
 	// cef1916版本debug模式:在单进程模式下程序退出时会触发中断
