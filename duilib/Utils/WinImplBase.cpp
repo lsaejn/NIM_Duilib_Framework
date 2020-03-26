@@ -107,27 +107,6 @@ LRESULT WindowImplBase::OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 
 LRESULT WindowImplBase::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	Control* pMaxButton = (Control*)FindControl(L"maxbtn");
-	Control* pRestoreButton = (Control*)FindControl(L"restorebtn");
-	if (!::IsZoomed(GetHWND()))
-	{
-		SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);
-
-		if (pMaxButton && pRestoreButton)
-		{
-			pMaxButton->SetVisible(false);
-			pRestoreButton->SetVisible(true);
-		}
-	}
-	else
-	{
-		SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
-		if (pMaxButton && pRestoreButton)
-		{
-			pMaxButton->SetVisible(true);
-			pRestoreButton->SetVisible(false);
-		}
-	}
 	return 0;
 }
 
@@ -271,35 +250,6 @@ LRESULT WindowImplBase::OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 		HRGN hRgn = ::CreateRoundRectRgn(rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, szRoundCorner.cx, szRoundCorner.cy);
 		::SetWindowRgn(GetHWND(), hRgn, TRUE);
 		::DeleteObject(hRgn);
-	}
-	if (m_pRoot)
-	{
-		Control* pMaxButton = (Control*)FindControl(L"maxbtn");
-		Control* pRestoreButton = (Control*)FindControl(L"restorebtn");
-		if (!::IsZoomed(GetHWND()))
-		{
-			if (pMaxButton && pRestoreButton)
-			{
-				if (!pMaxButton->IsVisible())
-				{
-					pMaxButton->SetVisible(true);
-					pRestoreButton->SetVisible(false);
-					UpdateWindow(GetHWND());
-				}
-			}
-		}
-		else
-		{
-			if (pMaxButton && pRestoreButton)
-			{
-				if (!pRestoreButton->IsVisible())
-				{
-					pMaxButton->SetVisible(false);
-					pRestoreButton->SetVisible(true);
-					UpdateWindow(GetHWND());
-				}
-			}
-		}
 	}
 
 	bHandled = FALSE;

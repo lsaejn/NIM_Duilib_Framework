@@ -203,15 +203,19 @@ void CefForm::InitWindow()
 	// 监听页面加载完毕通知
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
-	cef_control_->AttachDevTools(cef_control_dev_);
+	if(cef_control_dev_)
+		cef_control_->AttachDevTools(cef_control_dev_);
+	if (!nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
+		if (cef_control_dev_)
+			cef_control_dev_->SetVisible(false);
 
 	wchar_t buffer[128] = { 0 };
 	auto nRead = GetPrivateProfileStringW(L"Html", L"PathOfCefHtml", 
 		RelativePathForHtmlRes.c_str(), buffer, ArraySize(buffer), FullPathOfPkpmIni().c_str());
 	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ buffer;
 	cef_control_->LoadURL(cefHtmlPath);
-	if (!nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
-		cef_control_dev_->SetVisible(false);
+
+
 
 	auto hwnd = GetHWND();
 	CallBack f = [this]() {
@@ -321,19 +325,6 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 		//	CloseHandle(event);
 		//}
 		//
-		if (cef_control_->IsAttachedDevTools())
-		{
-			cef_control_->DettachDevTools();
-		}
-		else
-		{
-			cef_control_->AttachDevTools(cef_control_dev_);
-		}
-
-		if (nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
-		{
-			cef_control_dev_->SetVisible(cef_control_->IsAttachedDevTools());
-		}
 	}
 	else if (name == L"btn_back")
 	{
@@ -376,6 +367,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		OutputDebugString(L"Receive WM_LBUTTONDOWN");
 		//PostMessage(WM_TEST, 0, 0);
+		return TRUE;
 	}
 	else if (uMsg == WM_DROPFILES)
 	{
@@ -499,6 +491,11 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (uMsg == WM_SIZE)
 	{
+		if (m_pRoot)
+		{
+			FindControl(L"maxbtn")->SetVisible(!::IsZoomed(m_hWnd));
+			FindControl(L"restorebtn")->SetVisible(::IsZoomed(m_hWnd));
+		}
 		if(cef_control_)
 			cef_control_->SetFocus();
 	}
@@ -746,6 +743,7 @@ void CefForm::RegisterCppFuncs()
 			//你可以像shortCutHandler.cpp那样处理参数，避免写出现在这样的代码
 			OnDbClickProject(vec);
 			//fix me
+
 			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
 			})
@@ -1168,25 +1166,12 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 	std::string path(args[0]);
 	{
 		ShowWindow(SW_HIDE);
-		char oldWorkPath[256] = { 0 };
-		GetCurrentDirectoryA(sizeof(oldWorkPath), oldWorkPath);
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
 		{
 			::AfxMessageBox(L"工作目录错误或者没有权限", MB_OK | MB_SYSTEMMODAL);
-			//return;
+			//return or not? 要让用户打开main吗？
 		}
-		run_cmd(args[3].c_str(), args[4].c_str(),"");
-		//fix me, 线程里启动main
-		//begin
-		std::thread t([=]() {
-			SetCurrentDirectoryA(path.c_str());
-			run_cmd(args[3].c_str(), args[4].c_str(), "");
-			::PostMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
-			});
-		t.detach();
-		//end
-		//SetCurrentDirectoryA(oldWorkPath);
 		for (int i = 0; i != prjPaths_.size(); ++i)
 		{
 			if (prjPaths_[i] == path)
@@ -1196,7 +1181,12 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 				break;
 			}
 		}
-		//ShowWindow();
+		std::thread t([=]() {
+			SetCurrentDirectoryA(path.c_str());
+			run_cmd(args[3].c_str(), args[4].c_str(), "");
+			::PostMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+			});
+		t.detach();
 	}
 }
 
@@ -1261,8 +1251,6 @@ std::string CefForm::PathChecker(const std::string& newProj, bool &legal)
 		legal = false;
 	return realPathOfNewProj;
 }
-
-
 
 bool CefForm::AddWorkPaths(const std::string& newProj, const std::string& filename)
 {

@@ -5,12 +5,14 @@
 #include "ShortCutHandler.h"
 #include "AppDllAdaptor.h"
 #include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 #define WEBINTERFACE
 #define WM_THEME_SELECTED (WM_USER + 2)
 #define WM_SHOWMAINWINDOW (WM_USER + 3)
 
-const bool kEnableOffsetRender = true;
+const bool kEnableOffsetRender = false;
 
 class CefForm : public std::conditional<kEnableOffsetRender, ui::WindowImplBase, nim_comp::ShadowWndBase>::type
 {
