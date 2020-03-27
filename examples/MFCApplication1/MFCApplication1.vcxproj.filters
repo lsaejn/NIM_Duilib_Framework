@@ -210,6 +210,9 @@
     <ClInclude Include="MsgDialog.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="RapidjsonForward.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

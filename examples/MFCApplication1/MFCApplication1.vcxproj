@@ -233,6 +233,7 @@
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="NoCopyable.h" />
     <ClInclude Include="pkpm2014svr.h" />
+    <ClInclude Include="RapidjsonForward.h" />
     <ClInclude Include="rapidjson\allocators.h" />
     <ClInclude Include="rapidjson\document.h" />
     <ClInclude Include="rapidjson\encodedstream.h" />

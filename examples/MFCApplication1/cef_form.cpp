@@ -14,22 +14,8 @@
 #include <filesystem>
 #include <regex>
 #include <string_view>
-//#include <chrono>
 
-#ifdef max
-#undef max
-#endif
-#ifdef min
-#undef min
-#endif
-
-#include "rapidjson/prettywriter.h"
-#include "rapidjson/rapidjson.h"
-#include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/memorystream.h"
-
+#include "RapidjsonForward.h"
 #include "nlohmann/json.hpp"
 
 
@@ -39,12 +25,6 @@ using rapidjson::Writer;
 using namespace rapidjson;
 using namespace Alime::HttpUtility;
 
-//CString cfg_key_str;
-//CString get_cfg_path_reg_key()
-//{
-//	return cfg_key_str;
-//}
-//details
 /*
 本程序作为补丁包发行，所以不能覆盖配置文件。
 硬编码的变量是无奈之举。
@@ -66,6 +46,7 @@ namespace
 		static auto path = nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini";
 		return path;
 	}
+
 	std::string FullPathOfPkpmIniA()
 	{
 		static auto path = nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini");
@@ -380,7 +361,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (count != 1)
 		{
 			//auto ret=GetHWND() == AfxGetMainWnd()->GetSafeHwnd();
-			MsgBox::Waring(GetHWND(), L"仅支持拖拽单个目录", L"意外的错误");
+			MsgBox::Warning(GetHWND(), L"仅支持拖拽单个目录", L"意外的错误");
 			//AfxMessageBox(L"仅支持拖拽单个目录", MB_SYSTEMMODAL);
 		}
 		else
@@ -399,7 +380,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				));
 			}
 			else
-				MsgBox::Waring(GetHWND(), L"仅支持拖拽目录", L"错误");
+				MsgBox::Warning(GetHWND(), L"仅支持拖拽目录", L"错误");
 				//AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
 		}
 		DragFinish(hDropInfo);
@@ -673,7 +654,7 @@ void CefForm::RegisterCppFuncs()
 			{
 				if (prjPaths_.empty())
 				{
-					MsgBox::Waring(GetHWND(), L"没有选择工程", L"错误");
+					MsgBox::Warning(GetHWND(), L"没有选择工程", L"错误");
 					//::AfxMessageBox(L"没有选择工程");
 				}
 				std::string debugStr = R"({ "invalid index": "failed to call c++ function." })";
@@ -773,7 +754,7 @@ void CefForm::RegisterCppFuncs()
 			count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 			if (count != 1)
 			{
-				MsgBox::Waring(GetHWND(), L"仅支持拖拽单个目录", L"错误");
+				MsgBox::Warning(GetHWND(), L"仅支持拖拽单个目录", L"错误");
 				//::AfxMessageBox(L"仅支持拖拽单个目录", MB_OK | MB_SYSTEMMODAL);
 				return;
 			}
@@ -792,7 +773,7 @@ void CefForm::RegisterCppFuncs()
 				}
 				else
 				{
-					MsgBox::Waring(GetHWND(), L"仅支持拖拽目录", L"错误");
+					MsgBox::Warning(GetHWND(), L"仅支持拖拽目录", L"错误");
 					//::AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
 					return;
 				}
@@ -1114,7 +1095,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 {
 	if (!prjPaths_.size())
 	{
-		MsgBox::Waring(GetHWND(), L"请先选择工作目录", L"错误");
+		MsgBox::Warning(GetHWND(), L"请先选择工作目录", L"错误");
 		//::AfxMessageBox(L"请先选择工作目录", MB_OK | MB_SYSTEMMODAL);
 		return;
 	}
@@ -1184,12 +1165,12 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
 	if (args.size() != 5)
 	{
-		MsgBox::Waring(GetHWND(), L"打开工程的参数不正确", L"严重错误");
+		MsgBox::Warning(GetHWND(), L"打开工程的参数不正确", L"严重错误");
 		//::AfxMessageBox(L"严重错误", MB_OK | MB_SYSTEMMODAL);
 	}
 	if (!prjPaths_.size())
 	{//不应该再出现这个错误
-		MsgBox::Waring(GetHWND(), L"工作目录不存在", L"严重错误");
+		MsgBox::Warning(GetHWND(), L"工作目录不存在", L"严重错误");
 		//::AfxMessageBox(L"工作目录不存在", MB_OK | MB_SYSTEMMODAL);
 		return;
 	}
@@ -1199,7 +1180,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
 		{
-			MsgBox::Waring(GetHWND(), L"工作目录错误或者没有权限", L"权限错误");
+			MsgBox::Warning(GetHWND(), L"工作目录错误或者没有权限", L"权限错误");
 			//::AfxMessageBox(L"工作目录错误或者没有权限", MB_OK | MB_SYSTEMMODAL);
 			//return or not? 要让用户打开main吗？
 		}
@@ -1266,13 +1247,11 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 	}
 	if (!hasAdministratorsRights)
 	{
-		MsgBox::Waring(GetHWND(), L"无法保存工程信息，建议使用管理员权限打开本软件", L"权限错误");
+		MsgBox::Warning(GetHWND(), L"无法保存工程信息，建议使用管理员权限打开本软件", L"权限错误");
 		//AfxMessageBox(L"无法保存工程信息，建议使用管理员权限打开本软件", MB_OK | MB_SYSTEMMODAL);
 	}
 		
 }
-
-
 
 std::string CefForm::PathChecker(const std::string& newProj, bool &legal)
 {
@@ -1282,8 +1261,9 @@ std::string CefForm::PathChecker(const std::string& newProj, bool &legal)
 	std::string realPathOfNewProj = nbase::UnicodeToAnsi(realPath);
 	if (realPathOfNewProj.back() != '\\')
 		realPathOfNewProj += '\\';
-	if (realPathOfNewProj.length() == 3)//盘符
+	if (realPathOfNewProj.length() == 3&& realPathOfNewProj[1]==':')//盘符
 		legal = false;
+	//CreateFile(realPathOfNewProj.c_str(),)
 	return realPathOfNewProj;
 }
 

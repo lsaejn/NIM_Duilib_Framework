@@ -8,7 +8,7 @@ namespace MsgBox
 		MessageBox(wnd, content.c_str(), title.c_str(), MB_SYSTEMMODAL);
 	}
 
-	void Waring(HWND wnd, const std::wstring& content, const std::wstring& title)
+	void Warning(HWND wnd, const std::wstring& content, const std::wstring& title)
 	{
 #ifdef USE_SYS_MESSAGEBOX
 		SysWarning(wnd, content, title);
