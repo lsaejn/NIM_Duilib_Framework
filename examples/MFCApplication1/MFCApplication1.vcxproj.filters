@@ -207,6 +207,9 @@
     <ClInclude Include="NoCopyable.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MsgDialog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -255,6 +258,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="WinMain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MsgDialog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

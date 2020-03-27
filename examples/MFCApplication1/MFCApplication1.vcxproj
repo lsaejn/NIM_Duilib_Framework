@@ -176,6 +176,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>base.lib;duilib.lib;ui_components.lib;libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>nim_libcef.dll</DelayLoadDLLs>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -228,6 +229,7 @@
     <ClInclude Include="Console.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HttpUtil.h" />
+    <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="NoCopyable.h" />
     <ClInclude Include="pkpm2014svr.h" />
@@ -295,6 +297,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="HttpUtil.cpp" />
+    <ClCompile Include="MsgDialog.cpp" />
     <ClCompile Include="pkpm2014svr.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
     <ClCompile Include="string_util.cpp" />

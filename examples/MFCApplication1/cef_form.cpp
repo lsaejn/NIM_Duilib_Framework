@@ -3,6 +3,7 @@
 #include "string_util.h"
 #include "HttpUtil.h"
 #include "FileSystem.h"
+#include "MsgDialog.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -378,7 +379,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 		if (count != 1)
 		{
-			AfxMessageBox(L"仅支持拖拽单个目录", MB_SYSTEMMODAL);
+			//auto ret=GetHWND() == AfxGetMainWnd()->GetSafeHwnd();
+			MsgBox::Waring(GetHWND(), L"仅支持拖拽单个目录", L"意外的错误");
+			//AfxMessageBox(L"仅支持拖拽单个目录", MB_SYSTEMMODAL);
 		}
 		else
 		{
@@ -396,7 +399,8 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				));
 			}
 			else
-				AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
+				MsgBox::Waring(GetHWND(), L"仅支持拖拽目录", L"错误");
+				//AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
 		}
 		DragFinish(hDropInfo);
 	}
@@ -668,7 +672,10 @@ void CefForm::RegisterCppFuncs()
 			if (!prjPaths_.IsIndexLegal(index))
 			{
 				if (prjPaths_.empty())
-					::AfxMessageBox(L"没有选择工程");
+				{
+					MsgBox::Waring(GetHWND(), L"没有选择工程", L"错误");
+					//::AfxMessageBox(L"没有选择工程");
+				}
 				std::string debugStr = R"({ "invalid index": "failed to call c++ function." })";
 				callback(true, debugStr);
 				return;
@@ -766,7 +773,8 @@ void CefForm::RegisterCppFuncs()
 			count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 			if (count != 1)
 			{
-				::AfxMessageBox(L"仅支持拖拽单个目录", MB_OK | MB_SYSTEMMODAL);
+				MsgBox::Waring(GetHWND(), L"仅支持拖拽单个目录", L"错误");
+				//::AfxMessageBox(L"仅支持拖拽单个目录", MB_OK | MB_SYSTEMMODAL);
 				return;
 			}
 			else
@@ -784,7 +792,8 @@ void CefForm::RegisterCppFuncs()
 				}
 				else
 				{
-					::AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
+					MsgBox::Waring(GetHWND(), L"仅支持拖拽目录", L"错误");
+					//::AfxMessageBox(L"仅支持拖拽目录", MB_OK | MB_SYSTEMMODAL);
 					return;
 				}
 			}
@@ -1105,7 +1114,8 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 {
 	if (!prjPaths_.size())
 	{
-		::AfxMessageBox(L"请先选择工作目录", MB_OK | MB_SYSTEMMODAL);
+		MsgBox::Waring(GetHWND(), L"请先选择工作目录", L"错误");
+		//::AfxMessageBox(L"请先选择工作目录", MB_OK | MB_SYSTEMMODAL);
 		return;
 	}
 	{
@@ -1172,11 +1182,15 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
-	if(args.size()!=5)
-		::AfxMessageBox(L"严重错误", MB_OK | MB_SYSTEMMODAL);
+	if (args.size() != 5)
+	{
+		MsgBox::Waring(GetHWND(), L"打开工程的参数不正确", L"严重错误");
+		//::AfxMessageBox(L"严重错误", MB_OK | MB_SYSTEMMODAL);
+	}
 	if (!prjPaths_.size())
 	{//不应该再出现这个错误
-		::AfxMessageBox(L"工作目录不存在", MB_OK | MB_SYSTEMMODAL);
+		MsgBox::Waring(GetHWND(), L"工作目录不存在", L"严重错误");
+		//::AfxMessageBox(L"工作目录不存在", MB_OK | MB_SYSTEMMODAL);
 		return;
 	}
 	std::string path(args[0]);
@@ -1185,7 +1199,8 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
 		{
-			::AfxMessageBox(L"工作目录错误或者没有权限", MB_OK | MB_SYSTEMMODAL);
+			MsgBox::Waring(GetHWND(), L"工作目录错误或者没有权限", L"权限错误");
+			//::AfxMessageBox(L"工作目录错误或者没有权限", MB_OK | MB_SYSTEMMODAL);
 			//return or not? 要让用户打开main吗？
 		}
 		for (int i = 0; i != prjPaths_.size(); ++i)
@@ -1249,8 +1264,12 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 		if (!ret)
 			hasAdministratorsRights = false;
 	}
-	if(!hasAdministratorsRights)
-		AfxMessageBox(L"无法保存工程信息，建议使用管理员权限打开本软件", MB_OK | MB_SYSTEMMODAL);
+	if (!hasAdministratorsRights)
+	{
+		MsgBox::Waring(GetHWND(), L"无法保存工程信息，建议使用管理员权限打开本软件", L"权限错误");
+		//AfxMessageBox(L"无法保存工程信息，建议使用管理员权限打开本软件", MB_OK | MB_SYSTEMMODAL);
+	}
+		
 }
 
 
@@ -1354,7 +1373,7 @@ bool CefForm::SetCfgPmEnv()
 	DWORD dwRet = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, LENGTH_OF_ENV);
 	if (!dwRet)
 	{
-		AfxMessageBox(L"Error! Can not find Path", MB_OK | MB_SYSTEMMODAL);
+		::AfxMessageBox(L"Error! Can not find Path", MB_OK | MB_SYSTEMMODAL);
 		return false;
 	}
 	else if (LENGTH_OF_ENV < dwRet)//需要重新分配内存
