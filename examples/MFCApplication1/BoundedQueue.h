@@ -116,6 +116,11 @@ namespace collection_utility
 				remove(index);
 		}
 
+		bool IsIndexLegal(const int index)
+		{
+			return (index >= 0) && (static_cast<size_t>(index) < queue_.size());
+		}
+
 	private:
 		void rangeNoError(const int index)
 		{

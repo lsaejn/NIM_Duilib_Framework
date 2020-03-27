@@ -283,6 +283,7 @@ public:
 			return;
 		}
 
+		strCfgPa = (nbase::win32::GetCurrentModuleDirectory() + L"CFG\\").c_str();
 		CString cmdParm = L"-f ";
 		cmdParm += L"\"" + strCfgPa + L"pkpm.ini\"";
 		CFile fi;

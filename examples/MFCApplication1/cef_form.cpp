@@ -219,8 +219,10 @@ void CefForm::InitWindow()
 
 	auto hwnd = GetHWND();
 	CallBack f = [this]() {
-		prjPaths_.moveToFront(indexHeightLighted_);
-		SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+		if (prjPaths_.IsIndexLegal(indexHeightLighted_))
+			prjPaths_.moveToFront(indexHeightLighted_);
+		if(!prjPaths_.empty())
+			SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
 		cef_control_->CallJSFunction(L"flush",
 			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
 			ToWeakCallback([this](const std::string& chosenData) {
@@ -366,8 +368,6 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if (uMsg == WM_LBUTTONDOWN)
 	{
 		OutputDebugString(L"Receive WM_LBUTTONDOWN");
-		//PostMessage(WM_TEST, 0, 0);
-		return TRUE;
 	}
 	else if (uMsg == WM_DROPFILES)
 	{
@@ -665,6 +665,14 @@ void CefForm::RegisterCppFuncs()
 			std::string ansiMod=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(modName));
 			std::string ansiExe = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(exeName));
 			int index = json["prjIndex"];
+			if (!prjPaths_.IsIndexLegal(index))
+			{
+				if (prjPaths_.empty())
+					::AfxMessageBox(L"没有选择工程");
+				std::string debugStr = R"({ "invalid index": "failed to call c++ function." })";
+				callback(true, debugStr);
+				return;
+			}
 			std::string workDir = prjPaths_[index];
 			DataFormatTransfer(ansiMod, ansiExe, workDir);
 			//deprecated 
@@ -844,6 +852,8 @@ void CefForm::RegisterCppFuncs()
 					int prjSelected = json["index"];
 					//没有工程为什么不传-1?
 					prjPaths_.deleteAt(prjSelected);
+					if (prjPaths_.empty())
+						indexHeightLighted_ = -1;
 					SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
 					//fix me
 					//SaveMenuSelection(false);
@@ -1045,7 +1055,13 @@ std::string CefForm::OnNewProject()
 		return {};
 	}	
 	char result[MAX_PATH] = { 0 };
-	std::string defaultPath = prjPaths_[indexHeightLighted_];
+	std::string defaultPath;
+	if (indexHeightLighted_ == -1 || prjPaths_.size()==0)
+	{
+		OutputDebugString(L"dangerous mani");
+	}
+	else
+		defaultPath = prjPaths_[indexHeightLighted_];
 	ptr(defaultPath.c_str(), result);
 	FreeLibrary(hdll);
 	return result;
@@ -1680,7 +1696,22 @@ size_t CefForm::CorrectWorkPath()
 	return vec.size();
 }
 
-void CefForm::SetHeightLightIndex(int i)
+void CefForm::SetHeightLightIndex(const int _i)
 {
-	indexHeightLighted_ = i;
+	indexHeightLighted_ = _i;
+}
+
+LRESULT CefForm::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	nim_comp::Control* pMaxButton = (nim_comp::Control*)FindControl(L"maxbtn");
+	nim_comp::Control* pRestoreButton = (nim_comp::Control*)FindControl(L"restorebtn");
+	if (!::IsZoomed(GetHWND()))
+	{
+		SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+	}
+	else
+	{
+		SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
+	}
+	return 0;
 }

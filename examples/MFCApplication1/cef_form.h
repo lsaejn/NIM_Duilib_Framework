@@ -6,13 +6,13 @@
 #include "AppDllAdaptor.h"
 #include <atomic>
 #include <mutex>
-#include <condition_variable>
+
 
 #define WEBINTERFACE
 #define WM_THEME_SELECTED (WM_USER + 2)
 #define WM_SHOWMAINWINDOW (WM_USER + 3)
 
-const bool kEnableOffsetRender = false;
+const bool kEnableOffsetRender = true;
 
 class CefForm : public std::conditional<kEnableOffsetRender, ui::WindowImplBase, nim_comp::ShadowWndBase>::type
 {
@@ -34,6 +34,7 @@ public:
 	virtual void InitWindow() override;
 	virtual LRESULT OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT CefForm::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 	static const std::wstring	kClassName;
 
@@ -165,7 +166,7 @@ private:
 
 	/// <summary>用户删掉工程文件夹，然后新建大小写错误的文件夹再打开程序。这就导致配置文件里的工程路径是一个非大小写敏感的路径</summary>
 	size_t CorrectWorkPath();
-	void SetHeightLightIndex(int i);
+	void SetHeightLightIndex(const int i);
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;
