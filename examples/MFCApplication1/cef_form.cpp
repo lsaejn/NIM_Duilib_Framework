@@ -18,11 +18,6 @@
 #include "RapidjsonForward.h"
 #include "nlohmann/json.hpp"
 
-
-using rapidjson::Document;
-using rapidjson::StringBuffer;
-using rapidjson::Writer;
-using namespace rapidjson;
 using namespace Alime::HttpUtility;
 
 /*
@@ -58,7 +53,7 @@ namespace
 		rapidjson::Document doc;
 		rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
 
-		Value root(kObjectType);
+		rapidjson::Value root(rapidjson::kObjectType);
 		for (auto i = 0; i != dict.size(); ++i)
 		{
 			rapidjson::Value strObject(rapidjson::kStringType);
@@ -392,9 +387,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			cef_control_->Refresh();
 		}
 		//出现过一个问题，就是网页无法获得焦点
-		//我不得已，自己处理了ctrlv和delete事件
+		//我不得已处理了ctrlv和delete事件
 		//直到我意识到可以在WM_SIZE里加入SetFocus。
-		//然而这段代码页需还会有用。我会保留到发盘为止。
+		//然而这段代码也需要还会有用。我会保留到发盘为止。
 		if(0)if (0x80 == (0x80 & GetKeyState(VK_CONTROL)))
 		{
 			if ('V' == wParam || 'v' == wParam)
@@ -912,7 +907,7 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 	rapidjson::Document doc;
 	doc.SetObject();
 	rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-	Value array(kArrayType);//< 创建一个数组对象
+	rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
 	std::vector<std::string> vec;
 	char prjPathStr[256] = { 0 };
 	for (int i = 0; i < maxPrjNum_; ++i)
@@ -936,9 +931,9 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 		if (ret)
 		{
 			vec.emplace_back(prjPathStr);
-			Value key(kStringType);
+			rapidjson::Value key(rapidjson::kStringType);
 			key.SetString(workPathId.c_str(), allocator);
-			Value value(kStringType);
+			rapidjson::Value value(rapidjson::kStringType);
 			value.SetString(prjPathStr, allocator);
 			obj.AddMember("WorkPath", value, allocator);
 
@@ -1005,7 +1000,9 @@ bool CefForm::IsSnapShotExist(const std::string& path)
 
 void CefForm::SetCaption(const std::string& name)
 {
-	label_->SetText(nbase::UTF8ToUTF16(name));
+	auto captionName = nbase::UTF8ToUTF16(name);
+	Alime::FileSystem::GetAbbreviatedPath(captionName);
+	label_->SetText(captionName);
 }
 
 std::string CefForm::OnGetDefaultMenuSelection()
@@ -1296,17 +1293,17 @@ bool CefForm::AddWorkPaths(const std::string& newProj, const std::string& filena
 void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 {
 	std::string str(nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json_str)));
-	Document d;
+	rapidjson::Document d;
 	d.Parse(str.c_str());
 	size_t i = 0;
 	for (; i != ArraySize(toRead) - 1; ++i)
 	{
-		Value& s = d[toRead[i]];
+		rapidjson::Value& s = d[toRead[i]];
 		auto indexSelection = s.GetInt();
 		WritePrivateProfileStringA("Html", toRead[i], std::to_string(indexSelection).c_str(), nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
 	}
 	//数据结构是前端定的，所以，我其实没有选择。
-	Value& s = d[toRead[i]];
+	rapidjson::Value& s = d[toRead[i]];
 	int indexSelection = s.GetInt();
 	if (!prjPaths_.size() || !indexSelection)
 		return;
@@ -1505,7 +1502,7 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		return false;
 	else
 	{
-		Document document;
+		rapidjson::Document document;
 		document.Parse(pageInfo_.c_str());
 		assert(document.HasMember("UpdateUrl"));//旧代码，觉得没用就删除吧
 		assert(document.HasMember("Advertise"));
@@ -1614,7 +1611,7 @@ std::string CefForm::TellMeAdvertisement()
 		else
 		{
 			std::vector<std::pair<std::string, std::string>> data;
-			Document document;
+			rapidjson::Document document;
 			document.Parse(pageInfo_.c_str());
 			auto& arr = document["Advertise"]["NationWide"];
 			assert(arr.IsArray());
@@ -1625,23 +1622,23 @@ std::string CefForm::TellMeAdvertisement()
 				data.push_back(std::make_pair(adver_content, adver_url));
 			}
 			//////////begin/////////////////////
-			Document doc;
+			rapidjson::Document doc;
 			rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
 
-			Value array(kArrayType);//< 创建一个数组对象
+			rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
 			for (int i = 0; i != data.size(); ++i)
 			{
 				rapidjson::Value obj(rapidjson::kObjectType);
-				Value content(kStringType);
+				rapidjson::Value content(rapidjson::kStringType);
 				content.SetString(data[i].first.c_str(), allocator);
 				obj.AddMember("key", content, allocator);
-				Value url(kStringType);
+				rapidjson::Value url(rapidjson::kStringType);
 				url.SetString(data[i].second.c_str(), allocator);
 				obj.AddMember("value", url, allocator);
 				array.PushBack(obj, allocator);
 			}
 
-			Value root(kObjectType);
+			rapidjson::Value root(rapidjson::kObjectType);
 			root.AddMember("data", array, allocator);
 			rapidjson::StringBuffer s;
 			rapidjson::Writer<rapidjson::StringBuffer> writer(s);
@@ -1702,8 +1699,6 @@ void CefForm::SetHeightLightIndex(const int _i)
 
 LRESULT CefForm::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	nim_comp::Control* pMaxButton = (nim_comp::Control*)FindControl(L"maxbtn");
-	nim_comp::Control* pRestoreButton = (nim_comp::Control*)FindControl(L"restorebtn");
 	if (!::IsZoomed(GetHWND()))
 	{
 		SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);

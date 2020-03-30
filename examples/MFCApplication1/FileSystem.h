@@ -37,7 +37,7 @@ namespace Alime
 			bool	IsFolder() const;
 			bool	IsRoot() const;
 			WString GetName() const;
-			WString GetFullPath() const;
+			WString GetFullPath() const;	
 			//fix me，不应该使用的函数
 			WString GetFullPathWithSurfix() const;
 			WString GetRelativePathFor(const FilePath& _filePath);
@@ -121,5 +121,32 @@ namespace Alime
 			return PathNameDetail(arg.GetFilePath(), SensitivePath);
 		}
 
-	}
-}
+		static void GetAbbreviatedPath(std::wstring& path, size_t criticalLength= 80, size_t prefixLength=0)
+		{
+			if (path.size() < criticalLength)
+				return;
+			auto firstDelimiter = path.find(FilePath::Delimiter);
+			auto lastDelimiter = path.rfind(FilePath::Delimiter);
+			assert(lastDelimiter == path.length() - 1);
+			auto secondToLastDelimiter = path.rfind(FilePath::Delimiter, lastDelimiter-1);
+
+			std::wstring result(path.substr(0, firstDelimiter + 1) + L"...");
+			/*  like C:\\aa...aaa\\   */
+			size_t lengthOfLastFolder = lastDelimiter - secondToLastDelimiter-1;
+			if (lengthOfLastFolder < criticalLength - prefixLength)
+			{
+				result += path.substr(secondToLastDelimiter, lengthOfLastFolder + 2);
+			}
+			else
+			{
+				std::wstring toAppend;
+				for (int i = criticalLength - prefixLength; i >0; --i)
+				{
+					toAppend += path[path.size()- i];
+				}
+				result += toAppend;				
+			}
+			path = result;
+		}
+	} //namespace FileSystem
+}//namespace Alime
