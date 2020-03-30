@@ -2,6 +2,7 @@
 #include "FileSystem.h"
 #include <stdexcept>
 #include <cwctype>
+#include "../../base/util/string_util.h"
 
 #include "Shlwapi.h"
 #pragma comment(lib, "Shlwapi.lib")
@@ -176,6 +177,17 @@ namespace Alime
 			{
 				return fullPath_ + L"/" + relativePath;
 			}
+		}
+
+		void FilePath::GetPathComponents(WString path, std::list<WString>& components)
+		{
+			WString pathRemaining = path;
+			components.clear();
+			std::wstring delimiter;
+			delimiter.append(delimiter);
+			//fix me, WString->std::wstring when cross-platform
+			auto re=nbase::StringTokenize(path.c_str(), delimiter.c_str());
+			components = std::move(re);
 		}
 
 		int  FilePath::Compare(const FilePath& a, const FilePath& b)

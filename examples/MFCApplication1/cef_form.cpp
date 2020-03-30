@@ -4,6 +4,7 @@
 #include "HttpUtil.h"
 #include "FileSystem.h"
 #include "MsgDialog.h"
+#include "SkinSwitcher.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -28,9 +29,9 @@ pkpm的部署可以说是典型的反面教材。程序+程序配置+用户配置+用户工程管理
 */
 namespace
 {
-	//exe为起点
 	const std::wstring RelativePathForHtmlRes = L"resources\\HtmlRes\\index.html";
 	const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
+	//请以""作为分隔符
 	const char* defaultAdvertise = "{data:[ \
 {\"key\":\"官方网站: www.pkpm.cn\", \"value\":\"www.pkpm.cn\"}, "
 "{\"key\":\"官方论坛: www.pkpm.cn/bbs\",\"value\":\"www.pkpm.cn/bbs\"}"
@@ -44,7 +45,8 @@ namespace
 
 	std::string FullPathOfPkpmIniA()
 	{
-		static auto path = nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini");
+		static auto path = nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()
+			+ L"cfg/pkpm.ini");
 		return path;
 	}
 
@@ -66,29 +68,26 @@ namespace
 		rapidjson::Writer<rapidjson::StringBuffer> writer(s);
 		root.Accept(writer);
 		std::string result = s.GetString();
-		//MessageBox(NULL, result.c_str(), "test", 1);
 		return s.GetString();
 	}
 }
 
-
 const std::wstring CefForm::kClassName = L"PKPM V5.1.1启动界面";
-//我们的广告原页面是https://update.pkpm.cn/PKPM2010/Info/index.html
-//而且是永远不会变的
 
 CefForm::CefForm()
-	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName", 6, FullPathOfPkpmIni().c_str())),
+	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName",
+		6, FullPathOfPkpmIni().c_str())),
 	prjPaths_(maxPrjNum_),
 	isWebPageAvailable_(false),
 	cef_control_(NULL),
 	indexHeightLighted_(-1)
 {
 	webDataReader_.Init();
-	ReadWorkPathFromFile("CFG/pkpm.ini");
 	InitAdvertisement();
 	size_t numofPrj=CorrectWorkPath();
 	if (numofPrj > 0)
 		indexHeightLighted_ = 0;
+	ReadWorkPathFromFile("CFG/pkpm.ini");
 	//一个控制台，以命令方式模拟网页点击事件
 	//将被写入log模块
 	//Alime::Console::CreateConsole();
@@ -144,7 +143,6 @@ std::wstring CefForm::GetWindowClassName() const
 
 ui::Control* CefForm::CreateControl(const std::wstring& pstrClass)
 {
-	// 扫描 XML 发现有名称为 CefControl 的节点，则创建一个 ui::CefControl 控件
 	if (pstrClass == L"CefControl")
 	{
 		if (nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
@@ -162,15 +160,13 @@ void CefForm::InitWindow()
 	m_pRoot->AttachBubbledEvent(ui::kEventClick, nbase::Bind(&CefForm::OnClicked, this, std::placeholders::_1));
 	//m_pRoot->AttachBubbledEvent(ui::kEventMouseDoubleClick, nbase::Bind(&CefForm::OnDbClicked, this, std::placeholders::_1));
 	//m_pRoot->AttachAllEvents(nbase::Bind(&CefForm::OnDbClicked, this, std::placeholders::_1));
-	// 从 XML 中查找指定控件
 	cef_control_= dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control"));
 	cef_control_dev_= dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control_dev"));
 	btn_dev_tool_= dynamic_cast<ui::Button*>(FindControl(L"btn_dev_tool"));
 	edit_url_= dynamic_cast<ui::RichEdit*>(FindControl(L"edit_url"));
 	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
-
-	// 设置输入框样式
-	//保留这段代码是因为前端需要一个刷新机制
+	skinSettings_ = dynamic_cast<ui::Button*>(FindControl(L"settings"));
+	// 设置输入框样式, 保留这段代码是因为前端需要一个刷新机制
 	if (edit_url_)
 	{
 		edit_url_->SetSelAllOnFocus(true);
@@ -182,19 +178,23 @@ void CefForm::InitWindow()
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
 	if(cef_control_dev_)
 		cef_control_->AttachDevTools(cef_control_dev_);
-	if (!nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
+	if (nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
+	{
 		if (cef_control_dev_)
+		{
 			cef_control_dev_->SetVisible(false);
-
+#ifdef DEBUG
+			cef_control_dev_->SetVisible(true);
+#endif // DEBUG
+		}		
+	}
 	wchar_t buffer[128] = { 0 };
 	auto nRead = GetPrivateProfileStringW(L"Html", L"PathOfCefHtml", 
 		RelativePathForHtmlRes.c_str(), buffer, ArraySize(buffer), FullPathOfPkpmIni().c_str());
 	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ buffer;
 	cef_control_->LoadURL(cefHtmlPath);
 
-
-
-	auto hwnd = GetHWND();
+	//为了处理模型打包那个破exe的奇怪逻辑
 	CallBack f = [this]() {
 		if (prjPaths_.IsIndexLegal(indexHeightLighted_))
 			prjPaths_.moveToFront(indexHeightLighted_);
@@ -206,19 +206,12 @@ void CefForm::InitWindow()
 				}
 		));
 	};
-	this->shortCutHandler_.SetCallBacks(hwnd, f);
+	this->shortCutHandler_.SetCallBacks(GetHWND(), f);
 	shortCutHandler_.Init();
 
-	//我不太确定是不是需要自己增加拖放支持。
-	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);//获取原窗体的样式
-	auto hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
-	style |= WS_EX_ACCEPTFILES;//更改样式
-	hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
-	::SetWindowLongW(hwnd, GWL_EXSTYLE, style);//重新设置窗体样式
-
+	EnableAcceptFiles();
 	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
 	defaultCaption_ =label_->GetText();
-	//SetCaption(u8"PKPM结构设计软件 10版 V5.1.1");
 
 	//旧代码
 	SetCfgPmEnv();//增加pm环境
@@ -226,37 +219,14 @@ void CefForm::InitWindow()
 	appDll_.Invoke_InitPkpmApp();
 
 	//换肤按钮的响应
-	ui::Button* settings = dynamic_cast<ui::Button*>(FindControl(L"settings"));
-	settings->AttachClick([this](ui::EventArgs* args) {
-		RECT rect = args->pSender->GetPos();
-		ui::CPoint point;
-		point.x = rect.left- 130 ;
-		point.y = rect.top + 10;
-		ClientToScreen(m_hWnd, &point);
-
-		nim_comp::CMenuWnd* pMenu = new nim_comp::CMenuWnd(NULL);
-		ui::STRINGorID xml(L"settings_menu.xml");
-		pMenu->Init(xml, _T("xml"), point);
-		ui::ListBox* pVbox = dynamic_cast<ui::ListBox*>(pMenu->FindControl(L"themeWindow"));
-		pVbox->AttachSelect([this](ui::EventArgs* args) {
-			auto themeType=args->pSender->GetName();
-			int current = args->wParam;
-			//我们只关心用户本次选择
-			assert(args->lParam==-1);
-			PostMessage(WM_THEME_SELECTED, current, -1);
-			return true;
-			});
-		return true;
-		});
+	AttachClickCallbackToSkinButton();
 }
-
 
 LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	nim_comp::CefManager::GetInstance()->PostQuitMessage(0L);
 	return __super::OnClose(uMsg, wParam, lParam, bHandled);
 }
-
 
 bool CefForm::OnClicked(ui::EventArgs* msg)
 {
@@ -339,7 +309,6 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
-
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_LBUTTONDOWN)
@@ -384,7 +353,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (116 == wParam)
 		{
+#ifdef DEBUG
 			cef_control_->Refresh();
+#endif // DEBUG		
 		}
 		//出现过一个问题，就是网页无法获得焦点
 		//我不得已处理了ctrlv和delete事件
@@ -494,11 +465,10 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
 
-#include "SkinSwitcher.h"
 void CefForm::SwicthThemeTo(int index)
 {
 	//云信的tab可以把消息写到xml里
-	//可是我们这里需要用跨窗口的menuitem来执行皮肤切换
+	//可是这里需要用跨窗口的menuitem来执行皮肤切换
 	//我还没找到这么做的例子。
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
 	auto sw=SkinSwitcherFatctory::Get(index);
@@ -532,7 +502,6 @@ void CefForm::OnLoadEnd(int httpStatusCode)
 
 void CefForm::RegisterCppFuncs()
 {
-	//debug
 	//不要继续使用。为了节省空间，我删除了资源。
 	cef_control_->RegisterCppFunc(L"ShowMessageBox", 
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
@@ -586,11 +555,10 @@ void CefForm::RegisterCppFuncs()
 			document.ParseStream(input);
 			const char* captionName = document["caption"].GetString();
 			//projectIndex
-			int project= document["projectIndex"].GetInt();
-			assert(nbase::AnsiToUtf8(prjPaths_[project]) == captionName);
+			int Index = document["projectIndex"].GetInt();
+			assert(nbase::AnsiToUtf8(prjPaths_[Index]) == captionName);
 			//....
-			SetHeightLightIndex(project);
-			//fix me,写入配置文件
+			SetHeightLightIndex(Index);
 			std::string captionU8 = nbase::UTF16ToUTF8(defaultCaption_);
 			if(captionU8.empty())
 				captionU8 = u8"PKPM结构设计软件 10版 V5.1.1   ";
@@ -650,7 +618,6 @@ void CefForm::RegisterCppFuncs()
 				if (prjPaths_.empty())
 				{
 					MsgBox::Warning(GetHWND(), L"没有选择工程", L"错误");
-					//::AfxMessageBox(L"没有选择工程");
 				}
 				std::string debugStr = R"({ "invalid index": "failed to call c++ function." })";
 				callback(true, debugStr);
@@ -825,7 +792,7 @@ void CefForm::RegisterCppFuncs()
 			auto now = GetTickCount();
 			auto interval = now - lastTick;
 			lastTick = now;
-			if (interval < 500)	
+			if (interval < 400)	
 				return;
 			//旧代码，deleteAt(-1)原定是给js处理的
 			try {
@@ -838,16 +805,9 @@ void CefForm::RegisterCppFuncs()
 					//没有工程为什么不传-1?
 					prjPaths_.deleteAt(prjSelected);
 					if (prjPaths_.empty())
-						indexHeightLighted_ = -1;
+						SetHeightLightIndex(-1);
 					SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
-					//fix me
-					//SaveMenuSelection(false);
-					/*Fix me
-					Refresh不能在别的线程调用，而mfc又有自己的事件循环，
-					所以，只能在documentComplete里做判断。
-					我这里先对付过去了。
-					你应该判断上一次keyup和这次keydown的间隔
-					*/
+
 					std::string debugStr = R"({ "Call ONNEWPROJECT": "Success." })";
 					callback(true, nbase::AnsiToUtf8(debugStr));
 				}
@@ -909,12 +869,12 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 	rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
 	rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
 	std::vector<std::string> vec;
-	char prjPathStr[256] = { 0 };
+	char prjPathStr[1024] = { 0 };
 	for (int i = 0; i < maxPrjNum_; ++i)
 	{
 		auto workPathId = "WorkPath" + std::to_string((ULONGLONG)i);
-		memset(prjPathStr, 0, 256);
-		auto nRead = GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", prjPathStr, 256, fullpath.c_str());
+		memset(prjPathStr, 0, ArraySize(prjPathStr));
+		auto nRead = GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", prjPathStr, ArraySize(prjPathStr), fullpath.c_str());
 		if (!strcmp("error", prjPathStr))
 		{
 			//prjPathStr=="error"表明用户手动修改了配置文件!
@@ -1045,7 +1005,7 @@ std::string CefForm::OnNewProject()
 	std::string defaultPath;
 	if (indexHeightLighted_ == -1 || prjPaths_.size()==0)
 	{
-		OutputDebugString(L"dangerous mani");
+		OutputDebugString(L"dangerous operation");
 	}
 	else
 		defaultPath = prjPaths_[indexHeightLighted_];
@@ -1084,7 +1044,12 @@ std::string CefForm::OnNewProject()
 
 void CefForm::OnRightClickProject(const std::wstring& prjName)
 {
-	ShellExecute(NULL, _T("open"), _T("explorer.exe"), prjName.c_str(), NULL, SW_SHOWNORMAL);
+	if (PathFileExists(prjName.c_str()) && PathIsDirectory(prjName.c_str()))
+	{
+		ShellExecute(NULL, _T("open"), _T("explorer.exe"), prjName.c_str(), NULL, SW_SHOWNORMAL);
+	}
+	else
+		MsgBox::Warning(GetHWND(), L"工程目录无法打开，可能已经被删除" ,L"路径错误");
 }
 
 //有问题,我应该让前端调用时就把工程路径和索引一块过来
@@ -1435,22 +1400,24 @@ void CefForm::AdvertisementThreadFunc()
 	}
 }
 
+//我们的广告原页面是https://update.pkpm.cn/PKPM2010/Info/index.html
+//广告页面http://111.230.143.87/index.html
 bool CefForm::VersionPage()
 {
 	HttpRequest req;
-	//111.230.143.87是我自己的云服务器。
-	//广告页面http://111.230.143.87/index.html
 	wchar_t buffer[128] = { 0 };
 	const std::wstring backupServer = L"update.pkpm.cn";
 	const std::wstring backupQuery = L"/PKPM2010/Info/index.html";
-	GetPrivateProfileStringW(L"Html", L"server", backupServer.c_str(), buffer, sizeof(buffer) - 1, FullPathOfPkpmIni().c_str());
+	GetPrivateProfileStringW(L"Html", L"server", backupServer.c_str(), 
+		buffer, sizeof(buffer) - 1, FullPathOfPkpmIni().c_str());
 	req.server = buffer;
 	memset(buffer, 0, sizeof(buffer));
 	if (req.server == backupServer)
 		req.query = backupQuery;
 	else
 	{
-		GetPrivateProfileStringW(L"Html", L"query", L"/PKPM2010/Info/index.html", buffer, sizeof(buffer) - 1, FullPathOfPkpmIni().c_str());
+		GetPrivateProfileStringW(L"Html", L"query", L"/PKPM2010/Info/index.html",
+			buffer, sizeof(buffer) - 1, FullPathOfPkpmIni().c_str());
 		req.query = buffer;
 	}
 	req.acceptTypes.push_back(L"text/html");
@@ -1472,10 +1439,8 @@ bool CefForm::VersionPage()
 	std::wstring re = result.c_str();
 	auto astring = nbase::UnicodeToAnsi(re);
 	{
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
 		//vs2010下，tr版本的正则表达式无法匹配"空白符"和字符串的组合
-		//字面量中不允许出现空格
 		if (_MSC_VER <= 1600)
 			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {
 			return c == '\n' || c == '\r' || c == ' ';}), 
@@ -1504,17 +1469,10 @@ bool CefForm::TellMeNewVersionExistOrNot()
 	{
 		rapidjson::Document document;
 		document.Parse(pageInfo_.c_str());
-		assert(document.HasMember("UpdateUrl"));//旧代码，觉得没用就删除吧
+		assert(document.HasMember("UpdateUrl"));
 		assert(document.HasMember("Advertise"));
 		auto& arr = document["Advertise"]["NationWide"];
 		assert(arr.IsArray());
-#ifdef ALIME_DEBUG
-		for (size_t i = 0; i < arr.Size(); ++i)
-		{
-			std::string keyName = "Advertisement";
-			std::string adver(arr[i][keyName.c_str()].GetString());
-		}
-#endif // _DEBUG
 		int MainVersionOnServer = std::stoi(document["Version"]["MainVersion"].GetString());
 		int ViceVersionOnServer = std::stoi(document["Version"]["ViceVersion"].GetString());
 		int SubVersionOnServer = std::stoi(document["Version"]["SubVersion"].GetString());
@@ -1651,20 +1609,23 @@ std::string CefForm::TellMeAdvertisement()
 }
 
 /*
-程序不可能每次新建工程都检查全部的路径，
-我们只需要保证打开文件时，拿到的路径是有效的，
-并且每次新建的新工程路径是有效的。这样就可以了。
-FileSystem里可能有bug,0.0，但也没人帮测
+不可能每次新建工程都检查全部的路径，更不可能开线程监视。
+因为我不是在写文本编辑器。
+只需要保证打开文件时，拿到的路径是有效的，并且每次
+新建的新工程路径是有效的。这样就可以了。算仁至义尽。
+FileSystem里可能有bug, 0.0，但也没人帮测，这个公司需要的是神级程序员。
+没基础库，没文档，一堆垃圾代码。
 */
 size_t CefForm::CorrectWorkPath()
 {
 	std::vector<std::wstring> vec;
-	wchar_t prjPathStr[256] = { 0 };
+	wchar_t prjPathStr[1024] = { 0 };
 	for (int i = 0; i < maxPrjNum_; ++i)
 	{
 		auto workPathId = L"WorkPath" + std::to_wstring(i);
 		memset(prjPathStr, 0, ArraySize(prjPathStr)*sizeof(wchar_t));
-		GetPrivateProfileString(L"WorkPath", workPathId.c_str(), L"error", prjPathStr, ArraySize(prjPathStr), FullPathOfPkpmIni().c_str());
+		GetPrivateProfileString(L"WorkPath", workPathId.c_str(), L"error",
+			prjPathStr, ArraySize(prjPathStr), FullPathOfPkpmIni().c_str());
 		if (std::wstring_view(prjPathStr) != L"error")
 		{
 			//fix me, 去掉这个判断
@@ -1708,4 +1669,39 @@ LRESULT CefForm::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 		SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
 	}
 	return 0;
+}
+
+void CefForm::EnableAcceptFiles()
+{
+	//我不太确定是不是需要自己增加拖放支持。
+	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);
+	auto hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
+	style |= WS_EX_ACCEPTFILES;
+	hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
+	::SetWindowLongW(this->m_hWnd, GWL_EXSTYLE, style);
+}
+
+void CefForm::AttachClickCallbackToSkinButton()
+{
+	skinSettings_->AttachClick([this](ui::EventArgs* args) {
+		RECT rect = args->pSender->GetPos();
+		ui::CPoint point;
+		point.x = rect.left - 130;
+		point.y = rect.top + 10;
+		ClientToScreen(m_hWnd, &point);
+
+		nim_comp::CMenuWnd* pMenu = new nim_comp::CMenuWnd(NULL);
+		ui::STRINGorID xml(L"settings_menu.xml");
+		pMenu->Init(xml, _T("xml"), point);
+		ui::ListBox* pVbox = dynamic_cast<ui::ListBox*>(pMenu->FindControl(L"themeWindow"));
+		pVbox->AttachSelect([this](ui::EventArgs* args) {
+			auto themeType = args->pSender->GetName();
+			int current = args->wParam;
+			//我们只关心用户本次选择
+			assert(args->lParam == -1);
+			PostMessage(WM_THEME_SELECTED, current, -1);
+			return true;
+			});
+		return true;
+		});
 }

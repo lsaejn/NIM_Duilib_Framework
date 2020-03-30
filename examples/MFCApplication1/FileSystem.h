@@ -26,6 +26,7 @@ namespace Alime
 			~FilePath();
 
 			FilePath GetFolder() const;
+			static void GetPathComponents(WString path, std::list<WString>& components);
 			static int	Compare(const FilePath& a, const FilePath& b);
 			bool	operator==(const FilePath& filePath)const{ return Compare(*this, filePath) == 0; }
 			bool	operator!=(const FilePath& filePath)const{ return Compare(*this, filePath) != 0; }
@@ -121,6 +122,7 @@ namespace Alime
 			return PathNameDetail(arg.GetFilePath(), SensitivePath);
 		}
 
+		//fix me, 2020/03/30 最后一级目录很长的话，没办法处理
 		static void GetAbbreviatedPath(std::wstring& path, size_t criticalLength= 80, size_t prefixLength=0)
 		{
 			if (path.size() < criticalLength)
@@ -129,8 +131,10 @@ namespace Alime
 			auto lastDelimiter = path.rfind(FilePath::Delimiter);
 			assert(lastDelimiter == path.length() - 1);
 			auto secondToLastDelimiter = path.rfind(FilePath::Delimiter, lastDelimiter-1);
-
+			
 			std::wstring result(path.substr(0, firstDelimiter + 1) + L"...");
+			if (firstDelimiter != secondToLastDelimiter)
+				result += L'\\';
 			/*  like C:\\aa...aaa\\   */
 			size_t lengthOfLastFolder = lastDelimiter - secondToLastDelimiter-1;
 			if (lengthOfLastFolder < criticalLength - prefixLength)
@@ -148,5 +152,9 @@ namespace Alime
 			}
 			path = result;
 		}
+
+		//bool hasWriteAccessToFolder(std::wstring probe)
+
+
 	} //namespace FileSystem
 }//namespace Alime

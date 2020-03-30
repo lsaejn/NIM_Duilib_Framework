@@ -43,7 +43,7 @@ private:
 	bool OnClicked(ui::EventArgs* msg);
 	bool OnNavigate(ui::EventArgs* msg);
 	void OnLoadEnd(int httpStatusCode);
-	bool OnDbClicked(ui::EventArgs* msg);
+
 
 	/// <summary>前端读取工程列表,旧代码,见注释</summary>
 	///<param name="iniFileName">配置文件里的文件路径</param>
@@ -156,22 +156,38 @@ private:
 	void RegisterCppFuncs();
 
 	/// <summary>是否存在buildup.bmp</summary>
+	///<param name="path">工程路径</param >
 	bool IsSnapShotExist(const std::string& path);
 
-	/// <summary>老函数，执行dll里的函数执行命令</summary>
+	/// <summary>老函数，执行dll里的函数执行命令。张磊的杰作</summary>
+	///<param name="moduleName">二级菜单</param >
+	///<param name="appName1">三级菜单</param >
+	///<param name="appName2">基本上没有</param >
 	void run_cmd(const CStringA& moduleName, const CStringA& appName1, const CStringA& appName2);
 
 	/// <summary>老函数，设置PM环境变量</summary>
 	bool SetCfgPmEnv();
 
 	/// <summary>用户删掉工程文件夹，然后新建大小写错误的文件夹再打开程序。这就导致配置文件里的工程路径是一个非大小写敏感的路径</summary>
+	///<return>有效的工程数量</return>
 	size_t CorrectWorkPath();
-	void SetHeightLightIndex(const int i);
+
+	/// <summary>设置当前高亮的索引</summary>
+	///<param name="index">索引编号</param >
+	void SetHeightLightIndex(const int index);
+
+	/// <summary>对话框接受文件拖拽</summary>
+	void EnableAcceptFiles();
+
+	/// <summary>换肤按钮的事件</summary>
+	void AttachClickCallbackToSkinButton();
+
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;
-	ui::Button*			btn_dev_tool_;
-	ui::RichEdit*		edit_url_;
+	ui::Button*	 btn_dev_tool_;
+	ui::Button* skinSettings_;
+	ui::RichEdit* edit_url_;
 	ui::Label* label_;
 	WebDataReader webDataReader_;
 	const int maxPrjNum_;
@@ -182,6 +198,6 @@ private:
 	std::atomic<bool> isWebPageAvailable_;
 	std::string pageInfo_;
 	std::wstring defaultCaption_;
-	int indexHeightLighted_;//由于是异步通信，而很多旧代码需要直接拿加亮索引工作。你必须要出此下策。
+	int indexHeightLighted_;//很多旧代码需要直接拿加亮索引工作, 我们监视鼠标每次单击
 };
 
