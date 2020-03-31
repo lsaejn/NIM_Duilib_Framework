@@ -123,7 +123,7 @@ namespace Alime
 		}
 
 		//fix me, 2020/03/30 最后一级目录很长的话，没办法处理
-		static void GetAbbreviatedPath(std::wstring& path, size_t criticalLength= 80, size_t prefixLength=0)
+		static void GetAbbreviatedPath(std::wstring& path, size_t criticalLength= 70, size_t prefixLength=0)
 		{
 			if (path.size() < criticalLength)
 				return;
@@ -144,6 +144,7 @@ namespace Alime
 			else
 			{
 				std::wstring toAppend;
+				toAppend += L"...";
 				for (int i = criticalLength - prefixLength; i >0; --i)
 				{
 					toAppend += path[path.size()- i];
