@@ -182,6 +182,8 @@ private:
 	/// <summary>换肤按钮的事件</summary>
 	void AttachClickCallbackToSkinButton();
 
+	int remainingTimeOfUserLock(std::string* SerialNumber=NULL);
+
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;

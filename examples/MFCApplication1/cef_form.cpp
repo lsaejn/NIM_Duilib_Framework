@@ -822,6 +822,16 @@ void CefForm::RegisterCppFuncs()
 			})
 	);
 
+	cef_control_->RegisterCppFunc(L"RRMAININGTIME",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			a
+			std::wstring url = nbase::UTF8ToUTF16(json["adUrl"]);
+			::ShellExecute(NULL, L"open", url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+			std::string debugStr = R"({ "OPENURL": "Always Success." })";
+			callback(true, debugStr);
+			})
+	);
+
 }
 
 //fileName一般就是CFG/PKPM.ini了
@@ -1629,4 +1639,20 @@ void CefForm::AttachClickCallbackToSkinButton()
 			});
 		return true;
 		});
+}
+
+int CefForm::remainingTimeOfUserLock(std::string* SerialNumber)
+{
+	//参数:@ 模块号, @子模块号 @返回的授权码
+	//返回值: 剩余天数
+	typedef int(_stdcall *FuncInWinAuthorize)(int&, int&, char*);
+	auto pathOfWinAuthorize = nbase::win32::GetCurrentModuleDirectory()+L"Ribbon\\WinAuthorize.dll";
+	auto handle = LoadLibrary(pathOfWinAuthorize.c_str());
+	FuncInWinAuthorize dayLeftFunc = (FuncInWinAuthorize)GetProcAddress(handle, "_Login_SubMod2@12");
+	int ty = 100;
+	int sub_ky = 0;
+	char* gSN = new char[17];
+	int dayLeft = dayLeftFunc(ty, sub_ky, gSN);
+	*SerialNumber = gSN;
+	delete[] gSN;
 }
