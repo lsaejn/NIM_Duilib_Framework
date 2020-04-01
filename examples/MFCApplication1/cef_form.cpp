@@ -824,11 +824,7 @@ void CefForm::RegisterCppFuncs()
 
 	cef_control_->RegisterCppFunc(L"RRMAININGTIME",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-			a
-			std::wstring url = nbase::UTF8ToUTF16(json["adUrl"]);
-			::ShellExecute(NULL, L"open", url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
-			std::string debugStr = R"({ "OPENURL": "Always Success." })";
-			callback(true, debugStr);
+
 			})
 	);
 
@@ -979,7 +975,7 @@ std::string CefForm::OnNewProject()
 	int useDevelopVersion = 0;
 	useDevelopVersion=GetPrivateProfileIntA("Html", "DevelopVersion", 0,
 		nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
-	if (useDevelopVersion != 0)
+	if (!useDevelopVersion)
 	{
 		typedef void (*func)(const char*, char*);
 		auto hdll = LoadLibrary(L"PKPM2010V511.dll");
@@ -1655,4 +1651,5 @@ int CefForm::remainingTimeOfUserLock(std::string* SerialNumber)
 	int dayLeft = dayLeftFunc(ty, sub_ky, gSN);
 	*SerialNumber = gSN;
 	delete[] gSN;
+	return dayLeft;
 }
