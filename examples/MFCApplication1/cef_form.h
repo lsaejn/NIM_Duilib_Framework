@@ -155,6 +155,9 @@ private:
 	/// <summary>注册c++函数到js</summary>
 	void RegisterCppFuncs();
 
+	///<summary>加载时调用的函数</summary>
+	void OnLoadStart();
+
 	/// <summary>是否存在buildup.bmp</summary>
 	///<param name="path">工程路径</param >
 	bool IsSnapShotExist(const std::string& path);
@@ -182,6 +185,12 @@ private:
 	/// <summary>换肤按钮的事件</summary>
 	void AttachClickCallbackToSkinButton();
 
+	/// <summary>Cef缩放处理</summary>
+	void ModifyScaleForCef();
+
+	/// <summary>标题栏缩放处理</summary>
+	void ModifyScaleForCaption();
+
 	int remainingTimeOfUserLock(std::string* SerialNumber=NULL);
 
 private:
@@ -191,6 +200,7 @@ private:
 	ui::Button* skinSettings_;
 	ui::RichEdit* edit_url_;
 	ui::Label* label_;
+	ui::HBox* vistual_caption_;
 	WebDataReader webDataReader_;
 	const int maxPrjNum_;
 	collection_utility::BoundedQueue<std::string> prjPaths_;

@@ -135,6 +135,7 @@
     </PostBuildEvent>
     <Manifest>
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -226,6 +227,7 @@
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
+    <ClInclude Include="ConfigFileManager.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HttpUtil.h" />
@@ -293,6 +295,7 @@
     <ClCompile Include="AppDllAdaptor.cpp" />
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
+    <ClCompile Include="ConfigFileManager.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="FileSystem.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

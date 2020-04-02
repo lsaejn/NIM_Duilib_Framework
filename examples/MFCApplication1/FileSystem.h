@@ -5,7 +5,8 @@
 #include <iostream>
 #include "windows.h"
 
-using WString = std::wstring;
+
+using String = std::wstring;
 
 namespace Alime
 {
@@ -14,19 +15,19 @@ namespace Alime
 		class FilePath
 		{
 		protected:
-			WString fullPath_;
+			String fullPath_;
 			void	Initialize();
 		public:
 			static const wchar_t Delimiter = L'\\';
 			FilePath();
-			FilePath(const WString& _filePath);
+			FilePath(const String& _filePath);
 			FilePath(const wchar_t* _filePath);
 			FilePath(const FilePath& _filePath);
-			FilePath	operator/(const WString& relativePath)const;
+			FilePath	operator/(const String& relativePath)const;
 			~FilePath();
 
 			FilePath GetFolder() const;
-			static void GetPathComponents(WString path, std::list<WString>& components);
+			static std::vector<String> GetPathComponents(const String& path);
 			static int	Compare(const FilePath& a, const FilePath& b);
 			bool	operator==(const FilePath& filePath)const{ return Compare(*this, filePath) == 0; }
 			bool	operator!=(const FilePath& filePath)const{ return Compare(*this, filePath) != 0; }
@@ -37,11 +38,11 @@ namespace Alime
 			bool	IsFile() const;
 			bool	IsFolder() const;
 			bool	IsRoot() const;
-			WString GetName() const;
-			WString GetFullPath() const;	
+			String GetName() const;
+			String GetFullPath() const;	
 			//fix me，不应该使用的函数
-			WString GetFullPathWithSurfix() const;
-			WString GetRelativePathFor(const FilePath& _filePath);
+			String GetFullPathWithSurfix() const;
+			String GetRelativePathFor(const FilePath& _filePath);
 		};
 
 		class File
@@ -60,15 +61,15 @@ namespace Alime
 				Utf16,
 				Utf16BE
 			};
-			WString ReadAllTextByBom()const;
-			bool	ReadAllTextWithEncodingTesting(WString& text, Encoding& encoding, bool& containsBom);		
-			bool	ReadAllTextByBom(WString& text)const;
-			bool	ReadAllLinesByBom(std::vector<WString>& lines)const;
-			bool	WriteAllText(const WString& text, bool bom = true, Encoding encoding = Encoding::Utf16);
-			bool	WriteAllLines(std::vector<WString>& lines, bool bom = true, Encoding encoding = Encoding::Utf16);
+			String ReadAllTextByBom()const;
+			bool	ReadAllTextWithEncodingTesting(String& text, Encoding& encoding, bool& containsBom);		
+			bool	ReadAllTextByBom(String& text)const;
+			bool	ReadAllLinesByBom(std::vector<String>& lines)const;
+			bool	WriteAllText(const String& text, bool bom = true, Encoding encoding = Encoding::Utf16);
+			bool	WriteAllLines(std::vector<String>& lines, bool bom = true, Encoding encoding = Encoding::Utf16);
 			bool	Exists()const;
 			bool	Delete()const;
-			bool	Rename(const WString& newName)const;
+			bool	Rename(const String& newName)const;
 		};
 
 		class Folder
@@ -85,10 +86,10 @@ namespace Alime
 			bool	Exists()const;
 			bool	Create(bool recursively)const;
 			bool	Delete(bool recursively)const;
-			bool	Rename(const WString& newName)const;
+			bool	Rename(const String& newName)const;
 		};
 
-		static bool PathNameDetail(const FilePath &path, WString& SensitivePath)
+		static bool PathNameDetail(const FilePath &path, String& SensitivePath)
 		{
 			Alime::FileSystem::Folder dir(path.GetFolder());
 			if (dir.GetFilePath().IsRoot())
@@ -100,7 +101,7 @@ namespace Alime
 			HANDLE findHandle = INVALID_HANDLE_VALUE;
 			if (findHandle == INVALID_HANDLE_VALUE)
 			{
-				WString searchPath = path.GetFullPath();
+				String searchPath = path.GetFullPath();
 				findHandle = FindFirstFile(searchPath.data(), &findData);
 				if (findHandle == INVALID_HANDLE_VALUE)
 					return false;
@@ -115,7 +116,7 @@ namespace Alime
 		}
 
 		template<typename T>
-		static bool PathNameCaseSensitive(const T& arg, WString& SensitivePath)
+		static bool PathNameCaseSensitive(const T& arg, String& SensitivePath)
 		{
 			if (!arg.Exists())
 				return false;
@@ -123,39 +124,42 @@ namespace Alime
 		}
 
 		//fix me, 2020/03/30 最后一级目录很长的话，没办法处理
-		static void GetAbbreviatedPath(std::wstring& path, size_t criticalLength= 70, size_t prefixLength=0)
+		//criticalLength不包括盘符
+		static std::wstring GetAbbreviatedPath(const std::wstring& _path, size_t criticalLength= 60)
 		{
-			if (path.size() < criticalLength)
-				return;
-			auto firstDelimiter = path.find(FilePath::Delimiter);
-			auto lastDelimiter = path.rfind(FilePath::Delimiter);
-			assert(lastDelimiter == path.length() - 1);
-			auto secondToLastDelimiter = path.rfind(FilePath::Delimiter, lastDelimiter-1);
-			
-			std::wstring result(path.substr(0, firstDelimiter + 1) + L"...");
-			if (firstDelimiter != secondToLastDelimiter)
-				result += L'\\';
-			/*  like C:\\aa...aaa\\   */
-			size_t lengthOfLastFolder = lastDelimiter - secondToLastDelimiter-1;
-			if (lengthOfLastFolder < criticalLength - prefixLength)
-			{
-				result += path.substr(secondToLastDelimiter, lengthOfLastFolder + 2);
+			std::wstring result;
+			auto path = _path;
+			auto 	components=FileSystem::FilePath::GetPathComponents(path);
+			if (components.size() == 1)
+				return _path;
+			auto lastFolder = components.back();
+			if (lastFolder.length() > criticalLength)
+			{		
+				result = components.front() + FileSystem::FilePath::Delimiter;
+				result += L"...";
+				lastFolder = lastFolder.substr(lastFolder.length() - criticalLength - 10);
+				result += lastFolder;
+				return result;
 			}
 			else
 			{
-				std::wstring toAppend;
-				toAppend += L"...";
-				for (int i = criticalLength - prefixLength; i >0; --i)
+				for (int i = components.size() - 1; i >= 1; --i)
 				{
-					toAppend += path[path.size()- i];
+					if (components[i].size() + result.size() <= criticalLength)
+					{
+						result.insert(0, L"\\" + components[i]);
+					}
+					else
+					{
+						result.insert(0, L"\\...");
+						break;
+					}
 				}
-				result += toAppend;				
-			}
-			path = result;
+				result.insert(0, components[0]);
+				return result;
+			}			
 		}
 
 		//bool hasWriteAccessToFolder(std::wstring probe)
-
-
 	} //namespace FileSystem
 }//namespace Alime

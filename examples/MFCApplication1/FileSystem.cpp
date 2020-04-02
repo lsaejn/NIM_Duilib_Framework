@@ -17,7 +17,7 @@ namespace Alime
 			Initialize();
 		}
 
-		FilePath::FilePath(const WString& _filePath)
+		FilePath::FilePath(const String& _filePath)
 			:fullPath_(_filePath)
 		{
 			Initialize();
@@ -62,7 +62,7 @@ namespace Alime
 					{
 						throw std::exception("Failed to call GetCurrentDirectory.");
 					}
-					fullPath_ = WString(buffer) + L"\\" + fullPath_;
+					fullPath_ = String(buffer) + L"\\" + fullPath_;
 				}
 				{
 					wchar_t buffer[MAX_PATH + 1] = { 0 };
@@ -121,10 +121,10 @@ namespace Alime
 			return fullPath_ == L"";
 		}
 
-		WString  FilePath::GetName()const
+		String  FilePath::GetName()const
 		{
 			auto index=fullPath_.find_last_of(Delimiter);
-			if(index!=WString::npos)
+			if(index!=String::npos)
 				return fullPath_.substr(index+1, fullPath_.length()-index);
 			return fullPath_;
 		}
@@ -132,25 +132,25 @@ namespace Alime
 		FilePath  FilePath::GetFolder()const
 		{
 			auto index=fullPath_.find_last_of(Delimiter);
-			if(index!=WString::npos)
+			if(index!=String::npos)
 				return fullPath_.substr(0,index);
 			return FilePath();
 		}
 
-		WString FilePath::GetFullPath()const
+		String FilePath::GetFullPath()const
 		{
 			return fullPath_;
 		}
 
 		//不应该存在的api
-		WString FilePath::GetFullPathWithSurfix()const
+		String FilePath::GetFullPathWithSurfix()const
 		{
 			if(IsFolder())
 				return fullPath_+Delimiter;
 			return fullPath_;
 		}
 
-		WString FilePath::GetRelativePathFor(const FilePath& _filePath)
+		String FilePath::GetRelativePathFor(const FilePath& _filePath)
 		{
 			if (fullPath_.length() == 0 || _filePath.fullPath_.length() == 0 || fullPath_[0] != _filePath.fullPath_[0])
 			{
@@ -167,7 +167,7 @@ namespace Alime
 			return buffer;
 		}
 
-		FilePath  FilePath::operator/(const WString& relativePath)const
+		FilePath  FilePath::operator/(const String& relativePath)const
 		{
 			if (IsRoot())
 			{
@@ -179,21 +179,20 @@ namespace Alime
 			}
 		}
 
-		void FilePath::GetPathComponents(WString path, std::list<WString>& components)
+		std::vector<String> FilePath::GetPathComponents(const String &path)
 		{
-			WString pathRemaining = path;
-			components.clear();
+			String pathRemaining = path;
 			std::wstring delimiter;
-			delimiter.append(delimiter);
-			//fix me, WString->std::wstring when cross-platform
+			delimiter+=FilePath::Delimiter;
+			//fix me, String->std::wstring when cross-platform
 			auto re=nbase::StringTokenize(path.c_str(), delimiter.c_str());
-			components = std::move(re);
+			return { re.cbegin() ,re.cend() };
 		}
 
 		int  FilePath::Compare(const FilePath& a, const FilePath& b)
 		{
-			WString strA = a.fullPath_;
-			WString strB = b.fullPath_;
+			String strA = a.fullPath_;
+			String strB = b.fullPath_;
 			const wchar_t* bufA = strA.c_str();
 			const wchar_t* bufB = strB.c_str();
 			int length = strA.length() < strB.length() ? strA.length(): strB.length();
@@ -228,33 +227,33 @@ namespace Alime
 			return filePath;
 		}
 
-		bool File::ReadAllTextWithEncodingTesting(WString& text, Encoding& encoding, bool& containsBom)
+		bool File::ReadAllTextWithEncodingTesting(String& text, Encoding& encoding, bool& containsBom)
 		{
 			return true;
 		}
 
-		WString File::ReadAllTextByBom()const
+		String File::ReadAllTextByBom()const
 		{
-			WString text;
+			String text;
 			return text;
 		}
 
-		bool File::ReadAllTextByBom(WString& text)const
+		bool File::ReadAllTextByBom(String& text)const
 		{
 			return true;
 		}
 
-		bool File::ReadAllLinesByBom(std::vector<WString>& lines)const
+		bool File::ReadAllLinesByBom(std::vector<String>& lines)const
 		{
 			return true;
 		}
 
-		bool File::WriteAllText(const WString& text, bool bom, Encoding encoding)
+		bool File::WriteAllText(const String& text, bool bom, Encoding encoding)
 		{
 			return true;
 		}
 
-		bool File::WriteAllLines(std::vector<WString>& lines, bool bom, Encoding encoding)
+		bool File::WriteAllLines(std::vector<String>& lines, bool bom, Encoding encoding)
 		{
 			return true;
 		}
@@ -269,10 +268,10 @@ namespace Alime
 			return DeleteFile(filePath.GetFullPath().data()) != 0;
 		}
 
-		bool File::Rename(const WString& newName)const
+		bool File::Rename(const String& newName)const
 		{
-			WString oldFileName = filePath.GetFullPath();
-			WString newFileName = (filePath.GetFolder() / newName).GetFullPath();
+			String oldFileName = filePath.GetFullPath();
+			String newFileName = (filePath.GetFolder() / newName).GetFullPath();
 			return MoveFile(oldFileName.data(), newFileName.data()) != 0;
 		}
 
@@ -310,7 +309,7 @@ namespace Alime
 						auto end = begin + buffer.size();
 						while (begin < end && *begin)
 						{
-							WString driveString = begin;
+							String driveString = begin;
 							begin += driveString.length() + 1;
 							folders.push_back(Folder(FilePath(driveString)));
 						}
@@ -329,7 +328,7 @@ namespace Alime
 				{
 					if (findHandle == INVALID_HANDLE_VALUE)
 					{
-						WString searchPath = (filePath / L"*").GetFullPath();
+						String searchPath = (filePath / L"*").GetFullPath();
 						findHandle = FindFirstFile(searchPath.data(), &findData);
 						if (findHandle == INVALID_HANDLE_VALUE)
 						{
@@ -372,7 +371,7 @@ namespace Alime
 			{
 				if (findHandle == INVALID_HANDLE_VALUE)
 				{
-					WString searchPath = (filePath / L"*").GetFullPath();
+					String searchPath = (filePath / L"*").GetFullPath();
 					findHandle = FindFirstFile(searchPath.data(), &findData);
 					if (findHandle == INVALID_HANDLE_VALUE)
 					{
@@ -443,10 +442,10 @@ namespace Alime
 			return RemoveDirectory(filePath.GetFullPath().data()) != 0;
 		}
 
-		bool Folder::Rename(const WString& newName)const
+		bool Folder::Rename(const String& newName)const
 		{
-			WString oldFileName = filePath.GetFullPath();
-			WString newFileName = (filePath.GetFolder() / newName).GetFullPath();
+			String oldFileName = filePath.GetFullPath();
+			String newFileName = (filePath.GetFolder() / newName).GetFullPath();
 			return MoveFile(oldFileName.data(), newFileName.data()) != 0;
 		}
 	}

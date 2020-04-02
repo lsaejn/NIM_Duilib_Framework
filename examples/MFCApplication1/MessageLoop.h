@@ -23,6 +23,7 @@ public:
 protected:
 	virtual void SpecificInit();
 	Func f_;
+	bool isAdaptDpiOpen();
 private:
 	virtual void Init() override;
 	virtual void Cleanup() override;

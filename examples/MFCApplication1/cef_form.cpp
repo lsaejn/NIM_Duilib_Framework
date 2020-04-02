@@ -5,6 +5,7 @@
 #include "FileSystem.h"
 #include "MsgDialog.h"
 #include "SkinSwitcher.h"
+#include "ConfigFileManager.h"
 
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -72,7 +73,7 @@ namespace
 	}
 }
 
-const std::wstring CefForm::kClassName = L"PKPM V5.1.1启动界面";
+const std::wstring CefForm::kClassName = L"PKPM V5.1.2";
 
 CefForm::CefForm()
 	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName",
@@ -166,6 +167,7 @@ void CefForm::InitWindow()
 	edit_url_= dynamic_cast<ui::RichEdit*>(FindControl(L"edit_url"));
 	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
 	skinSettings_ = dynamic_cast<ui::Button*>(FindControl(L"settings"));
+	vistual_caption_=dynamic_cast<ui::HBox*>(FindControl(L"vistual_caption"));
 	// 设置输入框样式, 保留这段代码是因为前端需要一个刷新机制
 	if (edit_url_)
 	{
@@ -173,8 +175,7 @@ void CefForm::InitWindow()
 		edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
 	}
 
-	// 监听页面加载完毕通知
-	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::RegisterCppFuncs, this));
+	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
 	if(cef_control_dev_)
 		cef_control_->AttachDevTools(cef_control_dev_);
@@ -220,6 +221,7 @@ void CefForm::InitWindow()
 
 	//换肤按钮的响应
 	AttachClickCallbackToSkinButton();
+	ModifyScaleForCaption();
 }
 
 LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -461,6 +463,10 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetCurrentDirectory(appPath.c_str());
 		ShowWindow();
 	}
+	else if (uMsg == WM_MOUSEWHEEL)
+	{
+		OutputDebugString(L"MOUSEWHEEL");
+	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
 
@@ -498,6 +504,47 @@ void CefForm::OnLoadEnd(int httpStatusCode)
 		FindControl(L"btn_forward")->SetEnabled(cef_control_->CanGoForward());
 }
 
+void CefForm::ModifyScaleForCef()
+{
+	if (ConfigManager::GetInstance().IsAdaptDpiOn())
+		return;
+	else if (ConfigManager::GetInstance().IsAutoModifyWindowOn())
+	{
+		UINT dpi=ui::DpiManager::GetMainMonitorDPI();
+		auto scale=MulDiv(dpi, 100, 96);	
+		///see www.magpcss.org/ceforum/viewtopic.php?f=6&t=11491
+		cef_control_->SetZoomLevel(scale / 100.0f);
+		if (cef_control_dev_)
+			cef_control_dev_->SetZoomLevel(scale / 100.0f);
+	}
+}
+
+void CefForm::ModifyScaleForCaption()
+{
+	if (ConfigManager::GetInstance().IsAdaptDpiOn())
+		return;
+	else if (ConfigManager::GetInstance().IsAutoModifyWindowOn())
+	{
+		UINT dpi = ui::DpiManager::GetMainMonitorDPI();
+		auto scale = MulDiv(dpi, 100, 96);
+		double rate = scale / 100.0;
+		RECT rc;
+		GetWindowRect(GetHWND(), &rc);
+		int width = static_cast<int>((rc.right - rc.left) * rate);
+		int height = static_cast<int>((rc.bottom - rc.top) * rate);
+		SetWindowPos(GetHWND(), HWND_TOP, 0, 0, width,
+			height, SWP_NOMOVE);
+		auto captionHeight=vistual_caption_->GetFixedHeight();
+		vistual_caption_->SetAttribute(L"height", std::to_wstring(captionHeight * rate));
+		//label_->SetFont(L"system_18");
+	}
+}
+
+void CefForm::OnLoadStart()
+{
+	RegisterCppFuncs();
+	ModifyScaleForCef();
+}
 
 void CefForm::RegisterCppFuncs()
 {
@@ -554,13 +601,8 @@ void CefForm::RegisterCppFuncs()
 			const char* captionName = document["caption"].GetString();
 			int Index = document["projectIndex"].GetInt();
 			assert(nbase::AnsiToUtf8(prjPaths_[Index]) == captionName);
-
 			SetHeightLightIndex(Index);
-			std::string captionU8 = nbase::UTF16ToUTF8(defaultCaption_);
-			if(captionU8.empty())
-				captionU8 = u8"PKPM结构设计软件 10版 V5.1.1   ";
-			captionU8 += captionName;
-			SetCaption(captionU8);
+			SetCaption(captionName);
 #ifdef DEBUG
 			std::string debugStr = R"({ "SetCaption": "Success." })";
 			callback(true, debugStr);
@@ -605,8 +647,7 @@ void CefForm::RegisterCppFuncs()
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nlohmann::json json = nlohmann::json::parse(params);
 			std::string modName=json["modName"];
-			std::string exeName = json["exeName"];
-				
+			std::string exeName = json["exeName"];			
 			std::string ansiMod=nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(modName));
 			std::string ansiExe = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(exeName));
 			int index = json["prjIndex"];
@@ -707,9 +748,13 @@ void CefForm::RegisterCppFuncs()
 					filePath[strlen(filePath)] = '\\';
 					if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
 					{
-						//fix me
-						//我也不知道说什么了，这个前端的同事很多工作都是我代劳的
-						//她压根不检查返回值，无论有没有新建成功，她都重读一次工程列表
+						std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
+						callback(true, nbase::AnsiToUtf8(debugStr));
+					}
+					else
+					{
+						std::string debugStr = R"({ "call ONNEWPROJECT": "fail." })";
+						callback(false, nbase::AnsiToUtf8(debugStr));
 					}
 				}
 				else
@@ -936,11 +981,16 @@ bool CefForm::IsSnapShotExist(const std::string& path)
 	return static_cast<bool>(PathFileExistsA(path.c_str()));
 }
 
-void CefForm::SetCaption(const std::string& name)
+void CefForm::SetCaption(const std::string& prjName)
 {
-	auto captionName = nbase::UTF8ToUTF16(name);
-	Alime::FileSystem::GetAbbreviatedPath(captionName);
-	label_->SetText(captionName);
+	std::wstring captionWithPrefix;
+	if (defaultCaption_.empty())
+		captionWithPrefix = L"PKPM结构设计软件 10版 V5.1.2   ";
+	else
+		captionWithPrefix = defaultCaption_;
+	auto prjNameU16 = nbase::UTF8ToUTF16(prjName);	
+	captionWithPrefix += Alime::FileSystem::GetAbbreviatedPath(prjNameU16);
+	label_->SetText(captionWithPrefix);
 }
 
 std::string CefForm::OnGetDefaultMenuSelection()
