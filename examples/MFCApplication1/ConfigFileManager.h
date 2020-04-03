@@ -25,7 +25,7 @@ private:
 		:isAutoModifyWindowOn_(false),
 		isAdaptDpiOn_(false),
 		filePath_(nbase::win32::GetCurrentModuleDirectory()
-			+ L"resources\\themes\\default\\cef\\defaultConfig.json")
+			+ L"resources\\themes\\default\\defaultConfig.json")
 	{
 		CheckAdaptDpi();
 	}

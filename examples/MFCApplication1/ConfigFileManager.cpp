@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ConfigFileManager.h"
 #include "nlohmann/json.hpp"
+#include <fstream>
 
 /*
 enableAdaptDpi为真，则使用duilib的适放机制。需要修改资源以避免图片模糊。
@@ -11,6 +12,15 @@ enableAdaptDpi为假，则:
 */
 void ConfigManager::CheckAdaptDpi()
 {
+	{
+		std::ifstream ifs(nbase::UnicodeToAnsi(filePath_));
+		if (!ifs.good())
+			return;
+		nlohmann::json json;
+		ifs >> json;
+		isAutoModifyWindowOn_ = json[u8"enableAutoModifyWindow"];
+		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
+	}
 	std::string content;
 	bool succ = nbase::ReadFileToString(filePath_, content);
 	if (succ)
