@@ -43,7 +43,8 @@ private:
 	bool OnClicked(ui::EventArgs* msg);
 	bool OnNavigate(ui::EventArgs* msg);
 	void OnLoadEnd(int httpStatusCode);
-
+	void InitUiVariable();
+	void AttachFunctionToShortCut();
 
 	/// <summary>前端读取工程列表,旧代码,见注释</summary>
 	///<param name="iniFileName">配置文件里的文件路径</param>
@@ -191,6 +192,7 @@ private:
 	/// <summary>标题栏缩放处理</summary>
 	void ModifyScaleForCaption();
 
+	/// <summary>返回即将过期的模块的剩余日期</summary>
 	int remainingTimeOfUserLock(std::string* SerialNumber=NULL);
 
 private:
@@ -201,6 +203,7 @@ private:
 	ui::RichEdit* edit_url_;
 	ui::Label* label_;
 	ui::HBox* vistual_caption_;
+	ui::Window* this_window_;
 	WebDataReader webDataReader_;
 	const int maxPrjNum_;
 	collection_utility::BoundedQueue<std::string> prjPaths_;

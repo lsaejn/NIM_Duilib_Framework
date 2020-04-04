@@ -80,7 +80,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>PKPM2010V51</TargetName>
-    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;D:\works\vcpkg\installed\x86-windows-static\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
     <GenerateManifest>true</GenerateManifest>
@@ -114,7 +114,7 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>base_d.lib;duilib_d.lib;ui_components_d.lib;libcef_dll_wrapper_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>nim_libcef.dll</DelayLoadDLLs>
-      <AdditionalLibraryDirectories>../../libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../libs;D:\works\vcpkg\installed\x86-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <Midl>
@@ -170,6 +170,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -229,6 +230,7 @@
     <ClInclude Include="cef_form.h" />
     <ClInclude Include="ConfigFileManager.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="DpiAdaptor.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HttpUtil.h" />
     <ClInclude Include="MsgDialog.h" />
@@ -297,6 +299,7 @@
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="ConfigFileManager.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="DpiAdaptor.cpp" />
     <ClCompile Include="FileSystem.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

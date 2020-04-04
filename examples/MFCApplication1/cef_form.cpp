@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "io.h"
 #include "cef_form.h"
 #include "string_util.h"
 #include "HttpUtil.h"
@@ -7,15 +8,8 @@
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
 
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <tchar.h>
-#include <io.h>
-#include <sys/types.h>
-
 #include <filesystem>
 #include <regex>
-#include <string_view>
 
 #include "RapidjsonForward.h"
 #include "nlohmann/json.hpp"
@@ -157,63 +151,14 @@ ui::Control* CefForm::CreateControl(const std::wstring& pstrClass)
 void CefForm::InitWindow()
 {
 	SetIcon(128);
-	// 监听鼠标单击事件
-	m_pRoot->AttachBubbledEvent(ui::kEventClick, nbase::Bind(&CefForm::OnClicked, this, std::placeholders::_1));
-	//m_pRoot->AttachBubbledEvent(ui::kEventMouseDoubleClick, nbase::Bind(&CefForm::OnDbClicked, this, std::placeholders::_1));
-	//m_pRoot->AttachAllEvents(nbase::Bind(&CefForm::OnDbClicked, this, std::placeholders::_1));
-	cef_control_= dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control"));
-	cef_control_dev_= dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control_dev"));
-	btn_dev_tool_= dynamic_cast<ui::Button*>(FindControl(L"btn_dev_tool"));
-	edit_url_= dynamic_cast<ui::RichEdit*>(FindControl(L"edit_url"));
-	label_= dynamic_cast<ui::Label*>(FindControl(L"projectName"));
-	skinSettings_ = dynamic_cast<ui::Button*>(FindControl(L"settings"));
-	vistual_caption_=dynamic_cast<ui::HBox*>(FindControl(L"vistual_caption"));
+	SetWindowTextA(GetHWND(), "PkpmV5.1.2");
+	InitUiVariable();
 	// 设置输入框样式, 保留这段代码是因为前端需要一个刷新机制
-	if (edit_url_)
-	{
-		edit_url_->SetSelAllOnFocus(true);
-		edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
-	}
-
-	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
-	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
-	if(cef_control_dev_)
-		cef_control_->AttachDevTools(cef_control_dev_);
-	if (nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
-	{
-		if (cef_control_dev_)
-		{
-			cef_control_dev_->SetVisible(false);
-#ifdef DEBUG
-			cef_control_dev_->SetVisible(true);
-#endif // DEBUG
-		}		
-	}
-	wchar_t buffer[128] = { 0 };
-	auto nRead = GetPrivateProfileStringW(L"Html", L"PathOfCefHtml", 
-		RelativePathForHtmlRes.c_str(), buffer, ArraySize(buffer), FullPathOfPkpmIni().c_str());
-	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ buffer;
+	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ RelativePathForHtmlRes;
 	cef_control_->LoadURL(cefHtmlPath);
 
-	//为了处理模型打包那个破exe的奇怪逻辑
-	CallBack f = [this]() {
-		if (prjPaths_.IsIndexLegal(indexHeightLighted_))
-			prjPaths_.moveToFront(indexHeightLighted_);
-		if(!prjPaths_.empty())
-			SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
-		cef_control_->CallJSFunction(L"flush",
-			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
-			ToWeakCallback([this](const std::string& chosenData) {
-				}
-		));
-	};
-	this->shortCutHandler_.SetCallBacks(GetHWND(), f);
-	shortCutHandler_.Init();
-
 	EnableAcceptFiles();
-	SetWindowTextA(GetHWND(), "PkpmV5.1.1");
-	defaultCaption_ =label_->GetText();
-
+	
 	//旧代码
 	SetCfgPmEnv();//增加pm环境
 	appDll_.InitPkpmAppFuncPtr();
@@ -221,6 +166,8 @@ void CefForm::InitWindow()
 
 	//换肤按钮的响应
 	AttachClickCallbackToSkinButton();
+
+	//Dpi处理
 	ModifyScaleForCaption();
 }
 
@@ -528,6 +475,13 @@ void CefForm::ModifyScaleForCaption()
 		UINT dpi = ui::DpiManager::GetMainMonitorDPI();
 		auto scale = MulDiv(dpi, 100, 96);
 		double rate = scale / 100.0;
+		ui::UiRect captionRect=this_window_->GetCaptionRect();
+		ui::UiRect adjustedCaptionRect = { 0,
+			0,
+			static_cast<int>(captionRect.GetWidth() * rate),
+			static_cast<int>(captionRect.GetHeight() * rate) };
+		this_window_->SetCaptionRect(adjustedCaptionRect);
+
 		RECT rc;
 		GetWindowRect(GetHWND(), &rc);
 		int width = static_cast<int>((rc.right - rc.left) * rate);
@@ -680,6 +634,7 @@ void CefForm::RegisterCppFuncs()
 			}
 			else
 			{
+				strAnsi = nbase::StringTrim(strAnsi);
 				if(strAnsi.back()!='\\')
 					strAnsi = strAnsi + "\\";
 				if (!AddWorkPaths(strAnsi, nbase::UnicodeToAnsi((nbase::win32::GetCurrentModuleDirectory() + L"cfg\\pkpm.ini"))))
@@ -785,6 +740,7 @@ void CefForm::RegisterCppFuncs()
 			{
 				if (PathFileExistsA(filePath.c_str()) && PathIsDirectoryA(filePath.c_str()))
 				{
+					filePath=nbase::StringTrim(filePath);
 					if(filePath.back()!='\\')
 						filePath += "\\";
 					if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
@@ -1614,7 +1570,8 @@ size_t CefForm::CorrectWorkPath()
 			if (PathFileExists(prjPathStr) && PathIsDirectory(prjPathStr))
 			{
 				Alime::FileSystem::Folder folder(prjPathStr);
-				if (!folder.Exists())	continue;
+				if (!folder.Exists())
+					continue;
 				std::wstring destPath;
 				if (!Alime::FileSystem::PathNameCaseSensitive(folder, destPath))  continue;
 				if (destPath.back() != L'\\')
@@ -1624,12 +1581,13 @@ size_t CefForm::CorrectWorkPath()
 			}
 		}
 	}
+	//我们检查更多的工程，保留前6个有效工程，强迫用户使用新版本
 	for (int i = 0; i < 2*maxPrjNum_; ++i)
 	{
 		std::wstring workPathId = L"WorkPath"+std::to_wstring(i);
 		if (static_cast<size_t>(i) < vec.size())
 			WritePrivateProfileString(L"WorkPath", workPathId.c_str(), vec[i].c_str(), FullPathOfPkpmIni().c_str());
-		else//又人可能从12宫格升上来，我们保留前6个有效工程，剩下的删除
+		else
 			WritePrivateProfileString(L"WorkPath", workPathId.c_str(), NULL, FullPathOfPkpmIni().c_str());
 	}
 	return vec.size();
@@ -1702,4 +1660,57 @@ int CefForm::remainingTimeOfUserLock(std::string* SerialNumber)
 	*SerialNumber = gSN;
 	delete[] gSN;
 	return dayLeft;
+}
+
+void CefForm::InitUiVariable()
+{
+	m_pRoot->AttachBubbledEvent(ui::kEventClick, nbase::Bind(&CefForm::OnClicked, this, std::placeholders::_1));
+	cef_control_ = dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control"));
+	cef_control_dev_ = dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control_dev"));
+	btn_dev_tool_ = dynamic_cast<ui::Button*>(FindControl(L"btn_dev_tool"));
+	edit_url_ = dynamic_cast<ui::RichEdit*>(FindControl(L"edit_url"));
+	label_ = dynamic_cast<ui::Label*>(FindControl(L"projectName"));
+	//标题从xml的控件里读，很合理...
+	defaultCaption_ = label_->GetText();
+	skinSettings_ = dynamic_cast<ui::Button*>(FindControl(L"settings"));
+	vistual_caption_ = dynamic_cast<ui::HBox*>(FindControl(L"vistual_caption"));
+	this_window_ = dynamic_cast<ui::Window*>(FindControl(L"main_wnd"));
+	if (edit_url_)
+	{
+		edit_url_->SetSelAllOnFocus(true);
+		edit_url_->AttachReturn(nbase::Bind(&CefForm::OnNavigate, this, std::placeholders::_1));
+	}
+	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
+	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
+	if (cef_control_dev_)
+		cef_control_->AttachDevTools(cef_control_dev_);
+	if (nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
+	{
+		if (cef_control_dev_)
+		{
+#ifdef DEBUG
+			cef_control_dev_->SetVisible(true);
+#else
+			cef_control_dev_->SetVisible(false);
+#endif
+		}
+	}
+
+}
+
+void CefForm::AttachFunctionToShortCut()
+{
+	CallBack f = [this]() {
+		if (prjPaths_.IsIndexLegal(indexHeightLighted_))
+			prjPaths_.moveToFront(indexHeightLighted_);
+		if (!prjPaths_.empty())
+			SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+		cef_control_->CallJSFunction(L"flush",
+			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+			ToWeakCallback([this](const std::string& chosenData) {
+				}
+		));
+	};
+	this->shortCutHandler_.SetCallBacks(GetHWND(), f);
+	shortCutHandler_.Init();
 }
