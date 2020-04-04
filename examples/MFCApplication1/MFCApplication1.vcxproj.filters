@@ -168,9 +168,6 @@
     <ClInclude Include="CDirSelectThread.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Console.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="nlohmann\json.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -187,12 +184,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="XmlInfo\InfoItem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="HttpUtil.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="FileSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="templates.h">
@@ -366,6 +357,21 @@
     <ClInclude Include="spdlog\version.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Alime\HttpUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\FileSystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\Console.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\countDownLatch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\mutex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -389,9 +395,6 @@
     <ClCompile Include="CDirSelectThread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Console.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="AppDllAdaptor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -404,13 +407,7 @@
     <ClCompile Include="XmlInfo\SlimXml.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="HttpUtil.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="string_util.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="FileSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="WinMain.cpp">
@@ -423,6 +420,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DpiAdaptor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\HttpUtil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\FileSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\Console.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

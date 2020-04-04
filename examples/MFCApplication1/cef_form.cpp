@@ -2,11 +2,13 @@
 #include "io.h"
 #include "cef_form.h"
 #include "string_util.h"
-#include "HttpUtil.h"
-#include "FileSystem.h"
 #include "MsgDialog.h"
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
+
+#include "Alime/HttpUtil.h"
+#include "Alime/FileSystem.h"
+#include "Alime/Console.h"
 
 #include <filesystem>
 #include <regex>
@@ -75,7 +77,8 @@ CefForm::CefForm()
 	prjPaths_(maxPrjNum_),
 	isWebPageAvailable_(false),
 	cef_control_(NULL),
-	indexHeightLighted_(-1)
+	indexHeightLighted_(-1),
+	latch_(1)
 {
 	webDataReader_.Init();
 	InitAdvertisement();
@@ -83,38 +86,6 @@ CefForm::CefForm()
 	if (numofPrj > 0)
 		indexHeightLighted_ = 0;
 	ReadWorkPathFromFile("CFG/pkpm.ini");
-	//一个控制台，以命令方式模拟网页点击事件
-	//将被写入log模块
-	//Alime::Console::CreateConsole();
-	//Alime::Console::SetTitle(L"Alime");
-	//std::thread t([this]() {
-	//	while (!stop)//没有办法优雅地中止这个线程,因windows似乎不能向stdin直接write?
-	//	{
-	//		auto str = Alime::Console::ReadLine();
-	//		if (str.find(L"SetCaption") != std::wstring::npos)
-	//		{
-	//			auto result = str.substr(10);
-	//			SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    " + nbase::UTF16ToUTF8(result));
-	//		}
-	//		else if (str.find(L"Clear") != std::wstring::npos)
-	//		{
-	//			Alime::Console::Clear();
-	//		}
-	//		else if (str.find(L"XmlFile") != std::wstring::npos)
-	//		{
-	//			//readSpecific
-	//			auto result = str.substr(8);
-	//			auto str = webDataReader_.readSpecific(nbase::UnicodeToAnsi(result));
-	//			Alime::Console::Write(nbase::UTF8ToUTF16(str));
-	//		}
-	//		else {
-	//			Alime::Console::SetColor(1, 0, 0, 0);
-	//			Alime::Console::WriteLine(L"没有这个接口");
-	//			Alime::Console::SetColor(0, 0, 0, 1);
-	//		}
-	//	}
-	//	});
-	//t.detach();
 }
 
 CefForm::~CefForm()
@@ -163,7 +134,7 @@ void CefForm::InitWindow()
 	SetCfgPmEnv();//增加pm环境
 	appDll_.InitPkpmAppFuncPtr();
 	appDll_.Invoke_InitPkpmApp();
-
+	AttachFunctionToShortCut();
 	//换肤按钮的响应
 	AttachClickCallbackToSkinButton();
 
@@ -299,6 +270,14 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (uMsg == WM_KEYDOWN)
 	{
+		if (0x80 == (0x80 & GetKeyState(VK_CONTROL)))
+		{
+			if ('D' == wParam || 'd' == wParam)
+			{
+				ConsoleForDebug();
+			}
+		}
+		//F5
 		if (116 == wParam)
 		{
 #ifdef DEBUG
@@ -1645,20 +1624,26 @@ void CefForm::AttachClickCallbackToSkinButton()
 		});
 }
 
-int CefForm::remainingTimeOfUserLock(std::string* SerialNumber)
+int CefForm::RemainingTimeOfUserLock(std::string* SerialNumber)
 {
 	//参数:@ 模块号, @子模块号 @返回的授权码
 	//返回值: 剩余天数
 	typedef int(_stdcall *FuncInWinAuthorize)(int&, int&, char*);
 	auto pathOfWinAuthorize = nbase::win32::GetCurrentModuleDirectory()+L"Ribbon\\WinAuthorize.dll";
 	auto handle = LoadLibrary(pathOfWinAuthorize.c_str());
-	FuncInWinAuthorize dayLeftFunc = (FuncInWinAuthorize)GetProcAddress(handle, "_Login_SubMod2@12");
+	if (!handle)
+		return -1;
+	FuncInWinAuthorize dayLeftFunc = NULL;
+	dayLeftFunc = (FuncInWinAuthorize)GetProcAddress(handle, "_Login_SubMod2@12");
+	if(!dayLeftFunc)
+		return -1;
 	int ty = 100;
 	int sub_ky = 0;
-	char* gSN = new char[17];
-	int dayLeft = dayLeftFunc(ty, sub_ky, gSN);
+	char gSN[17] = { 0 };
+	int dayLeft = 0;
+	dayLeft=dayLeftFunc(ty, sub_ky, gSN);
 	*SerialNumber = gSN;
-	delete[] gSN;
+	FreeLibrary(handle);
 	return dayLeft;
 }
 
@@ -1713,4 +1698,54 @@ void CefForm::AttachFunctionToShortCut()
 	};
 	this->shortCutHandler_.SetCallBacks(GetHWND(), f);
 	shortCutHandler_.Init();
+}
+
+void CefForm::ConsoleForDebug()
+{
+	//一个控制台，以命令方式模拟网页点击事件
+//将被写入log模块
+	Alime::Console::CreateConsole();
+	RECT rc;
+	GetWindowRect(m_hWnd, &rc);
+	Alime::Console::SetWindowPosition(rc.right-20, rc.top+20);
+	Alime::Console::SetWindowSize(400, rc.bottom - rc.top-28);
+	Alime::Console::SetTitle(L"Alime");
+	std::thread t([this]() {
+		while (true)
+		{
+			auto str = Alime::Console::ReadLine();
+			if (str.find(L"SetCaption") != std::wstring::npos)
+			{
+				auto result = str.substr(10);
+				SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    " + nbase::UTF16ToUTF8(result));
+			}
+			else if (str.find(L"Clear") != std::wstring::npos)
+			{
+				Alime::Console::Clear();
+			}
+			else if (str.find(L"Lock") != std::wstring::npos)
+			{
+				std::string authorizationCode;
+				auto daysLeft = RemainingTimeOfUserLock(&authorizationCode);
+				if (daysLeft == -1 || authorizationCode.empty())
+					Alime::Console::WriteLine(L"未知的错误");
+				else
+				Alime::Console::WriteLine(nbase::AnsiToUnicode(authorizationCode)+
+					std::to_wstring(daysLeft));
+			}
+			else if (str.find(L"Quit") != std::wstring::npos)
+			{
+				break;
+			}
+			else 
+			{
+				Alime::Console::SetColor(1, 0, 0, 0);
+				Alime::Console::WriteLine(L"没有这个接口");
+				Alime::Console::SetColor(0, 0, 0, 1);
+			}
+		}
+		FreeConsole();
+		latch_.countDown();
+		});
+	t.detach();
 }

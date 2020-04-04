@@ -4,6 +4,7 @@
 #include "BoundedQueue.h"
 #include "ShortCutHandler.h"
 #include "AppDllAdaptor.h"
+#include "Alime/countDownLatch.h"
 #include <atomic>
 #include <mutex>
 
@@ -193,8 +194,9 @@ private:
 	void ModifyScaleForCaption();
 
 	/// <summary>返回即将过期的模块的剩余日期</summary>
-	int remainingTimeOfUserLock(std::string* SerialNumber=NULL);
+	int RemainingTimeOfUserLock(std::string* SerialNumber=NULL);
 
+	void ConsoleForDebug();
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;
@@ -214,5 +216,6 @@ private:
 	std::string pageInfo_;
 	std::wstring defaultCaption_;
 	int indexHeightLighted_;//很多旧代码需要直接拿加亮索引工作, 我们监视鼠标每次单击
+	Alime::CountDownLatch latch_;
 };
 

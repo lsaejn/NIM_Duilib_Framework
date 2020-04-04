@@ -19,6 +19,11 @@ namespace Alime
 		{
 			AllocConsole();
 		}
+		else
+		{
+			FreeConsole();
+			AllocConsole();
+		}
 	}
 
 	void Console::Write(const wchar_t* string, int32_t length)

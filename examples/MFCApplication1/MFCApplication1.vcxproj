@@ -80,7 +80,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>PKPM2010V51</TargetName>
-    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;D:\works\vcpkg\installed\x86-windows-static\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
     <GenerateManifest>true</GenerateManifest>
@@ -224,15 +224,17 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Alime\countDownLatch.h" />
+    <ClInclude Include="Alime\mutex.h" />
     <ClInclude Include="AppDllAdaptor.h" />
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
     <ClInclude Include="ConfigFileManager.h" />
-    <ClInclude Include="Console.h" />
+    <ClInclude Include="Alime\Console.h" />
     <ClInclude Include="DpiAdaptor.h" />
-    <ClInclude Include="FileSystem.h" />
-    <ClInclude Include="HttpUtil.h" />
+    <ClInclude Include="Alime\FileSystem.h" />
+    <ClInclude Include="Alime\HttpUtil.h" />
     <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="NoCopyable.h" />
@@ -347,12 +349,12 @@
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="ConfigFileManager.cpp" />
-    <ClCompile Include="Console.cpp" />
+    <ClCompile Include="Alime\Console.cpp" />
     <ClCompile Include="DpiAdaptor.cpp" />
-    <ClCompile Include="FileSystem.cpp">
+    <ClCompile Include="Alime\FileSystem.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="HttpUtil.cpp" />
+    <ClCompile Include="Alime\HttpUtil.cpp" />
     <ClCompile Include="MsgDialog.cpp" />
     <ClCompile Include="pkpm2014svr.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
