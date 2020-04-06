@@ -166,7 +166,7 @@ void CefForm::InitWindow()
 
 	//换肤按钮的响应
 	AttachClickCallbackToSkinButton();
-
+	AttachFunctionToShortCut();
 	//Dpi处理
 	ModifyScaleForCaption();
 }
