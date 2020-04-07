@@ -912,10 +912,12 @@ bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 	auto index = pathStr.find_last_not_of("/\\");
 	std::string path = pathStr.substr(0, index + 1);
 	if (ENOENT == _access(path.c_str(), 0))
+	{
 		return false;
+	}
 	struct stat statbuf;
 	if (stat(path.c_str(), &statbuf) == 0)
-	{
+	{	
 		if ((_S_IFMT & statbuf.st_mode) == _S_IFDIR)
 		{
 			auto seconds = statbuf.st_mtime;
@@ -925,6 +927,25 @@ bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 				tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
 				tm_time.tm_hour, tm_time.tm_min);
 			timestamp.assign(buf);
+			return true;
+		}
+		MessageBox(NULL, L"_S_IFDIR", L"_S_IFDIR", 1);
+	}
+	else
+	{
+		//winxp 下 stat系列函数都会出现bug
+		//search " _stat not working on Windows XP"
+		WIN32_FILE_ATTRIBUTE_DATA fileData;
+		GetFileAttributesExA(pathStr.c_str(), GetFileExInfoStandard, &fileData);
+		SYSTEMTIME systemTime;
+		bool res = FileTimeToSystemTime(&fileData.ftCreationTime, &systemTime);
+		if (res)
+		{
+			char buf[128] = { 0 };
+			sprintf(buf, "%4d年%02d月%02d日 %02d:%02d",
+				systemTime.wYear, systemTime.wMonth, systemTime.wDay,
+				systemTime.wHour, systemTime.wMinute);
+			timestamp=buf;
 			return true;
 		}
 	}
@@ -1166,10 +1187,17 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 
 std::string CefForm::PathChecker(const std::string& newProj, bool &legal)
 {
+	std::string realPathOfNewProj;
 	legal = true;
-	std::filesystem::path fullpath(newProj);
-	auto realPath = std::filesystem::canonical(fullpath);
-	std::string realPathOfNewProj = nbase::UnicodeToAnsi(realPath);
+	Alime::FileSystem::Folder folder(nbase::AnsiToUnicode(newProj));
+	std::wstring realPathw;
+	if (!folder.Exists() || 
+		!Alime::FileSystem::PathNameCaseSensitive(folder, realPathw))
+	{
+		legal = false;
+		return {};
+	}
+	realPathOfNewProj = nbase::UnicodeToAnsi(realPathw);
 	if (realPathOfNewProj.back() != '\\')
 		realPathOfNewProj += '\\';
 	if (realPathOfNewProj.length() == 3&& realPathOfNewProj[1]==':')//盘符
