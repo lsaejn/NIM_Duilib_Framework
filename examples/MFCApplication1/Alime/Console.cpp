@@ -156,6 +156,11 @@ namespace Alime
 #endif
 	}
 
+	void Console::SetColor(WORD colorType)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colorType);
+	}
+
 	void Console::SetTitle(const std::wstring& string)
 	{
 #if defined ALIME_MSVC

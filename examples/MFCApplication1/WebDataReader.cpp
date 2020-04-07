@@ -36,7 +36,6 @@ const std::string WebDataReader::ReadSpecific(const std::string& filePath) const
 
 void WebDataReader::Load()
 {
-	//for()
     auto path = nbase::win32::GetCurrentModuleDirectory() + kRelativePathForPkpmAppMenu;
     if (!std::filesystem::exists(path))
     {
@@ -91,4 +90,9 @@ bool WebDataReader::ModifyDataWithTag(const std::string& u8Content, std::string&
         return true;
     }
     return false;
+}
+
+void WebDataReader::Accept(IWebDataVisitor* visitor)
+{
+    visitor->Visit(this);
 }

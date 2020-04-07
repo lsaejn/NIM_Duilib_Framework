@@ -506,7 +506,9 @@ void CefForm::RegisterCppFuncs()
 			rapidjson::Document document;
 			document.ParseStream(input);
 			std::string filePath=document["filePath"].GetString();
-			auto re = webDataReader_.ReadSpecific(filePath);
+			WebDataVisitorInU8 visitor(filePath);
+			webDataReader_.Accept(&visitor);
+			auto re = visitor.GetValue();
 			callback(true, re);
 			return;
 			}
@@ -1635,8 +1637,11 @@ int CefForm::RemainingTimeOfUserLock(std::string* SerialNumber)
 		return -1;
 	FuncInWinAuthorize dayLeftFunc = NULL;
 	dayLeftFunc = (FuncInWinAuthorize)GetProcAddress(handle, "_Login_SubMod2@12");
-	if(!dayLeftFunc)
+	if (!dayLeftFunc)
+	{
+		FreeLibrary(handle);
 		return -1;
+	}		
 	int ty = 100;
 	int sub_ky = 0;
 	char gSN[17] = { 0 };
@@ -1710,6 +1715,7 @@ void CefForm::ConsoleForDebug()
 	Alime::Console::SetWindowPosition(rc.right-20, rc.top+20);
 	Alime::Console::SetWindowSize(400, rc.bottom - rc.top-28);
 	Alime::Console::SetTitle(L"Alime");
+	Alime::Console::SetColor(Alime::Console::CYAN);
 	std::thread t([this]() {
 		while (true)
 		{
@@ -1728,7 +1734,11 @@ void CefForm::ConsoleForDebug()
 				std::string authorizationCode;
 				auto daysLeft = RemainingTimeOfUserLock(&authorizationCode);
 				if (daysLeft == -1 || authorizationCode.empty())
+				{
+					Alime::Console::SetColor(Alime::Console::RED);
 					Alime::Console::WriteLine(L"未知的错误");
+					Alime::Console::SetColor(Alime::Console::CYAN);
+				}					
 				else
 				Alime::Console::WriteLine(nbase::AnsiToUnicode(authorizationCode)+
 					std::to_wstring(daysLeft));
@@ -1741,7 +1751,7 @@ void CefForm::ConsoleForDebug()
 			{
 				Alime::Console::SetColor(1, 0, 0, 0);
 				Alime::Console::WriteLine(L"没有这个接口");
-				Alime::Console::SetColor(0, 0, 0, 1);
+				Alime::Console::SetColor(Alime::Console::CYAN);
 			}
 		}
 		FreeConsole();

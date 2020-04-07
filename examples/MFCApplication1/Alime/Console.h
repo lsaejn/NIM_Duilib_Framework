@@ -7,6 +7,13 @@ namespace Alime
 	class Console
 	{
 	public:
+
+		static const WORD RED = FOREGROUND_RED;
+		static const WORD GREEN = FOREGROUND_GREEN;
+		static const WORD CYAN = FOREGROUND_GREEN | FOREGROUND_BLUE;
+		static const WORD WHITE = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+		static const WORD YELLOW = FOREGROUND_RED | FOREGROUND_GREEN;
+
 		static void CreateConsole();
 		static void Write(const wchar_t* str, int32_t  length);
 		static void Write(const wchar_t* str);
@@ -16,6 +23,7 @@ namespace Alime
 		static std::wstring Read();
 		static std::wstring ReadLine();
 		static void SetColor(bool red, bool green, bool blue, bool light);
+		static void SetColor(WORD colorType);
 		static void SetTitle(const std::wstring& string);
 		static void Clear();
 		static void SetWindowPosition(int left, int top);
