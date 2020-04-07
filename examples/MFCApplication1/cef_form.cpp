@@ -556,7 +556,7 @@ void CefForm::RegisterCppFuncs()
 			int Index = document["projectIndex"].GetInt();
 			assert(nbase::AnsiToUtf8(prjPaths_[Index]) == captionName);
 			SetHeightLightIndex(Index);
-			SetCaption(captionName);
+			SetCaptionWithProjectName(captionName);
 #ifdef DEBUG
 			std::string debugStr = R"({ "SetCaption": "Success." })";
 			callback(true, debugStr);
@@ -782,7 +782,10 @@ void CefForm::RegisterCppFuncs()
 					}
 					prjPaths_.deleteAt(prjSelected);
 					if (prjPaths_.empty())
+					{
 						SetHeightLightIndex(-1);
+						SetCaptionWithProjectName("");
+					}
 					SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
 					std::string debugStr = R"({ "Call ONNEWPROJECT": "Success." })";
 					callback(true, nbase::AnsiToUtf8(debugStr));
@@ -958,13 +961,19 @@ bool CefForm::IsSnapShotExist(const std::string& path)
 	return static_cast<bool>(PathFileExistsA(path.c_str()));
 }
 
-void CefForm::SetCaption(const std::string& prjName)
+void CefForm::SetCaptionWithProjectName(const std::string& prjName)
 {
 	std::wstring captionWithPrefix;
 	if (defaultCaption_.empty())
 		captionWithPrefix = L"PKPM结构设计软件 10版 V5.1.2   ";
 	else
 		captionWithPrefix = defaultCaption_;
+	if (prjName.empty())
+	{
+		label_->SetText(defaultCaption_);
+		return;
+	}
+		
 	auto prjNameU16 = nbase::UTF8ToUTF16(prjName);	
 	captionWithPrefix += Alime::FileSystem::GetAbbreviatedPath(prjNameU16);
 	label_->SetText(captionWithPrefix);

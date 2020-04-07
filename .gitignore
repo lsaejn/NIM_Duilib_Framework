@@ -349,3 +349,4 @@ healthchecksdb
 *.bsc
 /examples/MFCApplication1/PROGINFO.STS
 /stats
+*.aps
