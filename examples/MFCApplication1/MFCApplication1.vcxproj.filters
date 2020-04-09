@@ -201,9 +201,6 @@
     <ClInclude Include="MsgDialog.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="RapidjsonForward.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ConfigFileManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -370,6 +367,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Alime\mutex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RapidjsonForward.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SpdLogForward.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

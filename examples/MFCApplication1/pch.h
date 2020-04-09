@@ -24,6 +24,7 @@
 // ui components
 #include "ui_components/ui_components.h"
 #include "ui_components/ui_cef_control.h"
-#include "spdlog/spdlog.h"
+
+
 
 #endif //PCH_H

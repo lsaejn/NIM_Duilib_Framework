@@ -197,6 +197,8 @@ private:
 	int RemainingTimeOfUserLock(std::string* SerialNumber=NULL);
 
 	void ConsoleForDebug();
+
+	void InitSpdLog();
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;

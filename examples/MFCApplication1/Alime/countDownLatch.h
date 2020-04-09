@@ -1,5 +1,6 @@
 #pragma once
-#include "Alime/mutex.h"
+#include <mutex>
+#include <condition_variable>
 #include <atomic>
 
 namespace Alime
@@ -16,7 +17,7 @@ namespace Alime
 		}
 		void countDown()
 		{
-			Alime::Lock_guard<Alime::Mutex> lg(lock_);
+			std::unique_lock<std::mutex> lg(lock_);
 			--count_;
 			if (0 == count_)
 				cv_.notify_all();
@@ -24,22 +25,21 @@ namespace Alime
 
 		void wait()
 		{
-			Alime::Lock_guard<Alime::Mutex> lg(lock_);
+			std::unique_lock<std::mutex> lg(lock_);
 			while (count_ > 0)
 			{
-				cv_.wait(&lock_);
+				cv_.wait(lg);
 			}		
 		}
 
 		int getCount()
 		{
-			Alime::Lock_guard<Alime::Mutex> lg(lock_);
 			return count_;
 		}
 
 	private:
 		std::atomic<int> count_;
-		Alime::Condition cv_;
-		Alime::Mutex lock_;
+		std::condition_variable cv_;
+		std::mutex lock_;
 	};
 }

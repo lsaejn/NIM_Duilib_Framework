@@ -14,7 +14,13 @@
 #include <regex>
 
 #include "RapidjsonForward.h"
+#include "SpdlogForward.h"
 #include "nlohmann/json.hpp"
+
+
+
+//#include "spdlog/sinks/rotating_file_sink.h"
+
 
 using namespace Alime::HttpUtility;
 
@@ -86,10 +92,12 @@ CefForm::CefForm()
 	if (numofPrj > 0)
 		indexHeightLighted_ = 0;
 	ReadWorkPathFromFile("CFG/pkpm.ini");
+	InitSpdLog();
 }
 
 CefForm::~CefForm()
 {
+	spdlog::drop_all();
 }
 
 std::wstring CefForm::GetSkinFolder()
@@ -454,12 +462,12 @@ void CefForm::ModifyScaleForCaption()
 		UINT dpi = ui::DpiManager::GetMainMonitorDPI();
 		auto scale = MulDiv(dpi, 100, 96);
 		double rate = scale / 100.0;
-		ui::UiRect captionRect=this_window_->GetCaptionRect();
-		ui::UiRect adjustedCaptionRect = { 0,
-			0,
-			static_cast<int>(captionRect.GetWidth() * rate),
-			static_cast<int>(captionRect.GetHeight() * rate) };
-		this_window_->SetCaptionRect(adjustedCaptionRect);
+		//ui::UiRect captionRect=this_window_->GetCaptionRect();
+		//ui::UiRect adjustedCaptionRect = { 0,
+		//	0,
+		//	static_cast<int>(captionRect.GetWidth() * rate),
+		//	static_cast<int>(captionRect.GetHeight() * rate) };
+		//this_window_->SetCaptionRect(adjustedCaptionRect);
 
 		RECT rc;
 		GetWindowRect(GetHWND(), &rc);
@@ -468,7 +476,13 @@ void CefForm::ModifyScaleForCaption()
 		SetWindowPos(GetHWND(), HWND_TOP, 0, 0, width,
 			height, SWP_NOMOVE);
 		auto captionHeight=vistual_caption_->GetFixedHeight();
+		auto captionWidth = vistual_caption_->GetFixedWidth();
 		vistual_caption_->SetAttribute(L"height", std::to_wstring(captionHeight * rate));
+		rc=GetCaptionRect();
+		SetCaptionRect(
+			ui::UiRect(0, 0,
+				static_cast<int>(captionWidth *rate),
+				static_cast<int>(captionHeight *rate)));
 		//label_->SetFont(L"system_18");
 	}
 }
@@ -1758,4 +1772,46 @@ void CefForm::ConsoleForDebug()
 		latch_.countDown();
 		});
 	t.detach();
+}
+
+#include "Alime/FileSystem.h"
+void CefForm::InitSpdLog()
+{	
+	auto logFolderW = nbase::win32::GetCurrentModuleDirectory() + L"resources\\Logs\\";
+	auto logFileNameW = logFolderW + L"log.txt";
+	std::string LogsFile = nbase::UnicodeToAnsi(logFileNameW);
+	if (PathFileExists(logFileNameW.c_str()) && !PathIsDirectory(logFileNameW.c_str()))//多余，存在就不可能是文件夹
+	{
+		bool ret=DeleteFile(logFileNameW.c_str());
+		if (!ret)
+		{
+			return;
+		}
+	}
+	{
+		Alime::FileSystem::Folder p(logFolderW);
+		if (!p.Exists())
+			p.Create(false);
+	}
+	try {
+		auto file_logger = spdlog::basic_logger_mt("fileLogger", LogsFile.c_str());
+#ifdef DEBUG
+		file_logger->flush_on(spdlog::level::trace);
+		spdlog::set_level(spdlog::level::trace);
+#else
+		spdlog::set_level(spdlog::level::err);
+#endif // DEBUG	
+		spdlog::set_default_logger(file_logger);
+		file_logger->set_pattern("[%Y%m%d %H:%M:%S.%f] [%t] [%l] [%v]");
+		//spdlog::set_pattern("[%Y%m%d %H:%M:%S.%f] [%t] [%l] [%v] [%s:%#] [%g]");
+		spdlog::info("Support for floats {:03.2f}", 1.23456);
+		spdlog::critical("Support for int: {1:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42,33);
+		spdlog::info("Support for floats {1: 03.2f} and {1:03.2f}", 1.23456, 1.33333);
+		spdlog::info("Support for floats {0: 03.2f} and {1: 3.2f} {2}", 1.44456, 1.33333,"too");
+		spdlog::info("Positional args are {1} {0}..", "too", "supported");
+	}
+	catch(...){
+		//can not open logFile
+		return;
+	}
 }
