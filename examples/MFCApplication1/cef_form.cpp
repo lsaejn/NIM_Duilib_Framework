@@ -67,7 +67,7 @@ namespace
 	}
 }
 
-const std::wstring CefForm::kClassName = L"PKPM V5.1.2";
+const std::wstring CefForm::kClassName = L"PKPM V5.1.3";
 
 CefForm::CefForm()
 	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName",
@@ -151,7 +151,7 @@ ui::Control* CefForm::CreateControl(const std::wstring& pstrClass)
 void CefForm::InitWindow()
 {
 	SetIcon(128);
-	SetWindowTextA(GetHWND(), "PkpmV5.1.2");
+	SetWindowTextA(GetHWND(), "PkpmV5.1.3");
 	InitUiVariable();
 	// 设置输入框样式, 保留这段代码是因为前端需要一个刷新机制
 	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ RelativePathForHtmlRes;
@@ -965,7 +965,7 @@ void CefForm::SetCaptionWithProjectName(const std::string& prjName)
 {
 	std::wstring captionWithPrefix;
 	if (defaultCaption_.empty())
-		captionWithPrefix = L"PKPM结构设计软件 10版 V5.1.2   ";
+		captionWithPrefix = L"PKPM结构设计软件 10版 V5.1.3   ";
 	else
 		captionWithPrefix = defaultCaption_;
 	if (prjName.empty())
