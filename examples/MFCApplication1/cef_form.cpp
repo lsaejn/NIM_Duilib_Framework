@@ -401,6 +401,17 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		OutputDebugString(L"MOUSEWHEEL");
 	}
+	else if (uMsg == WM_SETADVERTISEINJS)
+	{
+		{
+			auto advString = TellMeAdvertisement();
+			cef_control_->CallJSFunction(L"SetAdvertise",
+				nbase::AnsiToUnicode(advString),
+				ToWeakCallback([this](const std::string& chosenData) {
+					}
+			));
+		}
+	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
 
@@ -810,11 +821,26 @@ void CefForm::RegisterCppFuncs()
 
 	cef_control_->RegisterCppFunc(L"OPENURL",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			static unsigned long long  lastTick = 0;
+			auto now = GetTickCount();
+			auto interval = now - lastTick;
+			lastTick = now;
+			if (interval < 800)
+			{
+				//MsgBox::Warning(GetHWND(), L"你的操作过于频繁", L"过于频繁有害身心健康");
+				return;
+			}			
 			nlohmann::json json = nlohmann::json::parse(params);
-			std::wstring url = nbase::UTF8ToUTF16(json["adUrl"]);
-			::ShellExecute(NULL, L"open", url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
-			std::string debugStr = R"({ "OPENURL": "Always Success." })";
-			callback(true, debugStr);
+			try {
+				std::wstring url = nbase::UTF8ToUTF16(json["adUrl"]);
+				::ShellExecute(NULL, L"open", url.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+				std::string debugStr = R"({ "OPENURL": "Always Success." })";
+				callback(true, debugStr);
+			}
+			catch (...)
+			{
+				MsgBox::Warning(GetHWND(), L"无效的参数", L"无法打开网页");
+			}
 			})
 	);
 
@@ -1333,6 +1359,11 @@ void CefForm::AdvertisementThreadFunc()
 		std::lock_guard<std::mutex> guarder(lock_);
 		isWebPageAvailable_ = true;
 	}
+	if (isWebPageAvailable_)
+	{
+		Sleep(3000);
+		PostMessage(WM_SETADVERTISEINJS, 0, 0);
+	}
 }
 
 //我们的广告原页面是https://update.pkpm.cn/PKPM2010/Info/index.html
@@ -1774,7 +1805,6 @@ void CefForm::ConsoleForDebug()
 	t.detach();
 }
 
-#include "Alime/FileSystem.h"
 void CefForm::InitSpdLog()
 {	
 	auto logFolderW = nbase::win32::GetCurrentModuleDirectory() + L"resources\\Logs\\";

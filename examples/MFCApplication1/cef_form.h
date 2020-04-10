@@ -12,6 +12,7 @@
 #define WEBINTERFACE
 #define WM_THEME_SELECTED (WM_USER + 2)
 #define WM_SHOWMAINWINDOW (WM_USER + 3)
+#define WM_SETADVERTISEINJS (WM_USER + 4)
 
 const bool kEnableOffsetRender = true;
 
