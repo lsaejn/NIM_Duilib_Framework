@@ -827,7 +827,7 @@ void CefForm::RegisterCppFuncs()
 			lastTick = now;
 			if (interval < 800)
 			{
-				//MsgBox::Warning(GetHWND(), L"你的操作过于频繁", L"过于频繁有害身心健康");
+				MsgBox::Warning(GetHWND(), L"你的操作过于频繁", L"过于频繁有害身心健康");
 				return;
 			}			
 			nlohmann::json json = nlohmann::json::parse(params);
