@@ -56,7 +56,7 @@ private:
 
 	/// <summary>标题栏现在c++在处理，前端点击工程需要调用此函数</summary>
 	///<param name="name">标题栏名称</param >
-	WEBINTERFACE void SetCaption(const std::string& name);
+	WEBINTERFACE void SetCaptionWithProjectName(const std::string& prjname);
 	
 	/// <summary>菜单记忆功能，前端调用此函数获得文件里保存的索引</summary>
 	///<return>4个索引的json</return>
