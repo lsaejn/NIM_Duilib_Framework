@@ -3,32 +3,26 @@
 #include "winbase.h"
 #include <exception>
 #include "assert.h"
+#include "Alime/NonCopyable.h"
 
 namespace Alime
 {
 	/*
 	¼òµ¥µÄ·ÇµÝ¹éËø
 	*/
-	class Mutex/*:public Lockable*/
+	class MutexRW:public noncopyable
 	{
 	public:
-		Mutex()//:holder_(0)
+		MutexRW()//:holder_(0)
 		{
 			InitializeSRWLock(&m_srw_lock);
 		}
 
-		~Mutex()
+		~MutexRW()
 		{
-			//assert(holder_ == 0);
-			destroy();
 		}
-		Mutex(const Mutex&) = delete;
-		Mutex& operator=(const Mutex&) = delete;
-
-		virtual void destroy()
-		{
-
-		}
+		MutexRW(const MutexRW&) = delete;
+		MutexRW& operator=(const MutexRW&) = delete;
 
 		virtual void lock()
 		{
@@ -44,7 +38,7 @@ namespace Alime
 
 		virtual bool try_lock_for(unsigned int seconds)
 		{
-			return Mutex::try_lock();
+			return try_lock();
 		}
 
 		virtual void unlock()
@@ -61,33 +55,32 @@ namespace Alime
 		SRWLOCK m_srw_lock;
 	};
 
-
-	class Condition
+	class ConditionRW :public noncopyable
 	{
 	public:
-		Condition()
+		ConditionRW()
 		{
 			InitializeConditionVariable(&m_condition_variable);
 		}
 
-		~Condition()
+		~ConditionRW()
 		{
-
 		}
-		Condition(const Condition&) = delete;
-		Condition& operator=(const Condition&) = delete;
+
+		ConditionRW(const ConditionRW&) = delete;
+		ConditionRW& operator=(const ConditionRW&) = delete;
 
 		virtual void destroy() {}
 
-		virtual void wait(Mutex *lock)
+		virtual void wait(MutexRW *lock)
 		{
-			if (!Condition::wait_for(lock, INFINITE))
+			if (!wait_for(lock, INFINITE))
 				std::terminate();
 		}
 
-		virtual bool wait_for(Mutex *lock, unsigned int timeout)
+		virtual bool wait_for(MutexRW *lock, unsigned int timeout)
 		{
-			return SleepConditionVariableSRW(&m_condition_variable, static_cast<Mutex *>(lock)->native_handle(), timeout, 0) != 0;
+			return SleepConditionVariableSRW(&m_condition_variable, static_cast<MutexRW *>(lock)->native_handle(), timeout, 0) != 0;
 		}
 
 		virtual void notify_one()
@@ -104,8 +97,112 @@ namespace Alime
 		CONDITION_VARIABLE m_condition_variable;
 	};
 
+	class Mutex :public noncopyable
+	{
+	public:
+		Mutex()//:holder_(0)
+		{
+			::InitializeCriticalSectionAndSpinCount(&cs_, 2000);
+		}
+
+		~Mutex()
+		{
+			destroy();
+		}
+		Mutex(const Mutex&) = delete;
+		Mutex& operator=(const Mutex&) = delete;
+
+		virtual void destroy()
+		{
+
+		}
+
+		virtual void lock()
+		{
+			::EnterCriticalSection(&cs_);
+		}
+
+		virtual bool try_lock()
+		{
+			if (::TryEnterCriticalSection(&cs_))
+			{
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool try_lock_for(unsigned int seconds)
+		{
+			auto TimeEnterIn = ::GetTickCount64();
+			while (::GetTickCount64() - TimeEnterIn < seconds * 1000)
+			{
+				if (try_lock())
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		virtual void unlock()
+		{
+			::DeleteCriticalSection(&cs_);
+		}
+
+		void* native_handle()
+		{
+			return &cs_;
+		}
+
+	private:
+		CRITICAL_SECTION cs_;
+	};
+
+	class Condition :public noncopyable
+	{
+	public:
+		Condition()
+		{
+			InitializeConditionVariable(&cv_);
+		}
+
+		~Condition()
+		{
+		}
+
+		Condition(const Condition&) = delete;
+		Condition& operator=(const Condition&) = delete;
+
+		virtual void wait(Mutex* lock)
+		{
+			if (!wait_for(lock, INFINITE))
+				std::terminate();
+		}
+		
+		virtual bool wait_for(Mutex* lock, unsigned int timeout)
+		{
+			if (timeout < 0)
+				throw "invalid_argument: timeout";
+			return SleepConditionVariableCS(&cv_, 
+				static_cast<CRITICAL_SECTION*>(lock->native_handle()), timeout*1000);
+		}
+
+		virtual void notify_one()
+		{
+			WakeConditionVariable(&cv_);
+		}
+
+		virtual void notify_all()
+		{
+			WakeAllConditionVariable(&cv_);
+		}
+
+	private:
+		CONDITION_VARIABLE cv_;
+	};
+
 	template<typename T>
-	class Lock_guard
+	class Lock_guard :public noncopyable
 	{
 	public:
 		Lock_guard( T& lock)
@@ -117,6 +214,12 @@ namespace Alime
 		{
 			lock_.unlock();
 		}
+
+		T& Get()
+		{
+			return lock_;
+		}
+
 	private:
 		 T& lock_;
 	};

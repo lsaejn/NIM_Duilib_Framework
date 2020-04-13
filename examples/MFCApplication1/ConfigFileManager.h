@@ -1,6 +1,7 @@
 #pragma once
-#include "NoCopyable.h"
+#include "Alime/NonCopyable.h"
 
+//reader
 class ConfigManager: public noncopyable
 {
 public:
@@ -10,29 +11,34 @@ public:
 		return instance;
 	}
 
-	bool IsAdaptDpiOn()
-	{
-		return isAdaptDpiOn_;
-	}
-
-	bool IsAutoModifyWindowOn()
-	{
-		return isAutoModifyWindowOn_;
-	}
+	bool IsAdaptDpiOn();
+	bool IsModifyWindowOn();
+	bool IsSystemFolderDialogOn() const;
+	std::string GetDefaultAdvertise() const;
+	std::wstring GetAdvertisementServer() const;
+	std::wstring GetAdvertisementQuery() const;
+	std::wstring GetCefFormWindowText() const;
+	std::wstring GetCefFormClassName() const;
+	std::wstring GetRelativePathForHtmlRes() const;
 
 private:	
-	ConfigManager()
-		:isAutoModifyWindowOn_(false),
-		isAdaptDpiOn_(false),
-		filePath_(nbase::win32::GetCurrentModuleDirectory()
-			+ L"resources\\themes\\default\\defaultConfig.json")
-	{
-		CheckAdaptDpi();
-	}
+	ConfigManager();
+	//·ÏÆú
 	void CheckAdaptDpi();
+
+	void LoadConfigFile();
+
+
 private:
 	bool isAdaptDpiForCaptionOn_;
 	bool isAutoModifyWindowOn_;
 	bool isAdaptDpiOn_;
+	bool systemFolderSelection_;
+	std::string defaultAdvertise_;
+	std::wstring advertisementServer_;
+	std::wstring advertisementQuery_;
+	std::wstring cefFormWindowText_;
+	std::wstring cefFormClassName_;
+	std::wstring relativePathForHtmlRes_;
 	std::wstring filePath_;
 };

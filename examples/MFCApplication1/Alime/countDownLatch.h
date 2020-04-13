@@ -17,6 +17,7 @@ namespace Alime
 		}
 		void countDown()
 		{
+			// fix me, use std::lock_guard
 			std::unique_lock<std::mutex> lg(lock_);
 			--count_;
 			if (0 == count_)
@@ -34,11 +35,12 @@ namespace Alime
 
 		int getCount()
 		{
+			std::lock_guard guard(lock_);
 			return count_;
 		}
 
 	private:
-		std::atomic<int> count_;
+		int count_;
 		std::condition_variable cv_;
 		std::mutex lock_;
 	};

@@ -4,6 +4,7 @@
 #include "BoundedQueue.h"
 #include "ShortCutHandler.h"
 #include "AppDllAdaptor.h"
+#include "DpiAdaptor.h"
 #include "Alime/countDownLatch.h"
 #include <atomic>
 #include <mutex>
@@ -90,7 +91,7 @@ private:
 	/// <summary>添加工程到文件</summary>
 	///<param name="newProj">新工程名</param >
 	///<param name="filePath">配置文件名</param >
-	///<return>工程是否增加成果</return>
+	///<return>工程是否增加成功</return>
 	WEBINTERFACE bool AddWorkPaths(const std::string& newProj, const std::string& filename);
 
 	/// <summary>保存工程到文件,旧代码里是static函数，我也懒得再加一个函数了。</summary>
@@ -103,7 +104,7 @@ private:
 	WEBINTERFACE void OnSetDefaultMenuSelection(const std::string& json_str);
 
 	/// <summary>告知前端广告内容。</summary>
-	///<return>广告内容的json，见接口文档</return>
+	///<return>广告内容的u8json，见接口文档</return>
 	WEBINTERFACE std::string TellMeAdvertisement();
 
 	/// <summary>告知前端是否存在新版本。</summary>
@@ -143,11 +144,12 @@ private:
 
 	/// <summary>以线程获取广告页面</summary>
 	void InitAdvertisement();
+
 	/// <summary>获取广告页面的线程函数</summary>
 	void AdvertisementThreadFunc();
 
 	/// <summary>旧代码，名字歪了。下载广告页。</summary>
-	bool VersionPage();
+	bool GetVersionPage();
 
 	/// <summary>旧代码，名字歪了。获得工程的创建时间，返回快照是否存在</summary>
 	///<param name="timestamp">欲返回的时间戳</param >
@@ -200,6 +202,13 @@ private:
 	void ConsoleForDebug();
 
 	void InitSpdLog();
+public:
+
+	void AcceptDpiAdaptor(IAdaptor* acc);
+	ui::Label* GetCaptionLabel();
+	ui::HBox* GetCaptionBox();
+	nim_comp::CefControlBase* GetCef();
+
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;

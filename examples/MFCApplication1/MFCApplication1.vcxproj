@@ -109,6 +109,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <BrowseInformation>true</BrowseInformation>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -224,8 +225,9 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Alime\countDownLatch.h" />
-    <ClInclude Include="Alime\mutex.h" />
+    <ClInclude Include="Alime\CountDownLatch.h" />
+    <ClInclude Include="Alime\Mutex.h" />
+    <ClInclude Include="Alime\ExecutorService.h" />
     <ClInclude Include="AppDllAdaptor.h" />
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
@@ -237,7 +239,7 @@
     <ClInclude Include="Alime\HttpUtil.h" />
     <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
-    <ClInclude Include="NoCopyable.h" />
+    <ClInclude Include="Alime\NonCopyable.h" />
     <ClInclude Include="pkpm2014svr.h" />
     <ClInclude Include="RapidjsonForward.h" />
     <ClInclude Include="SpdLogForward.h" />
@@ -346,6 +348,7 @@
     <ClInclude Include="XmlInfo\SlimXml.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Alime\ExecutorService.cpp" />
     <ClCompile Include="AppDllAdaptor.cpp" />
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
