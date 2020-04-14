@@ -21,7 +21,7 @@ namespace Alime
 			std::unique_lock<std::mutex> lg(lock_);
 			--count_;
 			if (0 == count_)
-				cv_.notify_all();
+				cv_.notify_one();
 		}
 
 		void wait()

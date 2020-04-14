@@ -35,12 +35,13 @@ CefForm::CefForm()
 	latch_(1)
 {
 	webDataReader_.Init();
-	InitAdvertisement();
+	//InitAdvertisement();
 	size_t numofPrj=CorrectWorkPath();
 	if (numofPrj > 0)
 		indexHeightLighted_ = 0;
 	ReadWorkPathFromFile("CFG/pkpm.ini");
 	InitSpdLog();
+	InitAdvertisement();
 }
 
 CefForm::~CefForm()
@@ -92,6 +93,7 @@ void CefForm::InitWindow()
 	SetCfgPmEnv();//增加pm环境
 	appDll_.InitPkpmAppFuncPtr();
 	appDll_.Invoke_InitPkpmApp();
+
 	AttachFunctionToShortCut();
 	//换肤按钮的响应
 	AttachClickCallbackToSkinButton();
@@ -100,7 +102,7 @@ void CefForm::InitWindow()
 }
 
 LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{
+{	
 	nim_comp::CefManager::GetInstance()->PostQuitMessage(0L);
 	return __super::OnClose(uMsg, wParam, lParam, bHandled);
 }
@@ -161,14 +163,28 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	}
 	else if (name == L"closebtn")
 	{
-		cef_control_->CallJSFunction(L"currentChosenData", 
-			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
-			ToWeakCallback([this](const std::string& chosenData) {
-				//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(chosenData), 3000, GetHWND());
-				//这必然是个合法json
-				OnSetDefaultMenuSelection(chosenData);
-				}
-		));
+		//bug出现在Winxp的机器上，
+		//来不及回调OnSetDefaultMenuSelection，程序就已经结束
+		//这么做相当丑陋，但是简单暴力！
+		std::thread t([this]() {
+			cef_control_->CallJSFunction(L"currentChosenData",
+				nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+				ToWeakCallback([this](const std::string& chosenData) {
+					OnSetDefaultMenuSelection(chosenData);
+					}
+			));
+		});
+		t.detach();
+		//丑陋0.0, 但
+		Sleep(200);
+		//cef_control_->CallJSFunction(L"currentChosenData", 
+		//	nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+		//	ToWeakCallback([this](const std::string& chosenData) {
+		//		//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(chosenData), 3000, GetHWND());
+		//		//已经命悬一线，我们需要让close等我们
+		//		OnSetDefaultMenuSelection(chosenData);
+		//		}
+		//));
 	}
 	return true;
 }
@@ -288,6 +304,7 @@ void CefForm::SaveThemeIndex(int index)
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
 	//fix me, 在这里开启广告查询
+	//InitAdvertisement();
 }
 
 void CefForm::ModifyScaleForCef()
@@ -756,6 +773,9 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 			if (IsSnapShotExist(bmpPath))
 			{
 				bmpPath = "file://" + bmpPath;//网页需要增加这个前缀
+				bmpPath = FileEncode(bmpPath);
+				//std::wstring urlEncode = Alime::HttpUtility::UrlEncodeQuery(nbase::AnsiToUnicode(bmpPath));
+				//bmpPath = nbase::UnicodeToAnsi(urlEncode);
 				value.SetString(bmpPath.c_str(), allocator);
 				obj.AddMember("ImgPath", value, allocator);
 			}
@@ -801,7 +821,6 @@ bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 			timestamp.assign(buf);
 			return true;
 		}
-		MessageBox(NULL, L"_S_IFDIR", L"_S_IFDIR", 1);
 	}
 	else
 	{
@@ -1116,7 +1135,7 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 		auto indexSelection = s.GetInt();
 		WritePrivateProfileStringA("Html", toRead[i], std::to_string(indexSelection).c_str(), nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
 	}
-	//数据结构是前端定的，所以，我其实没有选择。
+	//数据结构是前端定的，所以，我其实没有选择, 工程索引对我来说没有什么意义。
 	rapidjson::Value& s = d[toRead[i]];
 	int indexSelection = s.GetInt();
 	if (!prjPaths_.size() || !indexSelection)
@@ -1130,16 +1149,6 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 	CStringA appName1(appName1_);
 	ASSERT(!moduleName.IsEmpty());
 	ASSERT(!appName1.IsEmpty());
-	//需要提醒他们改配置文件。
-	if (moduleName == "数据转换")
-	{
-		if (appName1 == "SP3D/PDS")
-			appName1 = "PDS";
-		else if (appName1 == "Revit")
-		{
-			appName1 = "导出Revit";
-		}
-	}
 	char str[128] = { 0 };
 	if (appName2.IsEmpty())
 	{
@@ -1239,12 +1248,6 @@ void CefForm::AdvertisementThreadFunc()
 	{
 		std::lock_guard<std::mutex> guarder(lock_);
 		isWebPageAvailable_ = true;
-	}
-	if (isWebPageAvailable_)
-	{
-		//测试代码，这个投递线程应该再loadEnd调用
-		Sleep(1000);
-		PostMessage(WM_SETADVERTISEINJS, 0, 0);
 	}
 }
 
@@ -1629,7 +1632,7 @@ void CefForm::ConsoleForDebug()
 			if (str.find(L"SetCaption") != std::wstring::npos)
 			{
 				auto result = str.substr(10);
-				SetCaption(u8"PKPM结构设计软件 10版 V5.1.1    " + nbase::UTF16ToUTF8(result));
+				SetCaptionWithProjectName(u8"PKPM结构设计软件 10版 V5.1.1    " + nbase::UTF16ToUTF8(result));
 			}
 			else if (str.find(L"Clear") != std::wstring::npos)
 			{
@@ -1661,7 +1664,6 @@ void CefForm::ConsoleForDebug()
 			}
 		}
 		FreeConsole();
-		latch_.countDown();
 		});
 	t.detach();
 }

@@ -83,5 +83,21 @@ namespace application_utily
 		std::string result = s.GetString();
 		return s.GetString();
 	}
+
+	//for file: protocol
+	//测试的特殊字符串: c%c! - 副本@~`$()+-=_][{}';
+	//img src中包含特殊字符时，cef 处理不了#
+	std::string FileEncode(const std::string& query)
+	{
+		std::string result = query;
+		std::string replace = "%";
+		replace += "0123456789ABCDEF"['#' / 16];
+		replace += "0123456789ABCDEF"['#' % 16];
+		nbase::StringReplaceAll("#",
+			replace,
+			result);
+		return result;
+	}
+
 }
 

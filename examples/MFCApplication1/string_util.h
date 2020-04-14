@@ -21,4 +21,5 @@ namespace application_utily
 	std::wstring FullPathOfPkpmIni();
 	std::string FullPathOfPkpmIniA();
 	std::string DictToJson(const std::vector<std::pair<std::string, std::string>>& dict);
+	std::string FileEncode(const std::string& query);
 }

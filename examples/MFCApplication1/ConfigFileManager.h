@@ -25,12 +25,8 @@ private:
 	ConfigManager();
 	//·ÏÆú
 	void CheckAdaptDpi();
-
 	void LoadConfigFile();
-
-
 private:
-	bool isAdaptDpiForCaptionOn_;
 	bool isAutoModifyWindowOn_;
 	bool isAdaptDpiOn_;
 	bool systemFolderSelection_;

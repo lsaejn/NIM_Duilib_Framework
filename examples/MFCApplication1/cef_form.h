@@ -14,6 +14,7 @@
 #define WM_THEME_SELECTED (WM_USER + 2)
 #define WM_SHOWMAINWINDOW (WM_USER + 3)
 #define WM_SETADVERTISEINJS (WM_USER + 4)
+#define WM_ClOSENOW (WM_USER + 5)
 
 const bool kEnableOffsetRender = true;
 
@@ -154,7 +155,7 @@ private:
 	/// <summary>旧代码，名字歪了。获得工程的创建时间，返回快照是否存在</summary>
 	///<param name="timestamp">欲返回的时间戳</param >
 	///<param name="surfix">废弃，快照放到了别的函数</param >
-	///<return>要查询的文件是否有效< / return>
+	///<return>要查询的工程是否有效< / return>
 	bool GetPrjInfo(const std::string& path, std::string& timestamp, const char* surfix = "buildUp.bmp");
 
 	/// <summary>注册c++函数到js</summary>
