@@ -303,8 +303,9 @@ void CefForm::SaveThemeIndex(int index)
 
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
-	//fix me, 在这里开启广告查询
+	//fix me, 在这里开启广告查询/授权码查询
 	//InitAdvertisement();
+	DisplayAuthorizationCodeDate();
 }
 
 void CefForm::ModifyScaleForCef()
@@ -430,7 +431,8 @@ void CefForm::RegisterCppFuncs()
 			SetCaptionWithProjectName(captionName);
 #ifdef DEBUG
 			std::string debugStr = R"({ "SetCaption": "Success." })";
-			callback(true, debugStr);
+			if(callback)
+				callback(true, debugStr);
 #endif // DEBUG
 			return;
 			}
@@ -693,9 +695,9 @@ void CefForm::RegisterCppFuncs()
 			auto now = GetTickCount();
 			auto interval = now - lastTick;
 			lastTick = now;
-			if (interval < 800)
+			if (interval < 200)
 			{
-				MsgBox::Warning(GetHWND(), L"你的操作过于频繁", L"过于频繁有害身心健康");
+				MsgBox::Warning(GetHWND(), L"你的操作过于频繁", L"警告");
 				return;
 			}			
 			nlohmann::json json = nlohmann::json::parse(params);
@@ -1007,7 +1009,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 	}
 	std::string path(args[0]);
 	{
-		ShowWindow(SW_HIDE);
+		//ShowWindow(SW_HIDE);
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
 		{
@@ -1266,9 +1268,6 @@ bool CefForm::GetVersionPage()
 	HttpQuery(req, res);
 	if (200 != res.statusCode)
 	{
-#ifdef _DEBUG
-		OutputDebugStringW(L"没有联网功能");
-#endif // _DEBUG
 		return false;
 	}
 	////////////else///////////////////
@@ -1563,7 +1562,8 @@ int CefForm::RemainingTimeOfUserLock(std::string* SerialNumber)
 	char gSN[17] = { 0 };
 	int dayLeft = 0;
 	dayLeft=dayLeftFunc(ty, sub_ky, gSN);
-	*SerialNumber = gSN;
+	if(SerialNumber!=NULL)
+		*SerialNumber = gSN;
 	FreeLibrary(handle);
 	return dayLeft;
 }
@@ -1725,4 +1725,24 @@ ui::HBox* CefForm::GetCaptionBox()
 nim_comp::CefControlBase* CefForm::GetCef()
 {
 	return this->cef_control_;
+}
+
+void CefForm::DisplayAuthorizationCodeDate()
+{
+	std::thread checkThread([this]() {
+		std::string sn;
+		int daysLeft = RemainingTimeOfUserLock(&sn);
+		if (daysLeft >= 0 && daysLeft < ConfigManager::GetInstance().DaysLeftToNotify())
+		{
+			nlohmann::json json;
+			json["dayLeft"] = daysLeft;
+			auto toSend = nbase::UTF8ToUTF16(json.dump());
+			cef_control_->CallJSFunction(L"showLicenseKey",
+				toSend,
+				ToWeakCallback([this](const std::string& chosenData) {
+					}
+			));
+		}
+		});
+	checkThread.detach();
 }

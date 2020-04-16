@@ -97,7 +97,7 @@ public:
 		DoBeforeCallFunc_ = std::move(_f);
 	}
 
-	void SetAferFunc(CallBack _f)
+	void SetAfterFunc(CallBack _f)
 	{
 		DoAfterCallFunc_ = std::move(_f);
 	}
@@ -352,7 +352,7 @@ void ShortCutHandler::SetCallBacks(HWND wnd, CallBack _f)
 		impl_->SetBeforeFunc([this]() {
 			ShowWindow(this->mainWnd_, SW_HIDE);
 			});
-		impl_->SetAferFunc([this]() {
+		impl_->SetAfterFunc([this]() {
 			ShowWindow(this->mainWnd_, SW_SHOW);
 			});
 		impl_->SetFreshFunc(std::move(_f));

@@ -26,6 +26,7 @@ void ConfigManager::CheckAdaptDpi()
 ConfigManager::ConfigManager()
 	:isAutoModifyWindowOn_(false),
 	isAdaptDpiOn_(false),
+	deadline_(INT32_MAX),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -41,40 +42,25 @@ void ConfigManager::LoadConfigFile()
 	{
 		nlohmann::json json;
 		json = nlohmann::json::parse(content);
-		if (json.find(u8"enableAutoModifyWindow") != json.end())
-		{
+		try {
 			isAutoModifyWindowOn_ = json[u8"enableAutoModifyWindow"];
-		}
-		if (json.find(u8"enableAdaptDpi") != json.end())
-		{
 			isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
-		}
-		if (json.find(u8"systemFolderSelection") != json.end())
-		{
 			systemFolderSelection_ = json[u8"systemFolderSelection"];
+			defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
+			advertisementServer_ = nbase::UTF8ToUTF16(json["server"]);
+			advertisementQuery_ = nbase::UTF8ToUTF16(json["query"]);
+			cefFormWindowText_ = nbase::UTF8ToUTF16(json["windowText"]);
+			cefFormClassName_ = nbase::UTF8ToUTF16(json["className"]);
+			relativePathForHtmlRes_ = nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
+			deadline_ = json["deadline"];
+			if (deadline_ <= 0)
+				deadline_ = 7;
 		}
-		//老代码是ansi,这里先不动了
-		if (json.find("defaultAdvertise") != json.end())
+		catch (...)
 		{
-			defaultAdvertise_=json[u8"defaultAdvertise"].dump();
+			::AfxMessageBox(L"读取配置文件失败");
+			std::abort();
 		}
-		if (json.find("server") != json.end())
-		{
-			advertisementServer_ =nbase::UTF8ToUTF16( json["server"]);
-		}
-		if (json.find("query") != json.end())
-		{
-			advertisementQuery_ = nbase::UTF8ToUTF16( json["query"]);
-		}
-		if (json.find("windowText") != json.end())
-		{
-			cefFormWindowText_ = nbase::UTF8ToUTF16( json["windowText"]);
-		}
-		if (json.find("className") != json.end())
-		{
-			cefFormClassName_ = nbase::UTF8ToUTF16( json["className"]);
-		}
-		relativePathForHtmlRes_= nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
 	}
 }
 
@@ -121,4 +107,9 @@ bool ConfigManager::IsAdaptDpiOn()
 bool ConfigManager::IsModifyWindowOn()
 {
 	return isAutoModifyWindowOn_;
+}
+
+int32_t ConfigManager::DaysLeftToNotify() const
+{
+	return deadline_;
 }

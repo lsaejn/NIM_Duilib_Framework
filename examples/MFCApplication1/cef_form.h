@@ -203,6 +203,8 @@ private:
 	void ConsoleForDebug();
 
 	void InitSpdLog();
+
+	void DisplayAuthorizationCodeDate();
 public:
 
 	void AcceptDpiAdaptor(IAdaptor* acc);

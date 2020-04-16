@@ -4,7 +4,9 @@
 /*
 2020/04/08 官网的issues看起来一直是忽视状态
 %@,%s,%x 都不能用0.0
-只能自己定义了
+只能自己定义了。
+xp下没有GetDynamicTimeZoneInformation，
+需要指定WINNT，我是直接改os.h了
 */
 #define SPDLOG_STR_H(x) #x
 #define SPDLOG_STR_HELPER(x) SPDLOG_STR_H(x)

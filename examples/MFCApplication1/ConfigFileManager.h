@@ -20,7 +20,7 @@ public:
 	std::wstring GetCefFormWindowText() const;
 	std::wstring GetCefFormClassName() const;
 	std::wstring GetRelativePathForHtmlRes() const;
-
+	int32_t DaysLeftToNotify() const;
 private:	
 	ConfigManager();
 	//·ÏÆú
@@ -37,4 +37,5 @@ private:
 	std::wstring cefFormClassName_;
 	std::wstring relativePathForHtmlRes_;
 	std::wstring filePath_;
+	int32_t deadline_;
 };
