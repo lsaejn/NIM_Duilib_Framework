@@ -1427,6 +1427,9 @@ bool CefForm::VersionPage()
 		if (std::regex_search(astring, match, reg))
 		{
 			pageInfo_ = match[3];
+			if (pageInfo_.find("UpdateUrl") == std::string::npos ||
+				pageInfo_.find("Version") == std::string::npos)
+				return false;
 			return true;
 		}
 	}
