@@ -4,6 +4,7 @@
 #include "MsgDialog.h"
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
+#include "Alime/ProcessInfo.h"
 
 #include "Alime/HttpUtil.h"
 #include "Alime/FileSystem.h"
@@ -280,6 +281,18 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				ToWeakCallback([this](const std::string& chosenData) {
 					}
 			));
+		}
+	}
+	else if(uMsg == WM_QUERYENDSESSION ||
+		uMsg == WM_ENDSESSION)
+	{
+		{
+			auto pid = ProcessInspector::GetCurrentPid();
+			auto pidOfChildren = ProcessInspector::GetPidsOfChildProcess(pid);
+			for (auto elem : pidOfChildren)
+			{
+				ProcessInspector::KillProcess(elem);
+			}
 		}
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
@@ -1217,8 +1230,12 @@ void CefForm::InitAdvertisement()
 	func.detach();
 }
 
-//由于前端搞不定，所以逼着我开线程查询广告
-//这样，前端读取所有广告前，需要加锁
+//解决用户内网网页重定向的时候
+//某用户反映修改后的代码比之前显示网页慢了1-2秒
+//然而我们的lock区间很短且不会阻塞。
+//嗯？对方错觉了？或者刚好遇到了锁竞争？
+//无论如何也不会卡1-2秒。但这个时间又和
+//http解析dns的时间相仿。我困惑了。
 void CefForm::AdvertisementThreadFunc()
 {
 	assert(isWebPageAvailable_ == false);
@@ -1299,7 +1316,6 @@ bool CefForm::TellMeNewVersionExistOrNot()
 {
 	bool isWebPageAvailable = false;
 	{
-		std::lock_guard<std::mutex> guarder(lock_);
 		isWebPageAvailable = isWebPageAvailable_;
 	}
 	if (!isWebPageAvailable)
@@ -1394,8 +1410,6 @@ std::string CefForm::TellMeAdvertisement()
 {
 	bool isAdvertisementAvailable = false;
 	{
-		//atomic_bool和mutex择其一即可
-		std::lock_guard<std::mutex> guarder(lock_);
 		isAdvertisementAvailable = isWebPageAvailable_;
 	}
 	if (!isAdvertisementAvailable)

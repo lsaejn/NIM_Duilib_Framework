@@ -39,6 +39,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return 0;
 	}
 
+	//创建守护进程,避免cef残留
+	{
+		wchar_t buffer[256] = { 0 };
+		auto param=L" "+std::to_wstring(::GetCurrentProcessId());
+		memcpy_s(buffer, 256 * sizeof(wchar_t), param.c_str(), param.length() * sizeof(wchar_t));
+		auto pathOfGodWindow = nbase::win32::GetCurrentModuleDirectory() + L"ProcessGuard.exe";
+		HANDLE handleOfGuard;
+		nbase::win32::RunAppWithCommand(pathOfGodWindow.c_str(), buffer, &handleOfGuard);
+		if (handleOfGuard == INVALID_HANDLE_VALUE)
+		{
+			//LOG_ERROR<<
+		}
+	}
+
 	// 创建主线程
 	MainThread thread;
 

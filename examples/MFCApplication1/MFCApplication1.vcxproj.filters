@@ -156,9 +156,6 @@
     <ClInclude Include="rapidxml\rapidxml_utils.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="xml2json.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ShortCutHandler.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -378,6 +375,12 @@
     <ClInclude Include="Alime\CountDownLatch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ThirdParty\xml2json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\ProcessInfo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -438,6 +441,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Alime\ExecutorService.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\ProcessInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

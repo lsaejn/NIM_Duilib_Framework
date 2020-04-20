@@ -228,6 +228,7 @@
     <ClInclude Include="Alime\CountDownLatch.h" />
     <ClInclude Include="Alime\Mutex.h" />
     <ClInclude Include="Alime\ExecutorService.h" />
+    <ClInclude Include="Alime\ProcessInfo.h" />
     <ClInclude Include="AppDllAdaptor.h" />
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
@@ -343,12 +344,13 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="xml2json.h" />
+    <ClInclude Include="ThirdParty\xml2json.h" />
     <ClInclude Include="XmlInfo\InfoItem.h" />
     <ClInclude Include="XmlInfo\SlimXml.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Alime\ExecutorService.cpp" />
+    <ClCompile Include="Alime\ProcessInfo.cpp" />
     <ClCompile Include="AppDllAdaptor.cpp" />
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
