@@ -1022,7 +1022,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 	}
 	std::string path(args[0]);
 	{
-		//ShowWindow(SW_HIDE);
+		ShowWindow(false);
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
 		{

@@ -42,6 +42,10 @@ int main(int argc, char** argv)
 	
     DWORD pidOfPkpmV51 = std::stoi(argv[1]);
 	auto pidsOfChild = GetPidsOfChildProcess(pidOfPkpmV51);
+	auto pidOfThis=::GetCurrentProcessId();
+	auto iter = std::find(pidsOfChild.cbegin(), pidsOfChild.cend(), pidOfThis);
+	if (iter == pidsOfChild.cend())
+		return -2;
 	auto handle = OpenProcess(PROCESS_VM_OPERATION| SYNCHRONIZE, FALSE, pidOfPkpmV51);
 	if (INVALID_HANDLE_VALUE == handle)
 		return -1;
