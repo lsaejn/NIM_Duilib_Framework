@@ -970,7 +970,7 @@ void CefForm::OnRightClickProject(const std::wstring& prjName)
 {
 	if (PathFileExists(prjName.c_str()) && PathIsDirectory(prjName.c_str()))
 	{
-		ShellExecute(NULL, _T("open"), _T("explorer.exe"), prjName.c_str(), NULL, SW_SHOWNORMAL);
+		application_utily::OpenDocument(prjName);
 	}
 	else
 		MsgBox::Warning(GetHWND(), L"工程目录无法打开，可能已经被删除" ,L"路径错误");
@@ -1055,19 +1055,8 @@ void CefForm::OnOpenDocument(const std::string& filename)
 {
 	std::string FullPath(nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()) + "Ribbon\\");
 	FullPath += filename;
-
-	SHELLEXECUTEINFO ShExecInfo;
-	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-	ShExecInfo.hwnd = NULL;
-	ShExecInfo.lpVerb = _T("open");
 	auto wstr = nbase::AnsiToUnicode(FullPath);
-	ShExecInfo.lpFile = wstr.c_str();
-	ShExecInfo.lpParameters = _T("");
-	ShExecInfo.lpDirectory = NULL;
-	ShExecInfo.nShow = SW_SHOW;
-	ShExecInfo.hInstApp = NULL;
-	ShellExecuteEx(&ShExecInfo);
+	application_utily::OpenDocument(wstr);
 }
 
 

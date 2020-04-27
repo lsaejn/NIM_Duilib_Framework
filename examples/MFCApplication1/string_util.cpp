@@ -99,5 +99,20 @@ namespace application_utily
 		return result;
 	}
 
+	void OpenDocument(const std::wstring& filePath)
+	{
+		SHELLEXECUTEINFO ShExecInfo;
+		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+		ShExecInfo.hwnd = NULL;
+		ShExecInfo.lpVerb = _T("open");
+		ShExecInfo.lpFile = filePath.c_str();
+		ShExecInfo.lpParameters = _T("");
+		ShExecInfo.lpDirectory = NULL;
+		ShExecInfo.nShow = SW_SHOW;
+		ShExecInfo.hInstApp = NULL;
+		ShellExecuteEx(&ShExecInfo);
+	}
+
 }
 
