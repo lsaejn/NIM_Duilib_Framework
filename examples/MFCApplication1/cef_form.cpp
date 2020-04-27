@@ -91,7 +91,7 @@ void CefForm::InitWindow()
 	EnableAcceptFiles();
 	
 	//旧代码
-	SetCfgPmEnv();//增加pm环境
+	SetCfgPmEnv();
 	appDll_.InitPkpmAppFuncPtr();
 	appDll_.Invoke_InitPkpmApp();
 
@@ -116,8 +116,6 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 		你有几个选择:
 		1.像下面这样在线程里启动模态/非模态对话框。我保留了下面这个例子。
 		2.将对话框放到动态库的函数里。
-		否则，你需要将duilib对话框作为子窗口放到mfc对话框内部, 这种
-		做法可以使得mfc和duilib互相使用对方的mfc控件。
 	*/
 	if (name == L"btn_dev_tool")
 	{
@@ -165,8 +163,6 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	else if (name == L"closebtn")
 	{
 		//bug出现在Winxp的机器上，
-		//来不及回调OnSetDefaultMenuSelection，程序就已经结束
-		//这么做相当丑陋，但是简单暴力！
 		std::thread t([this]() {
 			cef_control_->CallJSFunction(L"currentChosenData",
 				nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
@@ -176,16 +172,8 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 			));
 		});
 		t.detach();
-		//丑陋0.0, 但
+		//丑陋0.0, 但是简单暴力
 		Sleep(200);
-		//cef_control_->CallJSFunction(L"currentChosenData", 
-		//	nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
-		//	ToWeakCallback([this](const std::string& chosenData) {
-		//		//nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(chosenData), 3000, GetHWND());
-		//		//已经命悬一线，我们需要让close等我们
-		//		OnSetDefaultMenuSelection(chosenData);
-		//		}
-		//));
 	}
 	return true;
 }
@@ -236,7 +224,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				ConsoleForDebug();
 			}
 		}
-		//F5
+		//提供F5给前端
 		if (116 == wParam)
 		{
 #ifdef DEBUG
@@ -272,8 +260,6 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (uMsg == WM_SETADVERTISEINJS)
 	{
-		//网页需要提供一个函数，SetAdvertise
-		//让c++主动开启广告滚动
 		{
 			auto advString = TellMeAdvertisement();
 			cef_control_->CallJSFunction(L"SetAdvertise",
@@ -316,8 +302,6 @@ void CefForm::SaveThemeIndex(int index)
 
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
-	//fix me, 在这里开启广告查询/授权码查询
-	//InitAdvertisement();
 	DisplayAuthorizationCodeDate();
 }
 
@@ -342,19 +326,13 @@ void CefForm::ModifyScaleForCaption()
 		return;
 	else if (ConfigManager::GetInstance().IsModifyWindowOn())
 	{
-		//fix me
+		//fix me, 未完成
 		DefaultDpiAdaptor helper;
 		AcceptDpiAdaptor(&helper);
 		return;
 		UINT dpi = ui::DpiManager::GetMainMonitorDPI();
 		auto scale = MulDiv(dpi, 100, 96);
 		double rate = scale / 100.0;
-		//ui::UiRect captionRect=this_window_->GetCaptionRect();
-		//ui::UiRect adjustedCaptionRect = { 0,
-		//	0,
-		//	static_cast<int>(captionRect.GetWidth() * rate),
-		//	static_cast<int>(captionRect.GetHeight() * rate) };
-		//this_window_->SetCaptionRect(adjustedCaptionRect);
 
 		RECT rc;
 		GetWindowRect(GetHWND(), &rc);
@@ -370,14 +348,12 @@ void CefForm::ModifyScaleForCaption()
 			ui::UiRect(0, 0,
 				static_cast<int>(captionWidth *rate),
 				static_cast<int>(captionHeight *rate)));
-		//label_->SetFont(L"system_18");
 	}
 }
 
 void CefForm::OnLoadStart()
 {
-	//有个潜在的竞争，就是我们要在网页加载之前就注册好函数
-	//我记得最早期的demo存在网页调用c++函数时，函数还没注册的情况
+	//早期的demo存在网页调用c++函数时，函数还没注册的情况
 	//但这个问题后来再也没有出现过
 	RegisterCppFuncs();
 	ModifyScaleForCef();
@@ -385,7 +361,7 @@ void CefForm::OnLoadStart()
 
 void CefForm::RegisterCppFuncs()
 {
-	//加上Toast资源文件夹，以便使用这个对话框。
+	//调试窗口，需要加上Toast资源文件夹，以便使用这个对话框。
 	cef_control_->RegisterCppFunc(L"ShowMessageBox", 
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
@@ -561,8 +537,8 @@ void CefForm::RegisterCppFuncs()
 			vec.push_back(coreWithPara);
 			vec.push_back(secMenu);
 			vec.push_back(trdMenu);
-			//cef_control_->HideToolTip();
-			//你可以像shortCutHandler.cpp那样处理参数，避免写出现在这样的代码
+			//cef_control_->HideToolTip(); 系统tooltip被弃用
+			//你可以像shortCutHandler.cpp里的模板那样处理参数，避免写出现vec
 			OnDbClickProject(vec);
 			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
@@ -735,14 +711,14 @@ void CefForm::RegisterCppFuncs()
 
 }
 
-//fileName一般就是CFG/PKPM.ini了
+
 /*
 这是个旧函数，每次都读配置文件，之所以没有
 删除是因为，它曾经帮了大忙0.0
 (比方说，它意外地处理了网页刷新造成的内存/文件不匹配，用户使用程序过程中手动改配置文件)，
 我保留它大概是希望获得额外的心理安慰。
-正确的做法是检查一次配置文件，读到内存，然后维护内存即可。
 */
+//fileName并不受我控制
 std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 {
 	prjPaths_.clear();
@@ -789,8 +765,6 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 			{
 				bmpPath = "file://" + bmpPath;//网页需要增加这个前缀
 				bmpPath = FileEncode(bmpPath);
-				//std::wstring urlEncode = Alime::HttpUtility::UrlEncodeQuery(nbase::AnsiToUnicode(bmpPath));
-				//bmpPath = nbase::UnicodeToAnsi(urlEncode);
 				value.SetString(bmpPath.c_str(), allocator);
 				obj.AddMember("ImgPath", value, allocator);
 			}
@@ -808,7 +782,6 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 	rapidjson::Writer<rapidjson::StringBuffer> writer(s);
 	doc.Accept(writer);
 	std::string result= s.GetString();
-	//fixe me, rapidjson 似乎自己编码了u8
 	return nbase::AnsiToUtf8(result);
 }
 
@@ -839,7 +812,7 @@ bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 	}
 	else
 	{
-		//winxp 下 stat系列函数都会出现bug
+		//winxp 下 stat系列函数都会出现bug。我先保留上面的分支
 		//search " _stat not working on Windows XP"
 		WIN32_FILE_ATTRIBUTE_DATA fileData;
 		GetFileAttributesExA(pathStr.c_str(), GetFileExInfoStandard, &fileData);
@@ -908,7 +881,6 @@ void CefForm::OnShortCut(const char* cutName)
 	shortCutHandler_.CallFunc(cutName);
 }
 
-//我们只在回调中使用u8字符串
 std::string CefForm::OnNewProject()
 {
 	int useDevelopVersion = 0;
@@ -1016,7 +988,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		MsgBox::Warning(GetHWND(), L"打开工程的参数不正确", L"严重错误");
 	}
 	if (!prjPaths_.size())
-	{//不应该再出现这个错误
+	{
 		MsgBox::Warning(GetHWND(), L"工作目录不存在", L"严重错误");
 		return;
 	}
@@ -1071,7 +1043,7 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 		{		
 			ret=WritePrivateProfileStringA("WorkPath", workPathId.c_str(), prjPaths[i].c_str(), filename.c_str());
 		}			
-		else//de a bug 
+		else
 		{
 			ret=WritePrivateProfileStringA("WorkPath", workPathId.c_str(), NULL, filename.c_str());
 		}
@@ -1139,7 +1111,7 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 		auto indexSelection = s.GetInt();
 		WritePrivateProfileStringA("Html", toRead[i], std::to_string(indexSelection).c_str(), nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
 	}
-	//数据结构是前端定的，所以，我其实没有选择, 工程索引对我来说没有什么意义。
+	//数据结构是前端定的，所以我其实没有选择, 工程索引对我来说没有什么意义，但我还是要管收\发\存。
 	rapidjson::Value& s = d[toRead[i]];
 	int indexSelection = s.GetInt();
 	if (!prjPaths_.size() || !indexSelection)
@@ -1165,18 +1137,18 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 	appDll_.Invoke_RunCommand(str);
 }
 
+//旧代码，vc程序员的素质堪忧，我大约有60的时候是用来擦屎
 bool CefForm::SetCfgPmEnv()
 {
 	const int LENGTH_OF_ENV = 1024 * 8;
-	//哔了狗了，unique_ptr知道吗?
-	TCHAR* szOriEnvPath = new  TCHAR[LENGTH_OF_ENV];//所以这片内存去哪了....?
+	TCHAR* szOriEnvPath = new  TCHAR[LENGTH_OF_ENV];//所以这片内存去哪了....?这个屎我不擦
 	DWORD dwRet = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, LENGTH_OF_ENV);
 	if (!dwRet)
 	{
 		::AfxMessageBox(L"Error! Can not find Path", MB_OK | MB_SYSTEMMODAL);
 		return false;
 	}
-	else if (LENGTH_OF_ENV < dwRet)//需要重新分配内存
+	else if (LENGTH_OF_ENV < dwRet)
 	{
 		delete[] szOriEnvPath;
 		szOriEnvPath = new  TCHAR[dwRet + 1];
@@ -1214,23 +1186,16 @@ bool CefForm::SetCfgPmEnv()
 
 void CefForm::InitAdvertisement()
 {
-	//基础设施不够，要承受this失效的风险。但问题发生在退出程序时，问题应该不大。
+	//fix me, not safe
 	std::thread func(std::bind(&CefForm::AdvertisementThreadFunc, this));
 	func.detach();
 }
 
-//解决用户内网网页重定向的时候
-//某用户反映修改后的代码比之前显示网页慢了1-2秒
-//然而我们的lock区间很短且不会阻塞。
-//嗯？对方错觉了？或者刚好遇到了锁竞争？
-//无论如何也不会卡1-2秒。但这个时间又和
-//http解析dns的时间相仿。我困惑了。
 void CefForm::AdvertisementThreadFunc()
 {
 	assert(isWebPageAvailable_ == false);
 	bool AdPageCanAccess = false;
-	//网页不是我在维护，他们可能犯任何错误
-	//比如,json写错，编码不对
+	//网页不是我在维护
 	try
 	{
 		AdPageCanAccess = GetVersionPage();
@@ -1292,6 +1257,7 @@ bool CefForm::GetVersionPage()
 		if (std::regex_search(astring, match, reg))
 		{
 			pageInfo_ = match[3];
+			//考虑用户内网网页重定向的问题,简单处理即可
 			if (pageInfo_.find("UpdateUrl") == std::string::npos ||
 				pageInfo_.find("Version") == std::string::npos)
 				return false;
@@ -1448,14 +1414,7 @@ std::string CefForm::TellMeAdvertisement()
 	return ConfigManager::GetInstance().GetDefaultAdvertise();
 }
 
-/*
-不可能每次新建工程都检查全部的路径，更不可能开线程监视。
-因为我不是在写文本编辑器。
-只需要保证打开文件时，拿到的路径是有效的，并且每次
-新建的新工程路径是有效的。这样就可以了。算仁至义尽。
-FileSystem里可能有bug, 0.0，但也没人帮测，这个公司需要的是神级程序员。
-没基础库，没文档，一堆垃圾代码。
-*/
+//大致修一下路径
 size_t CefForm::CorrectWorkPath()
 {
 	std::vector<std::wstring> vec;
@@ -1622,8 +1581,7 @@ void CefForm::AttachFunctionToShortCut()
 
 void CefForm::ConsoleForDebug()
 {
-	//一个控制台，以命令方式模拟网页点击事件
-//将被写入log模块
+	//一个控制台，给王工调试接口
 	Alime::Console::CreateConsole();
 	RECT rc;
 	GetWindowRect(m_hWnd, &rc);

@@ -21,6 +21,7 @@ std::function<void(void)> makeFunc(F&& f, Args... args)
 }
 
 /*
+fix me, 未完成，将会写到Alime convTemplate.h
 a template works liks this.
 std::string s="times";
 auto re=toStdString(1,"day, i say goodbye for",3.0, s, "");
@@ -29,10 +30,9 @@ out: 1 day, i say goodbye for 3.0 times;
 template <typename String>
 std::string  toStdString(const String &args)
 {
+	static_assert(1 == 1, "see convTemplate.h");
 	return args;
 }
-
-
 //
 //template <typename T, typename Target>
 //std::string toAppendStrImpl(const T& v, Target result) {

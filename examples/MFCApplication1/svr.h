@@ -1,7 +1,7 @@
 #pragma once
 
 
-
+//旧代码，大量MFC代码，要抽空干掉。
 struct MODULE_PATH //在主对话框中有一个类似的  这个是公用的
 {
 	CString m_name;

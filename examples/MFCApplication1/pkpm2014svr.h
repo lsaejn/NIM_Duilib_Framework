@@ -1,5 +1,5 @@
 #pragma once
-
+//¾É´úÂë
 #include "XmlInfo//InfoItem.h"
 
 class cfgpathsvr
