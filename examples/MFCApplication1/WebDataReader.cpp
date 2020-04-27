@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "WebDataReader.h"
+#include "string_util.h"
 #ifdef max
 #undef max
 #endif
@@ -10,6 +11,7 @@
 #include "nlohmann/json.hpp"
 
 #include <filesystem>
+#include <algorithm>
 
 //由于程序依赖注册表，所以以exe为根
 const std::wstring kRelativePathForPkpmAppMenu = L"CFG\\PKPMAPPMENU\\";
@@ -36,7 +38,6 @@ const std::string WebDataReader::ReadSpecific(const std::string& filePath) const
 
 void WebDataReader::Load()
 {
-	//for()
     auto path = nbase::win32::GetCurrentModuleDirectory() + kRelativePathForPkpmAppMenu;
     if (!std::filesystem::exists(path))
     {
@@ -47,6 +48,12 @@ void WebDataReader::Load()
     {
 		std::wstring filePath = p.path().generic_wstring();
         OutputDebugString(filePath.c_str());
+        {
+            auto copy = nbase::UnicodeToAnsi(filePath);
+            std::transform(copy.begin(), copy.end(), copy.begin(), ::toupper);
+            if (!string_utility::endWith(copy.c_str(), ".XML"))
+                continue;
+        }     
 		std::string content;
 		bool succ = nbase::ReadFileToString(filePath, content);
 		ASSERT(succ);
@@ -55,16 +62,22 @@ void WebDataReader::Load()
         std::string u8fileName = p.path().filename().generic_u8string();
         u8fileName = kRelativePathForPkpmAppMenuAnsi + u8fileName;
         //
-        std::string u8Content = xml2json(nbase::AnsiToUtf8(content).c_str());
+        std::string u8Content;
+        try 
+        {
+            u8Content = xml2json(nbase::AnsiToUtf8(content).c_str());
+        }
+        catch (...)
+        {
+            //log_err<<
+            MessageBox(NULL, filePath.c_str(), L"无效的配置文件", MB_ICONINFORMATION);
+            continue;
+        }
         std::string modifiedU8;
         if (ModifyDataWithTag(u8Content, modifiedU8))
-        {
             xmlData_[u8fileName] = modifiedU8;
-        }
         else
-        {
             xmlData_[u8fileName] = u8Content;
-        }          
     }
 }
 
@@ -91,4 +104,9 @@ bool WebDataReader::ModifyDataWithTag(const std::string& u8Content, std::string&
         return true;
     }
     return false;
+}
+
+void WebDataReader::Accept(IWebDataVisitor* visitor)
+{
+    visitor->Visit(this);
 }

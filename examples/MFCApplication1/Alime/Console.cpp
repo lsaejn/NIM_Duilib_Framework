@@ -19,6 +19,11 @@ namespace Alime
 		{
 			AllocConsole();
 		}
+		else
+		{
+			FreeConsole();
+			AllocConsole();
+		}
 	}
 
 	void Console::Write(const wchar_t* string, int32_t length)
@@ -149,6 +154,11 @@ namespace Alime
 		else
 			wprintf(L"\x1B[01;3%dm", color);
 #endif
+	}
+
+	void Console::SetColor(WORD colorType)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colorType);
 	}
 
 	void Console::SetTitle(const std::wstring& string)

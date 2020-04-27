@@ -4,6 +4,8 @@
 #include "BoundedQueue.h"
 #include "ShortCutHandler.h"
 #include "AppDllAdaptor.h"
+#include "DpiAdaptor.h"
+#include "Alime/countDownLatch.h"
 #include <atomic>
 #include <mutex>
 
@@ -11,6 +13,8 @@
 #define WEBINTERFACE
 #define WM_THEME_SELECTED (WM_USER + 2)
 #define WM_SHOWMAINWINDOW (WM_USER + 3)
+#define WM_SETADVERTISEINJS (WM_USER + 4)
+#define WM_ClOSENOW (WM_USER + 5)
 
 const bool kEnableOffsetRender = true;
 
@@ -88,7 +92,7 @@ private:
 	/// <summary>添加工程到文件</summary>
 	///<param name="newProj">新工程名</param >
 	///<param name="filePath">配置文件名</param >
-	///<return>工程是否增加成果</return>
+	///<return>工程是否增加成功</return>
 	WEBINTERFACE bool AddWorkPaths(const std::string& newProj, const std::string& filename);
 
 	/// <summary>保存工程到文件,旧代码里是static函数，我也懒得再加一个函数了。</summary>
@@ -101,7 +105,7 @@ private:
 	WEBINTERFACE void OnSetDefaultMenuSelection(const std::string& json_str);
 
 	/// <summary>告知前端广告内容。</summary>
-	///<return>广告内容的json，见接口文档</return>
+	///<return>广告内容的u8json，见接口文档</return>
 	WEBINTERFACE std::string TellMeAdvertisement();
 
 	/// <summary>告知前端是否存在新版本。</summary>
@@ -141,16 +145,17 @@ private:
 
 	/// <summary>以线程获取广告页面</summary>
 	void InitAdvertisement();
+
 	/// <summary>获取广告页面的线程函数</summary>
 	void AdvertisementThreadFunc();
 
 	/// <summary>旧代码，名字歪了。下载广告页。</summary>
-	bool VersionPage();
+	bool GetVersionPage();
 
 	/// <summary>旧代码，名字歪了。获得工程的创建时间，返回快照是否存在</summary>
 	///<param name="timestamp">欲返回的时间戳</param >
 	///<param name="surfix">废弃，快照放到了别的函数</param >
-	///<return>要查询的文件是否有效< / return>
+	///<return>要查询的工程是否有效< / return>
 	bool GetPrjInfo(const std::string& path, std::string& timestamp, const char* surfix = "buildUp.bmp");
 
 	/// <summary>注册c++函数到js</summary>
@@ -193,7 +198,19 @@ private:
 	void ModifyScaleForCaption();
 
 	/// <summary>返回即将过期的模块的剩余日期</summary>
-	int remainingTimeOfUserLock(std::string* SerialNumber=NULL);
+	int RemainingTimeOfUserLock(std::string* SerialNumber=NULL);
+
+	void ConsoleForDebug();
+
+	void InitSpdLog();
+
+	void DisplayAuthorizationCodeDate();
+public:
+
+	void AcceptDpiAdaptor(IAdaptor* acc);
+	ui::Label* GetCaptionLabel();
+	ui::HBox* GetCaptionBox();
+	nim_comp::CefControlBase* GetCef();
 
 private:
 	nim_comp::CefControlBase* cef_control_;
@@ -214,5 +231,6 @@ private:
 	std::string pageInfo_;
 	std::wstring defaultCaption_;
 	int indexHeightLighted_;//很多旧代码需要直接拿加亮索引工作, 我们监视鼠标每次单击
+	Alime::CountDownLatch latch_;
 };
 

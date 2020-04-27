@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ui_components", "..\ui_comp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PkpmV5", "MFCApplication1\MFCApplication1.vcxproj", "{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcessGuard", "ProcessGuard\ProcessGuard.vcxproj", "{E2B92886-A610-44BA-A048-1E040BE9E7B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -65,6 +67,14 @@ Global
 		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|Win32.Build.0 = Release|Win32
 		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.ActiveCfg = Release|x64
 		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.Build.0 = Release|x64
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Debug|Win32.Build.0 = Debug|Win32
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Debug|x64.ActiveCfg = Debug|x64
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Debug|x64.Build.0 = Debug|x64
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Release|Win32.ActiveCfg = Release|Win32
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Release|Win32.Build.0 = Release|Win32
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Release|x64.ActiveCfg = Release|x64
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,6 +82,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9} = {1DA0A8E2-5832-42FC-83F7-2CDCAD379C90}
 		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5} = {B2087994-3DF6-4A57-B8C6-6F744520D7FA}
+		{E2B92886-A610-44BA-A048-1E040BE9E7B5} = {B2087994-3DF6-4A57-B8C6-6F744520D7FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {68CA0970-4242-4E4F-94D2-C19760FCA05D}

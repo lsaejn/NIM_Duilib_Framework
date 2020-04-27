@@ -14,6 +14,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <io.h>
 
 // base header
 #include "base/base.h"
@@ -24,5 +25,7 @@
 // ui components
 #include "ui_components/ui_components.h"
 #include "ui_components/ui_cef_control.h"
+
+
 
 #endif //PCH_H

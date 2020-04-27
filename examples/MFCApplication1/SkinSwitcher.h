@@ -7,7 +7,7 @@
 #include <memory>
 #include <functional>
 
-#include "NoCopyable.h"
+#include "Alime/NonCopyable.h"
 
 
 /*

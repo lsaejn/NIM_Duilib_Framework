@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "string_util.h"
+#include "RapidjsonForward.h"
 #include <string>
 
 namespace string_utility
@@ -45,5 +46,73 @@ namespace string_utility
 		}
 		return std::move(s);
 	}
+}
+
+namespace application_utily
+{
+	std::wstring FullPathOfPkpmIni()
+	{
+		static auto path = nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini";
+		return path;
+	}
+
+	std::string FullPathOfPkpmIniA()
+	{
+		static auto path = nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()
+			+ L"cfg/pkpm.ini");
+		return path;
+	}
+
+	std::string DictToJson(const std::vector<std::pair<std::string, std::string>>& dict)
+	{
+		rapidjson::Document doc;
+		rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+
+		rapidjson::Value root(rapidjson::kObjectType);
+		for (auto i = 0; i != dict.size(); ++i)
+		{
+			rapidjson::Value strObject(rapidjson::kStringType);
+			strObject.SetString(dict[i].first.c_str(), allocator);
+			rapidjson::Value strObjectValue(rapidjson::kStringType);
+			strObjectValue.SetString(dict[i].second.c_str(), allocator);
+			root.AddMember(strObject, strObjectValue, allocator);
+		}
+		rapidjson::StringBuffer s;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+		root.Accept(writer);
+		std::string result = s.GetString();
+		return s.GetString();
+	}
+
+	//for file: protocol
+	//测试的特殊字符串: c%c! - 副本@~`$()+-=_][{}';
+	//img src中包含特殊字符时，cef 处理不了#
+	std::string FileEncode(const std::string& query)
+	{
+		std::string result = query;
+		std::string replace = "%";
+		replace += "0123456789ABCDEF"['#' / 16];
+		replace += "0123456789ABCDEF"['#' % 16];
+		nbase::StringReplaceAll("#",
+			replace,
+			result);
+		return result;
+	}
+
+	void OpenDocument(const std::wstring& filePath)
+	{
+		SHELLEXECUTEINFO ShExecInfo;
+		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+		ShExecInfo.hwnd = NULL;
+		ShExecInfo.lpVerb = _T("open");
+		ShExecInfo.lpFile = filePath.c_str();
+		ShExecInfo.lpParameters = _T("");
+		ShExecInfo.lpDirectory = NULL;
+		ShExecInfo.nShow = SW_SHOW;
+		ShExecInfo.hInstApp = NULL;
+		ShellExecuteEx(&ShExecInfo);
+	}
+
 }
 

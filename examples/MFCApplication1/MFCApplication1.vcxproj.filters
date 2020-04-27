@@ -156,9 +156,6 @@
     <ClInclude Include="rapidxml\rapidxml_utils.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="xml2json.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ShortCutHandler.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -166,9 +163,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="CDirSelectThread.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Console.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="nlohmann\json.hpp">
@@ -189,12 +183,6 @@
     <ClInclude Include="XmlInfo\InfoItem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="HttpUtil.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="FileSystem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="templates.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -204,19 +192,193 @@
     <ClInclude Include="SkinSwitcher.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="NoCopyable.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MsgDialog.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RapidjsonForward.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ConfigFileManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="DpiAdaptor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\async_logger_impl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\circular_q.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\console_globals.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\file_helper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\fmt_helper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\log_msg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\logger_impl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\mpmc_blocking_q.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\null_mutex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\os.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\pattern_formatter.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\periodic_worker.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\registry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\details\thread_pool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\colors.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\core.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\format.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\format-inl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\ostream.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\posix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\printf.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\ranges.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\time.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bin_to_hex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\fmt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\ostr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\android_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\ansicolor_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\base_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\basic_file_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\daily_file_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\dist_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\msvc_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\null_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\ostream_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\rotating_file_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\stdout_color_sinks.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\stdout_sinks.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\syslog_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\sinks\wincolor_sink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\async.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\async_logger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\formatter.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\logger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\spdlog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\tweakme.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\version.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\HttpUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\FileSystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\Console.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RapidjsonForward.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SpdLogForward.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\NonCopyable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\ExecutorService.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\Mutex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\CountDownLatch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\xml2json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Alime\ProcessInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -242,9 +404,6 @@
     <ClCompile Include="CDirSelectThread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Console.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="AppDllAdaptor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -257,13 +416,7 @@
     <ClCompile Include="XmlInfo\SlimXml.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="HttpUtil.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="string_util.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="FileSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="WinMain.cpp">
@@ -276,6 +429,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DpiAdaptor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\HttpUtil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\FileSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\Console.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\ExecutorService.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Alime\ProcessInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

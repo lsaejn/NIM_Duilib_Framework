@@ -97,7 +97,7 @@ public:
 		DoBeforeCallFunc_ = std::move(_f);
 	}
 
-	void SetAferFunc(CallBack _f)
+	void SetAfterFunc(CallBack _f)
 	{
 		DoAfterCallFunc_ = std::move(_f);
 	}
@@ -216,16 +216,10 @@ public:
 		STARTUPINFO info = { 0 };
 		info.cb = sizeof(STARTUPINFO);
 		PROCESS_INFORMATION prinfo;
-		//CRect rc;
-		//GetWindowRect(mainWnd, rc);
-		//ShowWindow(mainWnd, SW_HIDE);
 		DoBeforeCallFunc_();
 		CreateProcess(NULL, STRPATH, NULL, NULL, FALSE, 0, NULL, NULL, &info, &prinfo);
 		WaitForSingleObject(prinfo.hProcess, -1);
 		DoAfterCallFunc_();	
-		//MoveWindow(mainWnd,rc.left, rc.top, rc.Width(), rc.Height(), 0);
-		//::ShowWindow(mainWnd, SW_SHOW);
-		//::SetWindowPos(this->m_hWnd,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 		CloseHandle(prinfo.hThread);
 		CloseHandle(prinfo.hProcess);
 	}
@@ -352,7 +346,7 @@ void ShortCutHandler::SetCallBacks(HWND wnd, CallBack _f)
 		impl_->SetBeforeFunc([this]() {
 			ShowWindow(this->mainWnd_, SW_HIDE);
 			});
-		impl_->SetAferFunc([this]() {
+		impl_->SetAfterFunc([this]() {
 			ShowWindow(this->mainWnd_, SW_SHOW);
 			});
 		impl_->SetFreshFunc(std::move(_f));

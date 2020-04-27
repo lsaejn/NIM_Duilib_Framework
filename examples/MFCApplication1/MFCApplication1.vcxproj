@@ -80,7 +80,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>PKPM2010V51</TargetName>
-    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;D:\works\vcpkg\installed\x86-windows-static\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
     <GenerateManifest>true</GenerateManifest>
@@ -92,7 +92,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
     <TargetName>PKPM2010V51</TargetName>
-    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
   </PropertyGroup>
@@ -109,6 +109,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <BrowseInformation>true</BrowseInformation>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -224,20 +225,25 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Alime\CountDownLatch.h" />
+    <ClInclude Include="Alime\Mutex.h" />
+    <ClInclude Include="Alime\ExecutorService.h" />
+    <ClInclude Include="Alime\ProcessInfo.h" />
     <ClInclude Include="AppDllAdaptor.h" />
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
     <ClInclude Include="ConfigFileManager.h" />
-    <ClInclude Include="Console.h" />
+    <ClInclude Include="Alime\Console.h" />
     <ClInclude Include="DpiAdaptor.h" />
-    <ClInclude Include="FileSystem.h" />
-    <ClInclude Include="HttpUtil.h" />
+    <ClInclude Include="Alime\FileSystem.h" />
+    <ClInclude Include="Alime\HttpUtil.h" />
     <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
-    <ClInclude Include="NoCopyable.h" />
+    <ClInclude Include="Alime\NonCopyable.h" />
     <ClInclude Include="pkpm2014svr.h" />
     <ClInclude Include="RapidjsonForward.h" />
+    <ClInclude Include="SpdLogForward.h" />
     <ClInclude Include="rapidjson\allocators.h" />
     <ClInclude Include="rapidjson\document.h" />
     <ClInclude Include="rapidjson\encodedstream.h" />
@@ -279,6 +285,55 @@
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="ShortCutHandler.h" />
     <ClInclude Include="SkinSwitcher.h" />
+    <ClInclude Include="spdlog\async.h" />
+    <ClInclude Include="spdlog\async_logger.h" />
+    <ClInclude Include="spdlog\common.h" />
+    <ClInclude Include="spdlog\details\async_logger_impl.h" />
+    <ClInclude Include="spdlog\details\circular_q.h" />
+    <ClInclude Include="spdlog\details\console_globals.h" />
+    <ClInclude Include="spdlog\details\file_helper.h" />
+    <ClInclude Include="spdlog\details\fmt_helper.h" />
+    <ClInclude Include="spdlog\details\logger_impl.h" />
+    <ClInclude Include="spdlog\details\log_msg.h" />
+    <ClInclude Include="spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="spdlog\details\null_mutex.h" />
+    <ClInclude Include="spdlog\details\os.h" />
+    <ClInclude Include="spdlog\details\pattern_formatter.h" />
+    <ClInclude Include="spdlog\details\periodic_worker.h" />
+    <ClInclude Include="spdlog\details\registry.h" />
+    <ClInclude Include="spdlog\details\thread_pool.h" />
+    <ClInclude Include="spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="spdlog\fmt\bundled\colors.h" />
+    <ClInclude Include="spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="spdlog\fmt\bundled\posix.h" />
+    <ClInclude Include="spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="spdlog\fmt\bundled\time.h" />
+    <ClInclude Include="spdlog\fmt\fmt.h" />
+    <ClInclude Include="spdlog\fmt\ostr.h" />
+    <ClInclude Include="spdlog\formatter.h" />
+    <ClInclude Include="spdlog\logger.h" />
+    <ClInclude Include="spdlog\sinks\android_sink.h" />
+    <ClInclude Include="spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="spdlog\sinks\base_sink.h" />
+    <ClInclude Include="spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="spdlog\sinks\null_sink.h" />
+    <ClInclude Include="spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="spdlog\sinks\sink.h" />
+    <ClInclude Include="spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="spdlog\spdlog.h" />
+    <ClInclude Include="spdlog\tweakme.h" />
+    <ClInclude Include="spdlog\version.h" />
     <ClInclude Include="string_util.h" />
     <ClInclude Include="svr.h" />
     <ClInclude Include="templates.h" />
@@ -289,21 +344,23 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="xml2json.h" />
+    <ClInclude Include="ThirdParty\xml2json.h" />
     <ClInclude Include="XmlInfo\InfoItem.h" />
     <ClInclude Include="XmlInfo\SlimXml.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Alime\ExecutorService.cpp" />
+    <ClCompile Include="Alime\ProcessInfo.cpp" />
     <ClCompile Include="AppDllAdaptor.cpp" />
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="ConfigFileManager.cpp" />
-    <ClCompile Include="Console.cpp" />
+    <ClCompile Include="Alime\Console.cpp" />
     <ClCompile Include="DpiAdaptor.cpp" />
-    <ClCompile Include="FileSystem.cpp">
+    <ClCompile Include="Alime\FileSystem.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="HttpUtil.cpp" />
+    <ClCompile Include="Alime\HttpUtil.cpp" />
     <ClCompile Include="MsgDialog.cpp" />
     <ClCompile Include="pkpm2014svr.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
