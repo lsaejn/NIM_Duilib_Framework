@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{B2087994-3DF6-4A57-B8C6-6F744520D7FA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PkpmLauncher", "PkpmLauncher", "{B2087994-3DF6-4A57-B8C6-6F744520D7FA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "third_party", "third_party", "{1DA0A8E2-5832-42FC-83F7-2CDCAD379C90}"
 EndProject
@@ -15,9 +15,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "duilib", "..\duilib\duilib.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ui_components", "..\ui_components\ui_components.vcxproj", "{0149BA6E-3C0A-426D-AA0A-0B9EC7742F19}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PkpmV5", "MFCApplication1\MFCApplication1.vcxproj", "{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcessGuard", "ProcessGuard\ProcessGuard.vcxproj", "{E2B92886-A610-44BA-A048-1E040BE9E7B5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PkpmV5", "PkpmLauncher\PkpmLauncher.vcxproj", "{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,14 +59,6 @@ Global
 		{0149BA6E-3C0A-426D-AA0A-0B9EC7742F19}.Release|Win32.Build.0 = Release|Win32
 		{0149BA6E-3C0A-426D-AA0A-0B9EC7742F19}.Release|x64.ActiveCfg = Release|x64
 		{0149BA6E-3C0A-426D-AA0A-0B9EC7742F19}.Release|x64.Build.0 = Release|x64
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|Win32.Build.0 = Debug|Win32
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|x64.ActiveCfg = Debug|x64
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|x64.Build.0 = Debug|x64
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|Win32.ActiveCfg = Release|Win32
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|Win32.Build.0 = Release|Win32
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.ActiveCfg = Release|x64
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.Build.0 = Release|x64
 		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Debug|Win32.Build.0 = Debug|Win32
 		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Debug|x64.ActiveCfg = Debug|x64
@@ -75,14 +67,22 @@ Global
 		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Release|Win32.Build.0 = Release|Win32
 		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Release|x64.ActiveCfg = Release|x64
 		{E2B92886-A610-44BA-A048-1E040BE9E7B5}.Release|x64.Build.0 = Release|x64
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|Win32.Build.0 = Debug|Win32
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|x64.ActiveCfg = Debug|x64
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Debug|x64.Build.0 = Debug|x64
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|Win32.ActiveCfg = Release|Win32
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|Win32.Build.0 = Release|Win32
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.ActiveCfg = Release|x64
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A9D6DC71-C0DC-4549-AEA0-3B15B44E86A9} = {1DA0A8E2-5832-42FC-83F7-2CDCAD379C90}
-		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5} = {B2087994-3DF6-4A57-B8C6-6F744520D7FA}
 		{E2B92886-A610-44BA-A048-1E040BE9E7B5} = {B2087994-3DF6-4A57-B8C6-6F744520D7FA}
+		{135BCC27-6E9D-4929-90FA-3B64C3FE53C5} = {B2087994-3DF6-4A57-B8C6-6F744520D7FA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {68CA0970-4242-4E4F-94D2-C19760FCA05D}

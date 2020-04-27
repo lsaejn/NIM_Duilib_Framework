@@ -195,7 +195,7 @@
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\examples\Release\PKPM2010V51.exe D:\PKPMV51\PKPM2010V51.exe</Command>
+      <Command>copy D:\works\NimDuilibFramework\PkpmLauncher\Release\PKPM2010V51.exe D:\PKPMV51\PKPM2010V51.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -379,7 +379,7 @@
     <ClCompile Include="XmlInfo\SlimXml.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MFCApplication1.rc" />
+    <ResourceCompile Include="PkpmV5.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="rapidxml\manual.html" />
