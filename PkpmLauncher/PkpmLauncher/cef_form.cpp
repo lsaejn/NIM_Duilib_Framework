@@ -4,8 +4,8 @@
 #include "MsgDialog.h"
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
-#include "Alime/ProcessInfo.h"
 
+#include "Alime/ProcessInfo.h"
 #include "Alime/HttpUtil.h"
 #include "Alime/FileSystem.h"
 #include "Alime/Console.h"
@@ -36,7 +36,6 @@ CefForm::CefForm()
 	latch_(1)
 {
 	webDataReader_.Init();
-	//InitAdvertisement();
 	size_t numofPrj=CorrectWorkPath();
 	if (numofPrj > 0)
 		indexHeightLighted_ = 0;
