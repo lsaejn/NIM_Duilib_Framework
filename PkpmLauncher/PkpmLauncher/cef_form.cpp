@@ -1690,6 +1690,9 @@ nim_comp::CefControlBase* CefForm::GetCef()
 	return this->cef_control_;
 }
 
+//fix me. 把判断如何显示字符串的逻辑放到js里显然是不合适的
+//但又有一定灵活性。
+//那么，现在的解决方案就是单机锁小于某个天数，必然显示
 void CefForm::DisplayAuthorizationCodeDate()
 {
 	std::thread checkThread([this]() {
