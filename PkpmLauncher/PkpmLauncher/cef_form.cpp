@@ -237,9 +237,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		OutputDebugString(std::to_wstring(wParam).c_str());
 		assert(lParam == -1);
-		SwicthThemeTo(wParam);
-		SaveThemeIndex(wParam);
-
+		auto ret=SwicthThemeTo(wParam);
+		if(ret)
+			SaveThemeIndex(wParam);
 	}
 	else if (uMsg == WM_SHOWMAINWINDOW)
 	{
@@ -281,7 +281,8 @@ bool CefForm::SwicthThemeTo(int index)
 {
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
 	auto sw=SkinSwitcherFatctory::Get(index);
-	//fix me, check the index
+	if (!sw)
+		return false;
 	sw->Switch(vistual_caption, label_);
 	return true;
 }
@@ -347,8 +348,7 @@ void CefForm::ModifyScaleForCaption()
 
 void CefForm::OnLoadStart()
 {
-	//早期的demo存在网页调用c++函数时，函数还没注册的情况
-	//但这个问题后来再也没有出现过
+	//早期的demo存在网页调用c++函数时函数还没注册的情况
 	RegisterCppFuncs();
 	ModifyScaleForCef();
 }
@@ -704,8 +704,9 @@ void CefForm::RegisterCppFuncs()
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nlohmann::json json = nlohmann::json::parse(params);
 			int styleNo = json["index"];
-			this->SwicthThemeTo(styleNo);
-			this->SaveThemeIndex(styleNo);
+			bool ret=this->SwicthThemeTo(styleNo);
+			if(ret)
+				this->SaveThemeIndex(styleNo);
 			})
 	);
 

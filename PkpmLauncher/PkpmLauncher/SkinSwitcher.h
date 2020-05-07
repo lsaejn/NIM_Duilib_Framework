@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-
 #include <iostream>
 #include <map>
 #include <memory>
@@ -11,7 +10,7 @@
 
 
 /*
-就是瞎搞~~
+操了你妈了，我操，操你妈
 */
 struct SkinInfo
 {
@@ -52,7 +51,7 @@ public:
 	std::string skinName_;
 };
 
-using Function = std::function<SkinSwitcher * (void)>;
+using Function = std::function<SkinSwitcher* (void)>;
 
 class SkinSwitcherFatctory:public noncopyable
 {
@@ -119,8 +118,8 @@ public:
 	}
 	virtual void Switch(nim_comp::Box* vistual_caption, ui::Label* _label)
 	{
-		vistual_caption->SetBkColor(L"bk_wnd_lightcolor");
-		_label->SetAttribute(L"normaltextcolor", L"darkcolor");
+		vistual_caption->SetBkColor(L"blue_caption");
+		_label->SetAttribute(L"normaltextcolor", L"white");
 		std::cout << "Switch to LightSkin" << std::endl;
 	}
 }; 

@@ -1,5 +1,6 @@
 #pragma once
 #include "Alime/NonCopyable.h"
+#include "nlohmann/json.hpp"
 
 //reader
 class ConfigManager: public noncopyable
@@ -21,7 +22,7 @@ public:
 	std::wstring GetCefFormClassName() const;
 	std::wstring GetRelativePathForHtmlRes() const;
 	int32_t GetInterfaceStyleNo() const;
-	void SetInterfaceStyleNo(int);
+	void SetInterfaceStyleNo(int32_t);
 	int32_t DaysLeftToNotify() const;
 private:	
 	ConfigManager();
@@ -41,4 +42,5 @@ private:
 	std::wstring filePath_;
 	int32_t styleNo_;//界面风格编号
 	int32_t deadline_;
+	nlohmann::json json_;
 };

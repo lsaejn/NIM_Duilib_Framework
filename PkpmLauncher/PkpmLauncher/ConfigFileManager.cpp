@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ConfigFileManager.h"
-#include "nlohmann/json.hpp"
 #include <fstream>
+#include "Alime/FileSystem.h"
 
 /*
 enableAdaptDpi为真，则使用duilib的适放机制。需要修改资源以避免图片模糊。
@@ -38,8 +38,8 @@ void ConfigManager::LoadConfigFile()
 	bool succ = nbase::ReadFileToString(filePath_, content);
 	if (succ)
 	{
-		nlohmann::json json;
-		json = nlohmann::json::parse(content);
+		 json_ = nlohmann::json::parse(content);
+		auto& json = json_;
 		try {
 			isAutoModifyWindowOn_ = json[u8"enableAutoModifyWindow"];
 			isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
@@ -119,26 +119,38 @@ int32_t ConfigManager::GetInterfaceStyleNo() const
 	return styleNo_;
 }
 
-void ConfigManager::SetInterfaceStyleNo(int no)
+//立刻保存是因为启动器可能多开
+void ConfigManager::SetInterfaceStyleNo(int32_t no)
 {
-	std::string content;
-	bool succ = nbase::ReadFileToString(filePath_, content);
-	if (succ)
+	styleNo_ = no;
+	if (no != json_["interfaceStyleNo"])
 	{
-		nlohmann::json json;
-		json = nlohmann::json::parse(content);
-		json["interfaceStyleNo"] = no;
-		if (no != styleNo_)
+		json_["interfaceStyleNo"] = no;		
+		std::fstream file;
+		auto newFile = filePath_ + L"copy";
+		file.open(newFile, std::ios_base::out | std::ios_base::trunc);
+		if (file.is_open()&& file.good())
 		{		
-			std::fstream file;
-			file.open(filePath_, std::ios_base::out | std::ios_base::trunc);
-			if (!file.is_open())
-				return;
-			if (file.good())
-			{
-				auto str=json.dump();
-				file.write(str.c_str(), str.size());
-			}
-		}	
-	}
+			auto str=json_.dump();
+			file.write(str.c_str(), str.size());
+		}
+		file.close();
+
+		Alime::FileSystem::File originFile = filePath_;
+		if (!originFile.Rename(L"backup"))
+			return;
+		auto fileName = Alime::FileSystem::FilePath(filePath_).GetName();
+		auto filePath = Alime::FileSystem::FilePath(filePath_).GetFolder().GetFullPathWithSurfix();
+		Alime::FileSystem::File fileToSave = newFile;			
+		if (!fileToSave.Rename(fileName))
+		{
+			originFile.Rename(fileName);
+			fileToSave.Delete();
+		}
+		else
+		{
+			Alime::FileSystem::File(filePath + L"backup").Delete();
+		}
+	}	
+	
 }
