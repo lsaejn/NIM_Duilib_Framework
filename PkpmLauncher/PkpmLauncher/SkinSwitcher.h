@@ -65,7 +65,7 @@ public:
 	static std::unordered_map<std::string, Function> SkinThemes_;
 	static std::shared_ptr<SkinSwitcher> SkinSwitcherFatctory::Get(const int index)
 	{
-		static std::unordered_map<int, std::string> col = { {0,"LightSkin"},{1,"DarkSkin"} };
+		static std::unordered_map<int, std::string> col = { {0,"DarkSkin"},{1,"BlueSkin"} };
 		const std::string name=col[index];
 		auto iter = SkinThemes_.find(name);
 		if (iter != SkinThemes_.end())
@@ -110,10 +110,10 @@ public:
 REGISTER(DarkSkin)
 
 
-class LightSkin :public SkinSwitcher
+class BlueSkin :public SkinSwitcher
 {
 public:
-	virtual ~LightSkin()
+	virtual ~BlueSkin()
 	{
 		std::cout << "decons LightSkin" << std::endl;
 	}
@@ -124,7 +124,7 @@ public:
 		std::cout << "Switch to LightSkin" << std::endl;
 	}
 }; 
-REGISTER(LightSkin)
+REGISTER(BlueSkin)
 
 
 

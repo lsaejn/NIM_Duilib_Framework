@@ -24,6 +24,7 @@ ConfigManager::ConfigManager()
 	:isAutoModifyWindowOn_(false),
 	isAdaptDpiOn_(false),
 	deadline_(INT32_MAX),
+	styleNo_(0),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -49,6 +50,8 @@ void ConfigManager::LoadConfigFile()
 			cefFormWindowText_ = nbase::UTF8ToUTF16(json["windowText"]);
 			cefFormClassName_ = nbase::UTF8ToUTF16(json["className"]);
 			relativePathForHtmlRes_ = nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
+			if(json.find("interfaceStyleNo")!=json.end())//我们不知道什么时候上线这个功能
+				styleNo_ = json["interfaceStyleNo"];
 			deadline_ = json["deadline"];
 			if (deadline_ <= 0)
 				deadline_ = 7;
@@ -109,4 +112,33 @@ bool ConfigManager::IsModifyWindowOn()
 int32_t ConfigManager::DaysLeftToNotify() const
 {
 	return deadline_;
+}
+
+int32_t ConfigManager::GetInterfaceStyleNo() const
+{
+	return styleNo_;
+}
+
+void ConfigManager::SetInterfaceStyleNo(int no)
+{
+	std::string content;
+	bool succ = nbase::ReadFileToString(filePath_, content);
+	if (succ)
+	{
+		nlohmann::json json;
+		json = nlohmann::json::parse(content);
+		json["interfaceStyleNo"] = no;
+		if (no != styleNo_)
+		{		
+			std::fstream file;
+			file.open(filePath_, std::ios_base::out | std::ios_base::trunc);
+			if (!file.is_open())
+				return;
+			if (file.good())
+			{
+				auto str=json.dump();
+				file.write(str.c_str(), str.size());
+			}
+		}	
+	}
 }

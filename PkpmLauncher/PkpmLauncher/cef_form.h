@@ -114,7 +114,8 @@ private:
 
 	/// <summary>切换到索引为index的主题</summary>
 	///<param name="index">索引</param >
-	void SwicthThemeTo(int index);
+	///<return>是否成功</return>
+	bool SwicthThemeTo(int index);
 
 	/// <summary>保存用户的换肤选择</summary>
 	///<param name="index">索引</param >

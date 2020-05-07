@@ -20,6 +20,8 @@ public:
 	std::wstring GetCefFormWindowText() const;
 	std::wstring GetCefFormClassName() const;
 	std::wstring GetRelativePathForHtmlRes() const;
+	int32_t GetInterfaceStyleNo() const;
+	void SetInterfaceStyleNo(int);
 	int32_t DaysLeftToNotify() const;
 private:	
 	ConfigManager();
@@ -37,5 +39,6 @@ private:
 	std::wstring cefFormClassName_;
 	std::wstring relativePathForHtmlRes_;
 	std::wstring filePath_;
+	int32_t styleNo_;//界面风格编号
 	int32_t deadline_;
 };

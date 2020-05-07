@@ -23,4 +23,6 @@ namespace application_utily
 	std::string DictToJson(const std::vector<std::pair<std::string, std::string>>& dict);
 	std::string FileEncode(const std::string& query);
 	void OpenDocument(const std::wstring& filePath);
+	bool CreateProcessWithCommand(const wchar_t* application, const wchar_t* command, HANDLE* process);
+	void GodBlessThisProcess();
 }

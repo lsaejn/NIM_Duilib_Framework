@@ -79,25 +79,17 @@ ui::Control* CefForm::CreateControl(const std::wstring& pstrClass)
 void CefForm::InitWindow()
 {
 	SetIcon(128);
-	SetWindowText(GetHWND(), 
-		ConfigManager::GetInstance().GetCefFormWindowText().c_str());
+	SetWindowText(GetHWND(), ConfigManager::GetInstance().GetCefFormWindowText().c_str());
 	InitUiVariable();
-
-	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ 
-		ConfigManager::GetInstance().GetRelativePathForHtmlRes();
+	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ ConfigManager::GetInstance().GetRelativePathForHtmlRes();
 	cef_control_->LoadURL(cefHtmlPath);
-
 	EnableAcceptFiles();
-	
-	//旧代码
 	SetCfgPmEnv();
 	appDll_.InitPkpmAppFuncPtr();
 	appDll_.Invoke_InitPkpmApp();
-
 	AttachFunctionToShortCut();
-	//换肤按钮的响应
 	AttachClickCallbackToSkinButton();
-	//Dpi处理
+	SwicthThemeTo(ConfigManager::GetInstance().GetInterfaceStyleNo());
 	ModifyScaleForCaption();
 }
 
@@ -246,6 +238,8 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		OutputDebugString(std::to_wstring(wParam).c_str());
 		assert(lParam == -1);
 		SwicthThemeTo(wParam);
+		SaveThemeIndex(wParam);
+
 	}
 	else if (uMsg == WM_SHOWMAINWINDOW)
 	{
@@ -283,20 +277,21 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
 }
 
-void CefForm::SwicthThemeTo(int index)
+bool CefForm::SwicthThemeTo(int index)
 {
-	//云信的tab可以把消息写到xml里
-	//可是这里需要用跨窗口的menuitem来执行皮肤切换
-	//我还没找到这么做的例子。
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
 	auto sw=SkinSwitcherFatctory::Get(index);
+	//fix me, check the index
 	sw->Switch(vistual_caption, label_);
-	SaveThemeIndex(index);
+	return true;
 }
 
 void CefForm::SaveThemeIndex(int index)
 {
-	//fix me
+	auto path=application_utily::FullPathOfPkpmIni();
+	ConfigManager::GetInstance().SetInterfaceStyleNo(index);
+	WritePrivateProfileStringW(L"InterfaceStyle", L"index",
+		std::to_wstring(index).c_str(), path.c_str());
 }
 
 void CefForm::OnLoadEnd(int httpStatusCode)
@@ -702,9 +697,15 @@ void CefForm::RegisterCppFuncs()
 			})
 	);
 
-	cef_control_->RegisterCppFunc(L"RRMAININGTIME",
+	//标题栏暂时只支持修改背景色和文字颜色
+	//这个设置被我定义在resources\themes\default\cef\caption_style.xml中
+	//网页可以调用本接口切换风格
+	cef_control_->RegisterCppFunc(L"SetInterfaceStyle",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-
+			nlohmann::json json = nlohmann::json::parse(params);
+			int styleNo = json["index"];
+			this->SwicthThemeTo(styleNo);
+			this->SaveThemeIndex(styleNo);
 			})
 	);
 

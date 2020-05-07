@@ -114,5 +114,59 @@ namespace application_utily
 		ShellExecuteEx(&ShExecInfo);
 	}
 
+	bool CreateProcessWithCommand(const wchar_t* application, const wchar_t* command, HANDLE* process)
+	{
+		PROCESS_INFORMATION pi;
+		STARTUPINFOW si;
+
+		memset(&si, 0, sizeof(si));
+		si.dwFlags = 0;
+		si.cb = sizeof(si);
+		si.hStdInput = NULL;
+		si.hStdOutput = NULL;
+		si.hStdError = NULL;
+
+		wchar_t* command_dup = wcsdup(command);
+
+		if (::CreateProcessW(application,
+			command_dup,
+			NULL,
+			NULL,
+			(si.dwFlags & STARTF_USESTDHANDLES) ? TRUE : FALSE,
+			CREATE_NO_WINDOW,
+			NULL,
+			NULL,
+			&si,
+			&pi))
+		{
+			::CloseHandle(pi.hThread);
+			if (process == NULL)
+				::CloseHandle(pi.hProcess);
+			else
+				*process = pi.hProcess;
+			free(command_dup);
+			return true;
+		}
+
+		free(command_dup);
+		return false;
+	}
+
+	void GodBlessThisProcess()
+	{
+		wchar_t buffer[256] = { 0 };
+		auto param = L" " + std::to_wstring(::GetCurrentProcessId());
+		memcpy_s(buffer, 256 * sizeof(wchar_t), param.c_str(), param.length() * sizeof(wchar_t));
+		auto pathOfGodWindow = nbase::win32::GetCurrentModuleDirectory() + L"ProcessGuard.exe";
+		HANDLE handleOfGuard;
+		application_utily::CreateProcessWithCommand(pathOfGodWindow.c_str(), buffer, &handleOfGuard);
+		if (handleOfGuard == INVALID_HANDLE_VALUE)
+		{
+			//LOG_ERROR<<
+			return;
+		}
+		CloseHandle(handleOfGuard);
+	}
+
 }
 
