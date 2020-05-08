@@ -1292,8 +1292,19 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		auto vec = FindVersionFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");
 		if (!vec.empty())
 		{
+			//一个紧急改动
+			{
+				if (document.HasMember("VersionString"))
+				{
+					const std::string versionString = document["VersionString"].GetString();
+					auto iter = std::find(vec.cbegin(), vec.cend(), versionString);
+					if (iter != vec.cend())
+						return false;
+					else
+						return true;
+				}			
+			}
 			getLatestVersion(vec, mv, vv, sv);
-			//偷懒
 			if (MainVersionOnServer != mv || ViceVersionOnServer != vv || SubVersionOnServer != sv)
 				return true;
 		}

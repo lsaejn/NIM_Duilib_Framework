@@ -227,11 +227,11 @@ private:
 	collection_utility::BoundedQueue<std::string> prjPaths_;
 	ShortCutHandler shortCutHandler_;
 	AppDllAdaptor appDll_;
-	std::mutex lock_;//fix me改成原子变量后，锁可以去掉了
+	std::mutex lock_;
 	std::atomic<bool> isWebPageAvailable_;
 	std::string pageInfo_;
 	std::wstring defaultCaption_;
-	int indexHeightLighted_;//很多旧代码需要直接拿加亮索引工作, 我们监视鼠标每次单击
+	int indexHeightLighted_;
 	Alime::CountDownLatch latch_;
 };
 
