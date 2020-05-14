@@ -38,7 +38,7 @@ void MainThread::Init()
 
 	// 获取资源路径，初始化全局参数
 	std::wstring app_dir = nbase::win32::GetCurrentModuleDirectory();
-	ui::GlobalManager::Startup(app_dir + L"resources\\", ui::CreateControlCallback(), true);
+	ui::GlobalManager::Startup(app_dir + L"resources\\", ui::CreateControlCallback(), false);
 
 	// 创建一个默认带有阴影的居中窗口
 	ControlForm* window = new ControlForm();

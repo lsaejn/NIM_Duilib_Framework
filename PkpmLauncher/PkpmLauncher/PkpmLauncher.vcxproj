@@ -241,6 +241,7 @@
     <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="Alime\NonCopyable.h" />
+    <ClInclude Include="PicZoom.h" />
     <ClInclude Include="pkpm2014svr.h" />
     <ClInclude Include="RapidjsonForward.h" />
     <ClInclude Include="SpdLogForward.h" />
@@ -337,6 +338,7 @@
     <ClInclude Include="string_util.h" />
     <ClInclude Include="svr.h" />
     <ClInclude Include="templates.h" />
+    <ClInclude Include="VersionCmpStrategy.h" />
     <ClInclude Include="WebDataReader.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MessageLoop.h" />
@@ -366,6 +368,7 @@
     <ClCompile Include="ShortCutHandler.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="svr.cpp" />
+    <ClCompile Include="VersionCmpStrategy.cpp" />
     <ClCompile Include="WebDataReader.cpp" />
     <ClCompile Include="MessageLoop.cpp" />
     <ClCompile Include="WinMain.cpp" />

@@ -1703,9 +1703,6 @@ nim_comp::CefControlBase* CefForm::GetCef()
 	return this->cef_control_;
 }
 
-//fix me. 把判断如何显示字符串的逻辑放到js里显然是不合适的
-//但又有一定灵活性。
-//那么，现在的解决方案就是单机锁小于某个天数，必然显示
 void CefForm::DisplayAuthorizationCodeDate()
 {
 	std::thread checkThread([this]() {
@@ -1718,7 +1715,7 @@ void CefForm::DisplayAuthorizationCodeDate()
 			auto toSend = nbase::UTF8ToUTF16(json.dump());
 			cef_control_->CallJSFunction(L"showLicenseKey",
 				toSend,
-				ToWeakCallback([this](const std::string& chosenData) {
+				ToWeakCallback([this](const std::string& dummyFunction) {
 					}
 			));
 		}

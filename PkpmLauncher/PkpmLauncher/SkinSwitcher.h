@@ -5,31 +5,69 @@
 #include <map>
 #include <memory>
 #include <functional>
+#include <exception>
 
 #include "Alime/NonCopyable.h"
 
 
-/*
-≤Ÿ¡Àƒ„¬Ë¡À£¨Œ“≤Ÿ£¨≤Ÿƒ„¬Ë
-*/
-struct SkinInfo
+
+using StyleMsgCallback=std::function<void (ui::Control*)> ;
+using DpiMsgCallback = std::function<void (ui::Control*)>;
+
+class WrappedCaption : public noncopyable
 {
-	std::string captionBkColor_;
-	std::string normaltextcolor_;
+public:
+	class WrappedUiElement
+	{
+	public:
+		WrappedUiElement(ui::Control* ui)
+		{
+			ui_ = ui;
+		}
+		void SetStrategy(StyleMsgCallback sm, DpiMsgCallback dm)
+		{
+			callWhenStyleChanged_ = move(sm);
+			callWhenDpiChanged_ = move(dm);
+		}
+	private:
+		StyleMsgCallback callWhenStyleChanged_;
+		DpiMsgCallback callWhenDpiChanged_;
+		ui::Control* ui_;
+	};
+
+public:
+	WrappedCaption() = default;
+	void Register(ui::Control* _control)
+	{
+		if (std::find(controls_.begin(), controls_.end(), _control)
+			!= controls_.end())
+			throw "what the fuck";
+		//controls_.emplace_back(_control);
+	}
+	void UnRegister(ui::Control* _control)
+	{
+		controls_.erase(
+			std::find(controls_.begin(), controls_.end(), _control));
+	}
+	void ResponseDpiMsg()
+	{
+
+	}
+	void ResponseStyleMsg()
+	{
+
+	}
+private:
+	std::vector<ui::Control*> controls_;
 };
 
 class SkinInfoLoader
 {
 public:
-	SkinInfoLoader& Get()
-	{
-		static SkinInfoLoader sm;
-		return sm;
-	}
-private:
 	SkinInfoLoader()
 	{
-		auto pathOfSkinXml = nbase::win32::GetCurrentModuleDirectory() + L"resources\\themes\\default\\cef\\caption_style.xml";
+		auto pathOfSkinXml = nbase::win32::GetCurrentModuleDirectory()
+			+ L"resources\\themes\\default\\cef\\caption_style.xml";
 		ui::CMarkup cm;
 		cm.LoadFromFile(pathOfSkinXml.c_str());
 		auto rootNode = cm.GetRoot();
@@ -39,7 +77,8 @@ private:
 			auto child = rootNode.GetChild();
 		}
 	}
-	std::unordered_map<std::string, SkinInfo> skinfoMap;
+
+	std::unordered_map<std::string, std::string> skinfoMap;
 	int defaultIndex_;
 };
 
@@ -49,6 +88,7 @@ public:
 	virtual ~SkinSwitcher() = default;
 	virtual void Switch(nim_comp::Box* b, ui::Label* label) = 0;
 	std::string skinName_;
+	SkinInfoLoader skinLoader_;
 };
 
 using Function = std::function<SkinSwitcher* (void)>;
@@ -82,7 +122,6 @@ public:
 	Register(const std::string& className, Function&& constructor)
 	{
 		SkinSwitcherFatctory::SkinThemes_.insert({ className, constructor });
-		std::cout << "insert" << className << std::endl;
 	}
 };
 
@@ -97,13 +136,11 @@ class DarkSkin :public SkinSwitcher
 public:
 	virtual ~DarkSkin()
 	{
-		std::cout << "decons DarkSkin" << std::endl;
 	}
 	virtual void Switch(nim_comp::Box* vistual_caption, ui::Label* _label)
 	{
 		vistual_caption->SetBkColor(L"gray");
 		_label->SetAttribute(L"normaltextcolor", L"gray_caption");
-		std::cout << "Switch to LightSkin" << std::endl;
 	}
 }; 
 REGISTER(DarkSkin)
@@ -114,13 +151,11 @@ class BlueSkin :public SkinSwitcher
 public:
 	virtual ~BlueSkin()
 	{
-		std::cout << "decons LightSkin" << std::endl;
 	}
-	virtual void Switch(nim_comp::Box* vistual_caption, ui::Label* _label)
+	virtual void Switch(ui::Box* vistual_caption, ui::Label* _label)
 	{
 		vistual_caption->SetBkColor(L"blue_caption");
 		_label->SetAttribute(L"normaltextcolor", L"white");
-		std::cout << "Switch to LightSkin" << std::endl;
 	}
 }; 
 REGISTER(BlueSkin)

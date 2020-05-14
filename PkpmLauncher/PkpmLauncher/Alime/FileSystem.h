@@ -137,7 +137,7 @@ namespace Alime
 			{		
 				result = components.front() + FileSystem::FilePath::Delimiter;
 				result += L"...";
-				lastFolder = lastFolder.substr(lastFolder.length() - criticalLength - 10);
+				lastFolder = lastFolder.substr(lastFolder.length() - criticalLength);
 				result += lastFolder;
 				return result;
 			}
