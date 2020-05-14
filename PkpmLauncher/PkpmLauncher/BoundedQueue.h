@@ -110,7 +110,7 @@ namespace collection_utility
 		void deleteAt(const int index)
 		{
 			rangeNoError(index);
-			if((queue_.size()-1)==index)
+			if(static_cast<int>(queue_.size()-1)==index)
 				queue_.pop_back();
 			else
 				remove(index);

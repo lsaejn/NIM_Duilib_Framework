@@ -148,11 +148,7 @@ public:
 			ShellExecute(NULL, _T("open"), regcmd, NULL, NULL, SW_NORMAL);
 		}
 		else
-		{
-			CString strHint;
-			strHint.Format(L"无法找到程序或者您已经在运行程序 %s", regcmd);
-			AfxMessageBox(strHint);
-		}
+			AfxMessageBox(L"无法找到程序或者您已经在运行程序");
 	}
 
 	void OnParameterSettings()
@@ -218,7 +214,7 @@ public:
 		PROCESS_INFORMATION prinfo;
 		DoBeforeCallFunc_();
 		CreateProcess(NULL, STRPATH, NULL, NULL, FALSE, 0, NULL, NULL, &info, &prinfo);
-		WaitForSingleObject(prinfo.hProcess, -1);
+		WaitForSingleObject(prinfo.hProcess, INFINITE);
 		DoAfterCallFunc_();	
 		CloseHandle(prinfo.hThread);
 		CloseHandle(prinfo.hProcess);
@@ -284,14 +280,10 @@ public:
 		if (fi.Open(regcmd, CFile::readOnly, NULL, NULL))
 		{
 			fi.Close();
-			HINSTANCE hi = ShellExecute(NULL, L"open", regcmd, cmdParm, NULL, SW_NORMAL);
+			ShellExecute(NULL, L"open", regcmd, cmdParm, NULL, SW_NORMAL);
 		}
 		else
-		{
-			CString strHint;
-			strHint.Format(L"无法找到或启动程序或已打开 %s %s", regcmd, cmdParm);
-			MessageBox(NULL, strHint, L"错误提示", 1);
-		}
+			AfxMessageBox(L"无法找到程序或者您已经在运行程序");
 	}
 };
 

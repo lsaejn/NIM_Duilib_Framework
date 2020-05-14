@@ -69,7 +69,7 @@ namespace application_utily
 		rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
 
 		rapidjson::Value root(rapidjson::kObjectType);
-		for (auto i = 0; i != dict.size(); ++i)
+		for (size_t i = 0; i != dict.size(); ++i)
 		{
 			rapidjson::Value strObject(rapidjson::kStringType);
 			strObject.SetString(dict[i].first.c_str(), allocator);

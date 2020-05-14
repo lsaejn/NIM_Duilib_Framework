@@ -52,7 +52,7 @@ namespace ProcessInspector
 		return ::GetCurrentProcess();
 	}
 
-	std::vector<Pid> GetPidByClassNameOfWindow(constStrRef className)
+	std::vector<Pid> GetPidByClassNameOfWindow(constStrRef /*className*/)
 	{
 		//FindWindow(className,)
 		return {};
@@ -104,7 +104,7 @@ namespace ProcessInspector
 		HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		if (hProcessSnap == INVALID_HANDLE_VALUE)
 		{
-			return -1;
+			return NULL;
 		}
 		Win32HandleGuard guard(hProcessSnap);
 		PROCESSENTRY32 pe;
@@ -116,7 +116,7 @@ namespace ProcessInspector
 				return pe.th32ProcessID;
 			bProcess = Process32Next(hProcessSnap, &pe);
 		}
-		return -2;
+		return NULL;
 	}
 
 	///暴力结束一个进程
@@ -191,7 +191,7 @@ namespace ProcessInspector
 
 	Pid GetPidFromHwnd(HWND hwnd)
 	{
-		DWORD pid = -1;
+		DWORD pid = 0;
 		::GetWindowThreadProcessId(hwnd, &pid);
 		return pid;
 	}

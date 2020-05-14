@@ -1,5 +1,10 @@
 #pragma once
 
+template<typename... Args>
+void UNUSEDPARAMS(Args...)
+{
+}
+
 template<typename R, typename... Args, typename Class>
 constexpr int getCountOfPara(R(Class::*)(Args...))
 {

@@ -42,7 +42,7 @@ int CDirSelectThread::ExitInstance()
 }
 
 
-void CDirSelectThread::OnTest(WPARAM wParam, LPARAM lParam)
+void CDirSelectThread::OnTest(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
     ::AfxMessageBox(L"test");
 }

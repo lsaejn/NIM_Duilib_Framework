@@ -19,7 +19,7 @@ bool AppDllAdaptor::InitPkpmAppFuncPtr()
 {
 	TCHAR dll_name[40];
 	auto debugStr = GetPkpmXXXXiniPathName();
-	DWORD nRead = GetPrivateProfileString(_T("CONFIG"), _T("DLL"), _T("pkpmappx.dll"), dll_name, sizeof(dll_name), GetPkpmXXXXiniPathName());
+	GetPrivateProfileString(_T("CONFIG"), _T("DLL"), _T("pkpmappx.dll"), dll_name, sizeof(dll_name), GetPkpmXXXXiniPathName());
 	CString dll_path = GetAppPath() + dll_name;
 	hd = LoadLibrary(dll_path);
 	if (hd == NULL)
@@ -53,7 +53,7 @@ CString AppDllAdaptor::GetPkpmXXXXiniPathName()
 		CString fmt;
 		fmt = _T("Can not Find \n") + ini_file;
 		CString info;
-		info.Format(fmt, ini_file);
+		info.Format(fmt.GetBuffer(), ini_file);
 		AfxMessageBox(info, MB_ICONSTOP);
 		return _T("");
 	}

@@ -6,6 +6,7 @@
 void DefaultDpiAdaptor::AdaptCaption(CefForm* _window)
 {
 	auto label = _window->GetCaptionLabel();
+	UNREFERENCED_PARAMETER(label);
 	auto vistual_caption_ = _window->GetCaptionBox();
 
 	UINT dpi = ui::DpiManager::GetMainMonitorDPI();
@@ -24,13 +25,12 @@ void DefaultDpiAdaptor::AdaptCaption(CefForm* _window)
 	auto captionWidth = vistual_caption_->GetFixedWidth();
 	vistual_caption_->SetAttribute(L"height", std::to_wstring(captionHeight * rate));
 	rc = _window->GetCaptionRect();
-	_window->SetCaptionRect(
-		ui::UiRect(0, 0,
-			static_cast<int>(captionWidth * rate),
-			static_cast<int>(captionHeight * rate)));
+	auto rect = ui::UiRect(0, 0, static_cast<int>(captionWidth * rate), static_cast<int>(captionHeight * rate));
+	_window->SetCaptionRect(rect);
 }
 
  void DefaultDpiAdaptor::AdaptCefWindow(CefForm* _window)
 {
 	auto* cef = _window->GetCef();
+	UNREFERENCED_PARAMETER(cef);
 }

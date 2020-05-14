@@ -125,19 +125,6 @@ private:
 	///<param name="prjPath">工程路径</param >
 	void OnRightClickProject(const std::wstring& prjPath);
 
-	/// <summary>计算最新的程序版本，历史原因，cfg目录下存在类似 v4.3.4.ini 之类的文本以区分程序当前版本</summary>
-	///<param name="filenames">文件的名称</param >
-	///<param name="major_version">主版本号</param >
-	///<param name="minor_version">副版本号</param >
-	///<param name="sub_version">子版本号</param >
-	void getLatestVersion(std::vector<std::string>& filenames, int& major_version, int& minor_version, int& sub_version);
-
-	/// <summary>寻找指定格式的文件名</summary>
-	///<param name="path">欲寻找的目录</param >
-	///<param name="prefix">前缀</param >
-	///<param name="suffix">后缀</param >
-	std::vector<std::string> CefForm::FindVersionFiles(const char* path, const char* prefix, const char* suffix);
-
 	/// <summary>获得真实路径。因为用了c++17的函数，我不确定是否有问题</summary>
 	///<param name="path">原路径</param >
 	///<param name="prefix">返回是否合法</param >

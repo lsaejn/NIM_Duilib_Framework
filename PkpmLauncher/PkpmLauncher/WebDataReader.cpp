@@ -47,7 +47,6 @@ void WebDataReader::Load()
     for (auto& p : std::filesystem::directory_iterator(path))
     {
 		std::wstring filePath = p.path().generic_wstring();
-        OutputDebugString(filePath.c_str());
         {
             auto copy = nbase::UnicodeToAnsi(filePath);
             std::transform(copy.begin(), copy.end(), copy.begin(), ::toupper);
@@ -92,7 +91,7 @@ bool WebDataReader::ModifyDataWithTag(const std::string& u8Content, std::string&
         auto debug_ = jsonOfPanels.dump();
         auto u16 = nbase::UTF8ToUTF16(debug_);
 #endif // DEBUG
-        for (int i = 0; i != jsonOfPanels.size(); ++i)
+        for (size_t i = 0; i != jsonOfPanels.size(); ++i)
         {
             if (jsonOfPanels[i].find("SHOW") != jsonOfPanels[i].end())
             {

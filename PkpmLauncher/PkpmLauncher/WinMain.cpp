@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "WinMain.h"
 #include "string_util.h"
+#include "templates.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,8 +18,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNUSEDPARAMS(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
 	// 将它设置为包括所有要在应用程序中使用的

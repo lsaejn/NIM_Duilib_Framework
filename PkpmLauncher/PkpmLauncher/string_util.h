@@ -3,9 +3,10 @@
 #include <string>
 
 
-template<typename Ty, int nSize>
-int ArraySize(Ty(&Arg)[nSize])
+template<typename Ty, size_t nSize>
+size_t ArraySize(Ty(&Arg)[nSize])
 {
+	(void)Arg;
 	return nSize;
 }
 namespace string_utility

@@ -4,6 +4,7 @@
 #include "MsgDialog.h"
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
+#include "VersionCmpStrategy.h"
 
 #include "Alime/ProcessInfo.h"
 #include "Alime/HttpUtil.h"
@@ -197,7 +198,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				AddWorkPaths(pathString, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
 				cef_control_->CallJSFunction(L"flush",
 					nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
-					ToWeakCallback([this](const std::string& chosenData) {
+					ToWeakCallback([this](const std::string& /*chosenData*/) {
 						}
 				));
 			}
@@ -257,7 +258,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			auto advString = TellMeAdvertisement();
 			cef_control_->CallJSFunction(L"SetAdvertise",
 				nbase::UTF8ToUTF16(advString),
-				ToWeakCallback([this](const std::string& chosenData) {
+				ToWeakCallback([this](const std::string& /*chosenData*/) {
 					}
 			));
 		}
@@ -297,6 +298,7 @@ void CefForm::SaveThemeIndex(int index)
 
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
+	UNREFERENCED_PARAMETER(httpStatusCode);
 	DisplayAuthorizationCodeDate();
 }
 
@@ -325,24 +327,6 @@ void CefForm::ModifyScaleForCaption()
 		DefaultDpiAdaptor helper;
 		AcceptDpiAdaptor(&helper);
 		return;
-		UINT dpi = ui::DpiManager::GetMainMonitorDPI();
-		auto scale = MulDiv(dpi, 100, 96);
-		double rate = scale / 100.0;
-
-		RECT rc;
-		GetWindowRect(GetHWND(), &rc);
-		int width = static_cast<int>((rc.right - rc.left) * rate);
-		int height = static_cast<int>((rc.bottom - rc.top) * rate);
-		SetWindowPos(GetHWND(), HWND_TOP, 0, 0, width,
-			height, SWP_NOMOVE);
-		auto captionHeight=vistual_caption_->GetFixedHeight();
-		auto captionWidth = vistual_caption_->GetFixedWidth();
-		vistual_caption_->SetAttribute(L"height", std::to_wstring(captionHeight * rate));
-		rc=GetCaptionRect();
-		SetCaptionRect(
-			ui::UiRect(0, 0,
-				static_cast<int>(captionWidth *rate),
-				static_cast<int>(captionHeight *rate)));
 	}
 }
 
@@ -481,7 +465,7 @@ void CefForm::RegisterCppFuncs()
 	);
 
 	cef_control_->RegisterCppFunc(L"ONNEWPROJECT",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			auto strAnsi = OnNewProject();
 			if (strAnsi.empty())
 			{
@@ -510,7 +494,7 @@ void CefForm::RegisterCppFuncs()
 	);
 
 	cef_control_->RegisterCppFunc(L"ONGETDEfAULTMENUSELECTION",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			auto selection =OnGetDefaultMenuSelection();
 			callback(true, nbase::AnsiToUtf8(selection));
 			})
@@ -541,7 +525,7 @@ void CefForm::RegisterCppFuncs()
 
 	//
 	cef_control_->RegisterCppFunc(L"ONDROPFILES",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			HDROP hDropInfo=NULL;
 			UINT count;
 			CHAR filePath[260] = { 0 };
@@ -579,7 +563,7 @@ void CefForm::RegisterCppFuncs()
 	);
 
 	cef_control_->RegisterCppFunc(L"ONCTRLV",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			std::string filePath;
 			if (OpenClipboard(GetHWND()))
 			{
@@ -655,7 +639,7 @@ void CefForm::RegisterCppFuncs()
 	);
 
 	cef_control_->RegisterCppFunc(L"NEWVERSION",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			bool newReleased = TellMeNewVersionExistOrNot();
 			if(newReleased)
 				callback(true, R"({ "NewVersion": "true" })");
@@ -665,7 +649,7 @@ void CefForm::RegisterCppFuncs()
 	);
 
 	cef_control_->RegisterCppFunc(L"ADVERTISES",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			auto advertisement = TellMeAdvertisement();
 			//auto u8str = nbase::AnsiToUtf8(advertisement);
 			callback(true, advertisement);
@@ -788,7 +772,7 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 
 
 bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
-	const char* surfix)
+	const char* /*surfix*/)
 {
 	auto index = pathStr.find_last_not_of("/\\");
 	std::string path = pathStr.substr(0, index + 1);
@@ -969,7 +953,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 		}
 		run_cmd(module.c_str(), app.c_str(), "");
 		SetCurrentDirectoryA(oldWorkPath);
-		for (int i = 0; i != prjPaths_.size(); ++i)
+		for (size_t i = 0; i != prjPaths_.size(); ++i)
 		{
 			if (prjPaths_[i] == workdir)
 			{
@@ -1001,7 +985,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		{
 			MsgBox::Warning(GetHWND(), L"工作目录错误或者没有权限", L"权限错误");
 		}
-		for (int i = 0; i != prjPaths_.size(); ++i)
+		for (size_t i = 0; i != prjPaths_.size(); ++i)
 		{
 			if (prjPaths_[i] == path)
 			{
@@ -1244,8 +1228,7 @@ bool CefForm::GetVersionPage()
 	}
 	////////////else///////////////////
 	auto result = res.GetBodyUtf8();
-	std::wstring re = result.c_str();
-	auto astring = nbase::UnicodeToAnsi(re);
+	auto astring = nbase::UnicodeToAnsi(result.c_str());
 	{
 		std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
 		//vs2010下，tr版本的正则表达式无法匹配"空白符"和字符串的组合
@@ -1253,7 +1236,8 @@ bool CefForm::GetVersionPage()
 			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {
 			return c == '\n' || c == '\r' || c == ' ';}), 
 				astring.end());
-		auto re = std::regex_search(astring, reg);
+		if (!std::regex_search(astring, reg))
+			return false;
 		std::smatch match;
 		if (std::regex_search(astring, match, reg))
 		{
@@ -1271,9 +1255,7 @@ bool CefForm::GetVersionPage()
 bool CefForm::TellMeNewVersionExistOrNot()
 {
 	bool isWebPageAvailable = false;
-	{
-		isWebPageAvailable = isWebPageAvailable_;
-	}
+	isWebPageAvailable = isWebPageAvailable_;
 	if (!isWebPageAvailable)
 		return false;
 	else
@@ -1282,95 +1264,25 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		document.Parse(pageInfo_.c_str());
 		assert(document.HasMember("UpdateUrl"));
 		assert(document.HasMember("Advertise"));
-		auto& arr = document["Advertise"]["NationWide"];
-		assert(arr.IsArray());
-		int MainVersionOnServer = std::stoi(document["Version"]["MainVersion"].GetString());
-		int ViceVersionOnServer = std::stoi(document["Version"]["ViceVersion"].GetString());
-		int SubVersionOnServer = std::stoi(document["Version"]["SubVersion"].GetString());
-		int mv = -1, vv = -1, sv = 0;
+		assert(document["Advertise"]["NationWide"].IsArray());
 		std::wstring VersionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
-		auto vec = FindVersionFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");
+		auto vec = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");
 		if (!vec.empty())
 		{
-			//一个紧急改动
+			AscendingOrder stradegy;//fix me
+			std::sort(vec.begin(), vec.end(), stradegy);
+			const auto& LatestVersionOnLocal = vec.back();
+			if (document.HasMember("VersionString"))
 			{
-				if (document.HasMember("VersionString"))
-				{
-					const std::string versionString = document["VersionString"].GetString();
-					auto iter = std::find(vec.cbegin(), vec.cend(), versionString);
-					if (iter != vec.cend())
-						return false;
-					else
-						return true;
-				}			
+				std::string versionString = document["VersionString"].GetString();
+				if (stradegy(versionString, LatestVersionOnLocal))
+					return false;
+				else
+					return true;
 			}
-			getLatestVersion(vec, mv, vv, sv);
-			if (MainVersionOnServer != mv || ViceVersionOnServer != vv || SubVersionOnServer != sv)
-				return true;
 		}
 	}
 	return false;
-}
-
-std::vector<std::string> CefForm::FindVersionFiles(
-	const char* path,
-	const char* prefix,
-	const char* suffix)
-{
-	std::string toFind(path);
-	toFind += "\\*.";
-	toFind += suffix;
-	std::vector<std::string> result;
-	long handle;
-	_finddata_t fileinfo;
-	handle = _findfirst(toFind.c_str(), &fileinfo);
-	if (handle == -1)
-		return result;
-	do
-	{
-		if (string_utility::startWith(fileinfo.name, prefix)/* && endWith(fileinfo.name, ".ini")*/)
-		{
-			std::string filename(fileinfo.name);
-			filename = filename.substr(1, filename.size() - 5);
-			result.push_back(filename);
-		}
-	} while (!_findnext(handle, &fileinfo));
-	_findclose(handle);
-	return result;
-}
-
-void CefForm::getLatestVersion(std::vector<std::string>& result,
-	int& major_version, int& minor_version, int& sub_version)
-{
-	if (result.empty())
-		throw std::exception("vector empty");
-	std::sort(result.begin(), result.end(),
-		[](const std::string& s1, const std::string& s2)->bool {
-			auto num_in_s1 = string_utility::string_split(s1, ".");
-			auto num_in_s2 = string_utility::string_split(s2, ".");
-			int size_s1 = num_in_s1.size();
-			int size_s2 = num_in_s2.size();
-			int n = size_s1 < size_s2 ? size_s1 : size_s2;
-			for (int i = 0; i != n; ++i)
-			{
-				auto num1 = atoi(num_in_s1[i].c_str());
-				auto num2 = atoi(num_in_s2[i].c_str());
-				if (num1 != num2)
-					return num1 - num2 < 0 ? true : false;
-			}
-			return size_s1 < size_s2 ? true : false;
-		});
-	auto ret = string_utility::string_split(result.back(), ".");
-	if (ret.size() < 3)
-	{
-		sub_version = 0;
-	}
-	else
-	{
-		sub_version = std::stoi(ret[2]);
-	}
-	major_version = std::stoi(ret[0]);
-	minor_version = std::stoi(ret[1]);
 }
 
 std::string CefForm::TellMeAdvertisement()
@@ -1403,7 +1315,7 @@ std::string CefForm::TellMeAdvertisement()
 			rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
 
 			rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
-			for (int i = 0; i != data.size(); ++i)
+			for (size_t i = 0; i != data.size(); ++i)
 			{
 				rapidjson::Value obj(rapidjson::kObjectType);
 				rapidjson::Value content(rapidjson::kStringType);
@@ -1471,7 +1383,7 @@ void CefForm::SetHeightLightIndex(const int _i)
 	indexHeightLighted_ = _i;
 }
 
-LRESULT CefForm::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+LRESULT CefForm::OnNcLButtonDbClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	if (!::IsZoomed(GetHWND()))
 	{
@@ -1552,7 +1464,6 @@ void CefForm::InitUiVariable()
 	cef_control_dev_ = dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control_dev"));
 	btn_dev_tool_ = dynamic_cast<ui::Button*>(FindControl(L"btn_dev_tool"));
 	label_ = dynamic_cast<ui::Label*>(FindControl(L"projectName"));
-	//标题从xml的控件里读，很合理...
 	defaultCaption_ = label_->GetText();
 	skinSettings_ = dynamic_cast<ui::Button*>(FindControl(L"settings"));
 	vistual_caption_ = dynamic_cast<ui::HBox*>(FindControl(L"vistual_caption"));
@@ -1583,7 +1494,7 @@ void CefForm::AttachFunctionToShortCut()
 			SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
 		cef_control_->CallJSFunction(L"flush",
 			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
-			ToWeakCallback([this](const std::string& chosenData) {
+			ToWeakCallback([this](const std::string& /*chosenData*/) {
 				}
 		));
 	};
@@ -1715,7 +1626,7 @@ void CefForm::DisplayAuthorizationCodeDate()
 			auto toSend = nbase::UTF8ToUTF16(json.dump());
 			cef_control_->CallJSFunction(L"showLicenseKey",
 				toSend,
-				ToWeakCallback([this](const std::string& dummyFunction) {
+				ToWeakCallback([this](const std::string& /*dummyFunction*/) {
 					}
 			));
 		}

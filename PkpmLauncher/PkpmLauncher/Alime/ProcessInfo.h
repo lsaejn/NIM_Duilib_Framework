@@ -27,8 +27,8 @@ struct ProcessInfo
     bool isVisible;
     ProcessInfo()
         :hWnd(NULL),
-        pid(-1),
-        tid(-1),
+        pid(0),
+        tid(0),
         isVisible(false)
     {
     }
