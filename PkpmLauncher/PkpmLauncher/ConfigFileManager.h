@@ -26,7 +26,8 @@ public:
 	int32_t DaysLeftToNotify() const;
 private:	
 	ConfigManager();
-	//·ÏÆú
+
+	[[deprecated("why two dpi variable in this function?")]] 
 	void CheckAdaptDpi();
 	void LoadConfigFile();
 private:

@@ -49,6 +49,7 @@ private:
 class IVersionCompareStrategy
 {
 public:
+	//·µ»Øa<b
 	virtual bool operator()(const std::string& a, const std::string& b) = 0;
 };
 
@@ -71,9 +72,9 @@ public:
 		}
 		if (countOfLhs > countOfRhs)
 			return false;
-		for (size_t i = countToCompared; i != rhs.size(); ++i)
+		for (size_t i = countToCompared; i != rhsElems.size(); ++i)
 		{
-			if (rhs[i] > 0)//ok
+			if (std::stoi(rhsElems[i]) > 0)//ok
 				return true;
 		}
 		return false;

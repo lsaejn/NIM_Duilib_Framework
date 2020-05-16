@@ -516,7 +516,6 @@ void CefForm::RegisterCppFuncs()
 			vec.push_back(secMenu);
 			vec.push_back(trdMenu);
 			//cef_control_->HideToolTip(); 系统tooltip被弃用
-			//你可以像shortCutHandler.cpp里的模板那样处理参数，避免写出现vec
 			OnDbClickProject(vec);
 			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
@@ -797,7 +796,7 @@ bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 	}
 	else
 	{
-		//winxp 下 stat系列函数都会出现bug。我先保留上面的分支
+		//vs2019编译的程序，winxp下 stat系列函数都会出现bug。我先保留上面的分支
 		//search " _stat not working on Windows XP"
 		WIN32_FILE_ATTRIBUTE_DATA fileData;
 		GetFileAttributesExA(pathStr.c_str(), GetFileExInfoStandard, &fileData);
@@ -1122,7 +1121,7 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 	appDll_.Invoke_RunCommand(str);
 }
 
-//旧代码，vc程序员的素质堪忧，我大约有60的时候是用来擦屎
+//旧代码，vc程序员的素质堪忧，我大约有60%的时间是用来擦屎
 bool CefForm::SetCfgPmEnv()
 {
 	const int LENGTH_OF_ENV = 1024 * 8;
@@ -1185,10 +1184,8 @@ void CefForm::AdvertisementThreadFunc()
 	{
 		AdPageCanAccess = GetVersionPage();
 	}
-	catch (const std::exception& e)
+	catch (...)
 	{
-		UNREFERENCED_PARAMETER(e);
-		//LOG_ERROR<<e.what();
 #ifdef DEBUG
 		AfxMessageBox(L"广告内容格式有误，或者编码不正确", MB_OK | MB_SYSTEMMODAL);
 #endif // DEBUG
@@ -1261,10 +1258,12 @@ bool CefForm::TellMeNewVersionExistOrNot()
 	else
 	{
 		rapidjson::Document document;
-		document.Parse(pageInfo_.c_str());
-		assert(document.HasMember("UpdateUrl"));
-		assert(document.HasMember("Advertise"));
-		assert(document["Advertise"]["NationWide"].IsArray());
+		try {
+			document.Parse(pageInfo_.c_str());
+		}
+		catch (...) {
+			return false;
+		}	
 		std::wstring VersionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
 		auto vec = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");
 		if (!vec.empty())

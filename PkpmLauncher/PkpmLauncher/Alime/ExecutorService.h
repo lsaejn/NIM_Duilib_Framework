@@ -15,17 +15,17 @@ namespace Alime
 		typedef std::function<void()> Task;
         explicit ExecutorService(const std::string_view nameArg = "ExecutorService");
         ~ExecutorService();
-        void setMaxQueueSize(int maxSize);
-        void setThreadInitCallback(const Task& cb);
-        void start(int numThreads);
-        void stop();
-        const std::string& name() const;
-        size_t queueSize() const;
-        void run(Task f);
+        void SetMaxQueueSize(int maxSize);
+        void SetThreadInitCallback(const Task& cb);
+        void Start(int numThreads);
+        void Stop();
+        const std::string& GetName() const;
+        size_t QueueSize() const;
+        void Run(Task f);
     private:
-        bool isFull() const;
-        void runInThread();
-        Task take();
+        bool IsFull() const;
+        void RunInThread();
+        Task Take();
     private:
         std::condition_variable notEmpty_ ;
         std::condition_variable notFull_ ;                  

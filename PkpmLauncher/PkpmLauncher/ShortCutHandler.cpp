@@ -156,33 +156,6 @@ public:
 		typedef void (*pExport)(void);
 		pExport func = (pExport)GetProcAddress(dll_, "OpenPkpmInfoSheet");
 		func();
-		//{
-		//	CString strFullName;
-		//	GetAppPathByCFGPATHMarker(get_cfg_path_reg_key(), strFullName);
-		//	toolsvr::FixPathStr(strFullName);
-		//	if (DRIVE_REMOTE == GetDriveType(strFullName))
-		//	{
-		//		CString strHint = "您即将更改服务器的配置文件，请您确认是否具有服务器文件的读写权限。";
-		//		//strHint = g_stringMgr.LoadString(IDS_MAYNOT_CONFIG_PKPM_INI);
-		//		if (IDCANCEL == AfxMessageBox(strHint, MB_OKCANCEL))
-		//			return;
-		//	}
-		//	int nRet = IDOK;
-		//	int nOpen = 0;
-		//	do
-		//	{
-		//		int nlen;
-		//		bool bHasPwe = false;
-		//		if (fuc_IsProjectWiseVailed)
-		//		{
-		//			bHasPwe = fuc_IsProjectWiseVailed(NULL, nlen);
-		//		}
-		//		CPkpmInfoSheet dialog(_T("PKPM全局参数设置"), NULL, bHasPwe, nOpen);
-		//		dialog.m_otherspage.SetPageType(2);//当前页面类型
-		//		dialog.m_psh.dwFlags &= ~PSH_HASHELP;
-		//		nRet = dialog.DoModal();
-		//	} while (false);
-		//}
 	}
 
 	//fix me, 参数可以去掉了

@@ -17,11 +17,11 @@ namespace Alime
     {
         if (running_)
         {
-            stop();
+            Stop();
         }
     }
 
-    void ExecutorService::start(int numThreads)
+    void ExecutorService::Start(int numThreads)
     {
         assert(threads_.empty());
         running_ = true;
@@ -31,8 +31,8 @@ namespace Alime
             char id[32];
             snprintf(id, sizeof id, "%d", i + 1);
             threads_.emplace_back(new std::thread(
-                std::bind(&ExecutorService::runInThread, this), name_ + id));
-            //threads_[i]->start();
+                std::bind(&ExecutorService::RunInThread, this), name_ + id));
+            threads_[i]->detach();
         }
         if (numThreads == 0 && threadInitCallback_)
         {
@@ -40,7 +40,7 @@ namespace Alime
         }
     }
 
-    void ExecutorService::stop()
+    void ExecutorService::Stop()
     {
         {
             std::lock_guard lock(mutex_);
@@ -53,7 +53,7 @@ namespace Alime
         }
     }
 
-    void ExecutorService::run(Task task)
+    void ExecutorService::Run(Task task)
     {
         if (threads_.empty())
         {
@@ -62,40 +62,38 @@ namespace Alime
         else
         {
             std::unique_lock lock(mutex_);
-            while (isFull())
+            while (IsFull())
             {
                 notFull_.wait(lock);
             }
-            assert(!isFull());
+            assert(!IsFull());
 
             queue_.push_back(std::move(task));
             notEmpty_.notify_one();
         }
     }
 
-    void ExecutorService::setMaxQueueSize(int maxSize)
+    void ExecutorService::SetMaxQueueSize(int maxSize)
     { 
         maxQueueSize_ = maxSize;
     }
 
-    void ExecutorService::setThreadInitCallback(const Task& cb)
+    void ExecutorService::SetThreadInitCallback(const Task& cb)
     {
         threadInitCallback_ = cb;
     }
 
-    const std::string& ExecutorService::name() const
+    const std::string& ExecutorService::GetName() const
     {
         return name_;
     }
 
-    ExecutorService::Task ExecutorService::take()
+    ExecutorService::Task ExecutorService::Take()
     {
         std::unique_lock lock(mutex_);
-        // always use a while-loop, due to spurious wakeup
-        while (queue_.empty() && running_)
-        {
-            notEmpty_.wait(lock);
-        }
+        notEmpty_.wait(lock, [&]() {
+            return !(queue_.empty() && running_);
+            });
         Task task;
         if (!queue_.empty())
         {
@@ -109,13 +107,13 @@ namespace Alime
         return task;
     }
 
-    bool ExecutorService::isFull() const
+    bool ExecutorService::IsFull() const
     {
         //mutex_.assertLocked();
         return maxQueueSize_ > 0 && queue_.size() >= maxQueueSize_;
     }
 
-    void ExecutorService::runInThread()
+    void ExecutorService::RunInThread()
     {
         try
         {
@@ -125,7 +123,7 @@ namespace Alime
             }
             while (running_)
             {
-                Task task(take());
+                Task task(Take());
                 if (task)
                 {
                     task();
@@ -145,7 +143,7 @@ namespace Alime
         }
     }
 
-    size_t ExecutorService::queueSize() const
+    size_t ExecutorService::QueueSize() const
     {
         std::lock_guard<std::mutex> lock(mutex_);
         return queue_.size();

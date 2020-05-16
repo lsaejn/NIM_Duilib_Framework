@@ -11,6 +11,7 @@ using namespace Gdiplus;
 class ProjectPicZoomer
 {
 public:
+
 	template<typename T>
 	class ScopePtrDeletor
 	{
@@ -76,6 +77,7 @@ public:
 		return false;
 	}
 private:
+
 	std::pair<Graphics*, Bitmap*> ZoomThis(UINT destWidth, UINT destHeight)
 	{
 		Bitmap* destBmpPtr = new Bitmap(destWidth, destHeight, PixelFormat32bppARGB);
@@ -84,7 +86,7 @@ private:
 		graphics->DrawImage(srcBitmap_, 0, 0, destWidth, destHeight);
 		return { graphics, destBmpPtr };
 	}
-private:
+
 	std::wstring filePath_;
 	Bitmap* srcBitmap_;
 	ULONG_PTR gdiToken_;
