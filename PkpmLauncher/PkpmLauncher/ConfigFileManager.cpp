@@ -50,6 +50,8 @@ void ConfigManager::LoadConfigFile()
 			cefFormWindowText_ = nbase::UTF8ToUTF16(json["windowText"]);
 			cefFormClassName_ = nbase::UTF8ToUTF16(json["className"]);
 			relativePathForHtmlRes_ = nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
+			skinFile_ = nbase::UTF8ToUTF16(json["skinFile"]);
+			skinFolder_ = nbase::UTF8ToUTF16(json["skinFolder"]);
 			if(json.find("interfaceStyleNo")!=json.end())//我们不知道什么时候上线这个功能
 				styleNo_ = json["interfaceStyleNo"];
 			deadline_ = json["deadline"];
@@ -97,6 +99,15 @@ std::wstring ConfigManager::GetCefFormClassName() const
 std::wstring ConfigManager::GetRelativePathForHtmlRes() const
 {
 	return relativePathForHtmlRes_;
+}
+
+std::wstring ConfigManager::GetSkinFilePath() const
+{
+	return skinFile_;
+}
+std::wstring ConfigManager::GetSkinFolderPath() const
+{
+	return skinFolder_;
 }
 
 bool ConfigManager::IsAdaptDpiOn()

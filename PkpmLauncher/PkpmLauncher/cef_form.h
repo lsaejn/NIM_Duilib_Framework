@@ -216,7 +216,7 @@ private:
 	AppDllAdaptor appDll_;
 	std::mutex lock_;
 	std::atomic<bool> isWebPageAvailable_;
-	std::string pageInfo_;
+	std::string pageInfo_; //guarded by lock_
 	std::wstring defaultCaption_;
 	int indexHeightLighted_;
 	Alime::CountDownLatch latch_;

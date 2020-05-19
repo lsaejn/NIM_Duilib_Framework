@@ -238,6 +238,7 @@
     <ClInclude Include="DpiAdaptor.h" />
     <ClInclude Include="Alime\FileSystem.h" />
     <ClInclude Include="Alime\HttpUtil.h" />
+    <ClInclude Include="Lock_util.h" />
     <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="Alime\NonCopyable.h" />

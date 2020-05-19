@@ -21,6 +21,8 @@ public:
 	std::wstring GetCefFormWindowText() const;
 	std::wstring GetCefFormClassName() const;
 	std::wstring GetRelativePathForHtmlRes() const;
+	std::wstring GetSkinFilePath() const;
+	std::wstring GetSkinFolderPath() const;
 	int32_t GetInterfaceStyleNo() const;
 	void SetInterfaceStyleNo(int32_t);
 	int32_t DaysLeftToNotify() const;
@@ -41,6 +43,8 @@ private:
 	std::wstring cefFormClassName_;
 	std::wstring relativePathForHtmlRes_;
 	std::wstring filePath_;
+	std::wstring skinFile_;
+	std::wstring skinFolder_;
 	int32_t styleNo_;//界面风格编号
 	int32_t deadline_;
 	nlohmann::json json_;

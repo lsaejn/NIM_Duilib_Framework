@@ -25,8 +25,6 @@ const std::wstring CefForm::kClassName =
 
 const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
 
-
-
 CefForm::CefForm()
 	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName",
 		6, FullPathOfPkpmIni().c_str())),
@@ -52,12 +50,12 @@ CefForm::~CefForm()
 
 std::wstring CefForm::GetSkinFolder()
 {
-	return L"cef";
+	return ConfigManager::GetInstance().GetSkinFolderPath();
 }
 
 std::wstring CefForm::GetSkinFile()
 {
-	return L"cef.xml";
+	return ConfigManager::GetInstance().GetSkinFilePath();
 }
 
 std::wstring CefForm::GetWindowClassName() const
@@ -1260,6 +1258,10 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		rapidjson::Document document;
 		try {
 			document.Parse(pageInfo_.c_str());
+			if (!document.HasMember("UpdateUrl") ||
+				!document.HasMember("Advertise") ||
+				!document["Advertise"]["NationWide"].IsArray()
+				) return false;
 		}
 		catch (...) {
 			return false;
@@ -1271,7 +1273,7 @@ bool CefForm::TellMeNewVersionExistOrNot()
 			AscendingOrder stradegy;//fix me
 			std::sort(vec.begin(), vec.end(), stradegy);
 			const auto& LatestVersionOnLocal = vec.back();
-			if (document.HasMember("VersionString"))
+			if (document.HasMember("VersionString"))//ÁÙÊ±¼ÓµÄ
 			{
 				std::string versionString = document["VersionString"].GetString();
 				if (stradegy(versionString, LatestVersionOnLocal))
@@ -1357,7 +1359,8 @@ size_t CefForm::CorrectWorkPath()
 				if (!folder.Exists())
 					continue;
 				std::wstring destPath;
-				if (!Alime::FileSystem::PathNameCaseSensitive(folder, destPath))  continue;
+				if (!Alime::FileSystem::PathNameCaseSensitive(folder, destPath))
+					continue;
 				if (destPath.back() != L'\\')
 					destPath += L'\\';
 				if (std::find(vec.cbegin(), vec.cend(), destPath) == vec.cend())
