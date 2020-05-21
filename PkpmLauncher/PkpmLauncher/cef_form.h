@@ -5,7 +5,10 @@
 #include "ShortCutHandler.h"
 #include "AppDllAdaptor.h"
 #include "DpiAdaptor.h"
+#include "Task.h"
+
 #include "Alime/countDownLatch.h"
+#include "Alime/ExecutorService.h"
 #include <atomic>
 #include <mutex>
 
@@ -15,6 +18,7 @@
 #define WM_SHOWMAINWINDOW (WM_USER + 3)
 #define WM_SETADVERTISEINJS (WM_USER + 4)
 #define WM_ClOSENOW (WM_USER + 5)
+#define WM_SHOWAUTHORIZE (WM_USER + 5)
 
 const bool kEnableOffsetRender = true;
 
@@ -39,9 +43,7 @@ public:
 	virtual LRESULT OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT CefForm::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-
 	static const std::wstring	kClassName;
-
 private:
 	/// <summary>控件点击事件,xml里面的一些控件用来调试很方便</summary>
 	bool OnClicked(ui::EventArgs* msg);
@@ -49,6 +51,7 @@ private:
 	void OnLoadEnd(int httpStatusCode);
 	void InitUiVariable();
 	void AttachFunctionToShortCut();
+	void AppendThreadTask();
 
 	/// <summary>前端读取工程列表,旧代码,见注释</summary>
 	///<param name="iniFileName">配置文件里的文件路径</param>
@@ -185,9 +188,6 @@ private:
 	/// <summary>标题栏缩放处理</summary>
 	void ModifyScaleForCaption();
 
-	/// <summary>返回即将过期的模块的剩余日期</summary>
-	int RemainingTimeOfUserLock(std::string* SerialNumber=NULL);
-
 	void ConsoleForDebug();
 
 	void InitSpdLog();
@@ -220,5 +220,8 @@ private:
 	std::wstring defaultCaption_;
 	int indexHeightLighted_;
 	Alime::CountDownLatch latch_;
+	Alime::ExecutorService pool_;
+	WebPageDownLoader webPageData_;
+	AuthorizationCodeDate lockDate_;
 };
 

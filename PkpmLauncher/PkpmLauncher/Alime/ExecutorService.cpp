@@ -32,7 +32,7 @@ namespace Alime
             snprintf(id, sizeof id, "%d", i + 1);
             threads_.emplace_back(new std::thread(
                 std::bind(&ExecutorService::RunInThread, this), name_ + id));
-            threads_[i]->detach();
+            //threads_[i]->detach();
         }
         if (numThreads == 0 && threadInitCallback_)
         {

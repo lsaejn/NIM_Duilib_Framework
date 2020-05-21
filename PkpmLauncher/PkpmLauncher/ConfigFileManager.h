@@ -12,9 +12,10 @@ public:
 		return instance;
 	}
 
-	bool IsAdaptDpiOn();
-	bool IsModifyWindowOn();
+	bool IsAdaptDpiOn() const;
+	bool IsModifyWindowOn() const;
 	bool IsSystemFolderDialogOn() const;
+	bool IsWebPageRefreshOn() const;
 	std::string GetDefaultAdvertise() const;
 	std::wstring GetAdvertisementServer() const;
 	std::wstring GetAdvertisementQuery() const;
@@ -36,6 +37,7 @@ private:
 	bool isAutoModifyWindowOn_;
 	bool isAdaptDpiOn_;
 	bool systemFolderSelection_;
+	bool isWebPageRefreshOn_;
 	std::string defaultAdvertise_;
 	std::wstring advertisementServer_;
 	std::wstring advertisementQuery_;

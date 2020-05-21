@@ -1,14 +1,22 @@
 #pragma once
 #include <mutex>
 
-template<class T>
-struct LockGuardPtr;
+/*
+struct threadData{
+void fuck(){...}
+}
+SafeAccess<threadData> d;
+d.lock()->fuck();
+*/
 
 template<class T>
-struct LockGuarded
+struct SafeAccessPtr;
+
+template<class T>
+struct SafeAccess
 {
-    friend struct LockGuardPtr<T>;
-    LockGuardPtr<T> lock()
+    friend struct SafeAccessPtr<T>;
+    SafeAccessPtr<T> lock()
     {
         return *this;
     }
@@ -19,24 +27,24 @@ private:
 };
 
 template<class T>
-struct LockGuardPtr
+struct SafeAccessPtr
 {
     T& operator*()
     {
-        return m_ptr;
+        return ref_;
     }
 
     T* operator->()
     {
-        return &m_ptr;
+        return &ref_;
     }
 
     T* get()
     {
-        return &m_ptr;
+        return &ref_;
     }
 
-    LockGuardPtr(LockGuarded<T>& sync)
+    SafeAccessPtr(SafeAccess<T>& sync)
         :lock_(sync.mutex_),
         ref_(sync.data_)
     {

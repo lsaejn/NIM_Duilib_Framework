@@ -17,13 +17,12 @@
 #include "RapidjsonForward.h"
 #include "SpdlogForward.h"
 #include "nlohmann/json.hpp"
+
 using namespace Alime::HttpUtility;
 using namespace application_utily;
 
-const std::wstring CefForm::kClassName =
-  ConfigManager::GetInstance().GetCefFormClassName();
-
 const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
+const std::wstring	CefForm::kClassName= ConfigManager::GetInstance().GetCefFormClassName();
 
 CefForm::CefForm()
 	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName",
@@ -32,7 +31,8 @@ CefForm::CefForm()
 	isWebPageAvailable_(false),
 	cef_control_(NULL),
 	indexHeightLighted_(-1),
-	latch_(1)
+	latch_(1),
+	pool_("A girl lost her name, Arya")
 {
 	webDataReader_.Init();
 	size_t numofPrj=CorrectWorkPath();
@@ -40,7 +40,14 @@ CefForm::CefForm()
 		indexHeightLighted_ = 0;
 	ReadWorkPathFromFile("CFG/pkpm.ini");
 	InitSpdLog();
-	InitAdvertisement();
+	AppendThreadTask();
+}
+
+void CefForm::AppendThreadTask()
+{
+	pool_.SetMaxQueueSize(4);
+	pool_.Run(std::bind(&WebPageDownLoader::Run, &webPageData_, std::function<void()>()));
+	pool_.Start(1);
 }
 
 CefForm::~CefForm()
@@ -101,52 +108,7 @@ LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 bool CefForm::OnClicked(ui::EventArgs* msg)
 {
 	std::wstring name = msg->pSender->GetName();
-	/*
-		如果你坚持要在本项目使用mfc对话框
-		你有几个选择:
-		1.像下面这样在线程里启动模态/非模态对话框。我保留了下面这个例子。
-		2.将对话框放到动态库的函数里。
-	*/
-	if (name == L"btn_dev_tool")
-	{
-		//我们启动一个模态/非模态对话框,嗯...模态比较简单一些
-		/**/
-		//CWinThread* m_pThrd;
-		////启动
-		//m_pThrd = AfxBeginThread(RUNTIME_CLASS(CDirSelectThread),THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED,0);
-		//CDirSelectThread* workThread = dynamic_cast<CDirSelectThread*>(m_pThrd);
-		//HANDLE event = CreateEvent(NULL, TRUE, FALSE, L"Quit");
-		//workThread->SetQuitEvent(event);
-		//workThread->ResumeThread();
-		//HANDLE hp = m_pThrd->m_hThread;
-		//写一个loop函数，执行下面的逻辑
-		//if (hp)
-		//{
-		//	while (WAIT_OBJECT_0 != MsgWaitForMultipleObjects(1, &event, FALSE, 0, QS_ALLINPUT))
-		//	{
-		//		MSG msg;
-		//		if (::PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
-		//		{
-		//			if (msg.message == WM_LBUTTONDOWN)
-		//			{
-		//				MessageBox(NULL,L"...",L"ananann",1);
-		//			}
-		//			else
-		//			{
-		//				continue;
-		//			}
-		//			/*
-		//				::TranslateMessage(&msg);
-		//				::DispatchMessage(&msg);
-		//			*/
-		//		}
-		//	}
-		//	
-		//	CloseHandle(event);
-		//}
-		//
-	}
-	else if (name == L"btn_wnd_max")
+	if (name == L"btn_wnd_max")
 	{
 		return false;
 	}
@@ -172,11 +134,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_LBUTTONDOWN)
 	{
-		OutputDebugString(L"Receive WM_LBUTTONDOWN");
 	}
 	else if (uMsg == WM_DROPFILES)
 	{
-		OutputDebugString(L"Receive WM_DROPFILES");
 		HDROP hDropInfo = (HDROP)wParam;
 		UINT count;
 		TCHAR filePath[MAX_PATH] = { 0 };
@@ -207,20 +167,9 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (uMsg == WM_KEYDOWN)
 	{
-		if (0x80 == (0x80 & GetKeyState(VK_CONTROL)))
-		{
-			if ('D' == wParam || 'd' == wParam)
-			{
-				ConsoleForDebug();
-			}
-		}
 		//提供F5给前端
-		if (116 == wParam)
-		{
-#ifdef DEBUG
+		if (116 == wParam && ConfigManager::GetInstance().IsWebPageRefreshOn())
 			cef_control_->Refresh();
-#endif // DEBUG		
-		}
 	}
 	else if (uMsg == WM_SIZE)
 	{
@@ -250,27 +199,24 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		OutputDebugString(L"MOUSEWHEEL");
 	}
-	else if (uMsg == WM_SETADVERTISEINJS)
+	else if (uMsg == WM_SHOWAUTHORIZE)
 	{
-		{
-			auto advString = TellMeAdvertisement();
-			cef_control_->CallJSFunction(L"SetAdvertise",
-				nbase::UTF8ToUTF16(advString),
-				ToWeakCallback([this](const std::string& /*chosenData*/) {
-					}
-			));
-		}
+		//nlohmann::json json;
+		//json["dayLeft"] = daysLeft;
+		//auto toSend = nbase::UTF8ToUTF16(json.dump());
+		//cef_control_->CallJSFunction(L"showLicenseKey",
+		//	toSend,
+		//	ToWeakCallback([this](const std::string& /*dummyFunction*/) {
+		//		}
+		//));
 	}
-	else if(uMsg == WM_QUERYENDSESSION ||
-		uMsg == WM_ENDSESSION)
+	else if(uMsg == WM_QUERYENDSESSION ||uMsg == WM_ENDSESSION)
 	{
+		auto pid = ProcessInspector::GetCurrentPid();
+		auto pidOfChildren = ProcessInspector::GetPidsOfChildProcess(pid);
+		for (auto elem : pidOfChildren)
 		{
-			auto pid = ProcessInspector::GetCurrentPid();
-			auto pidOfChildren = ProcessInspector::GetPidsOfChildProcess(pid);
-			for (auto elem : pidOfChildren)
-			{
-				ProcessInspector::KillProcess(elem);
-			}
+			ProcessInspector::KillProcess(elem);
 		}
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
@@ -297,7 +243,9 @@ void CefForm::SaveThemeIndex(int index)
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
 	UNREFERENCED_PARAMETER(httpStatusCode);
-	DisplayAuthorizationCodeDate();
+	pool_.Run(std::bind(&AuthorizationCodeDate::Run, &lockDate_, [this]() {
+		PostMessageW(WM_SHOWAUTHORIZE, 0, 0);
+		}));
 }
 
 void CefForm::ModifyScaleForCef()
@@ -330,7 +278,7 @@ void CefForm::ModifyScaleForCaption()
 
 void CefForm::OnLoadStart()
 {
-	//早期的demo存在网页调用c++函数时函数还没注册的情况
+	//早期的demo存在网页调用c++函数时函数还没注册的情况。
 	RegisterCppFuncs();
 	ModifyScaleForCef();
 }
@@ -341,7 +289,7 @@ void CefForm::RegisterCppFuncs()
 	cef_control_->RegisterCppFunc(L"ShowMessageBox", 
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
-			callback(false, R"({ "message": "Success0." })");
+			callback(false, R"({ "message": "this is a messgae from c++" })");
 		})
 	);
 
@@ -352,7 +300,7 @@ void CefForm::RegisterCppFuncs()
 			document.ParseStream(input);
 			std::string filePath = document["projectName"].GetString();
 			OnRightClickProject(nbase::UTF8ToUTF16(filePath));
-			callback(true, R"({ "message": "Success0." })");
+			callback(true, R"({ "message": "ONRCLICKPRJ called successfully"})");
 			})
 	);
 
@@ -395,7 +343,7 @@ void CefForm::RegisterCppFuncs()
 			SetHeightLightIndex(Index);
 			SetCaptionWithProjectName(captionName);
 #ifdef DEBUG
-			std::string debugStr = R"({ "SetCaption": "Success." })";
+			std::string debugStr = R"({ "message": "Function SetCaption called successfully." })";
 			if(callback)
 				callback(true, debugStr);
 #endif // DEBUG
@@ -411,7 +359,7 @@ void CefForm::RegisterCppFuncs()
 			document.ParseStream(input);
 			std::string shortcutName = document["shortcutName"].GetString();
 #ifdef DEBUG
-			std::string debugStr = R"({ "SetCaption": "Success." })";
+			std::string debugStr = R"({ "message": "Function SHORTCUT called successfully." })";
 			callback(true, debugStr);
 #endif // DEBUG
 			shortcutName = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(shortcutName)).c_str();
@@ -428,7 +376,7 @@ void CefForm::RegisterCppFuncs()
 			document.ParseStream(input);
 			std::string path = document["fullPath"].GetString();
 			OnOpenDocument(nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(path)));
-			std::string debugStr = R"({ "SetCaption": "Success." })";
+			std::string debugStr = R"({ "message": "OPENDOCUMENT always called successfully ." })";
 			callback(true, debugStr);
 			return;
 			}
@@ -449,14 +397,14 @@ void CefForm::RegisterCppFuncs()
 				{
 					MsgBox::Warning(GetHWND(), L"没有选择工程", L"错误");
 				}
-				std::string debugStr = R"({ "invalid index": "failed to call c++ function." })";
-				callback(true, debugStr);
+				std::string debugStr = R"({ "message": "invalid index." })";
+				callback(false, debugStr);
 				return;
 			}
 			std::string workDir = prjPaths_[index];
 			DataFormatTransfer(ansiMod, ansiExe, workDir);
 
-			std::string debugStr = R"({ "Pass me the projectName or index": "Success." })";
+			std::string debugStr = R"({ "message": "Pass me the projectName or index." })";
 			callback(true, debugStr);
 			}
 		)
@@ -467,7 +415,7 @@ void CefForm::RegisterCppFuncs()
 			auto strAnsi = OnNewProject();
 			if (strAnsi.empty())
 			{
-				std::string debugStr = R"({ "call ONNEWPROJECT": "Failed." })";
+				std::string debugStr = R"({ "message": "call ONNEWPROJECT Failed." })";
 				callback(false, debugStr);
 			}
 			else
@@ -483,7 +431,7 @@ void CefForm::RegisterCppFuncs()
 				nlohmann::json json;
 				json["pathSelected"] = nbase::AnsiToUtf8(strAnsi);
 				auto str = json.dump();
-				std::string debugStr = R"({ "call ONNEWPROJECT": "successed." })";
+				std::string debugStr = R"({ "message": "call ONNEWPROJECT successed." })";
 				callback(true, str);
 				return;
 			}
@@ -491,6 +439,7 @@ void CefForm::RegisterCppFuncs()
 		)
 	);
 
+	//fix me, ONGETDEfAULTMENUSELECTION 里的f....
 	cef_control_->RegisterCppFunc(L"ONGETDEfAULTMENUSELECTION",
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			auto selection =OnGetDefaultMenuSelection();
@@ -515,7 +464,7 @@ void CefForm::RegisterCppFuncs()
 			vec.push_back(trdMenu);
 			//cef_control_->HideToolTip(); 系统tooltip被弃用
 			OnDbClickProject(vec);
-			std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
+			std::string debugStr = R"({ "message": "call ONNEWPROJECT Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
 			})
 	);
@@ -648,7 +597,6 @@ void CefForm::RegisterCppFuncs()
 	cef_control_->RegisterCppFunc(L"ADVERTISES",
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			auto advertisement = TellMeAdvertisement();
-			//auto u8str = nbase::AnsiToUtf8(advertisement);
 			callback(true, advertisement);
 			})
 	);
@@ -695,12 +643,8 @@ void CefForm::RegisterCppFuncs()
 
 
 /*
-这是个旧函数，每次都读配置文件，之所以没有
-删除是因为，它曾经帮了大忙0.0
-(比方说，它意外地处理了网页刷新造成的内存/文件不匹配，用户使用程序过程中手动改配置文件)，
-我保留它大概是希望获得额外的心理安慰。
+这是个旧函数
 */
-//fileName并不受我控制
 std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 {
 	prjPaths_.clear();
@@ -823,7 +767,7 @@ void CefForm::SetCaptionWithProjectName(const std::string& prjName)
 {
 	std::wstring captionWithPrefix;
 	if (defaultCaption_.empty())
-		captionWithPrefix = L"PKPM结构设计软件 10版 V5.1.3   ";
+		captionWithPrefix = L"PKPM结构设计软件 10版 V5   ";
 	else
 		captionWithPrefix = defaultCaption_;
 	if (prjName.empty())
@@ -1166,44 +1110,6 @@ bool CefForm::SetCfgPmEnv()
 	}
 }
 
-void CefForm::InitAdvertisement()
-{
-	//fix me, not safe
-	std::thread func(std::bind(&CefForm::AdvertisementThreadFunc, this));
-	func.detach();
-}
-
-void CefForm::AdvertisementThreadFunc()
-{
-	assert(isWebPageAvailable_ == false);
-	bool AdPageCanAccess = false;
-	//网页不是我在维护
-	try
-	{
-		AdPageCanAccess = GetVersionPage();
-	}
-	catch (...)
-	{
-#ifdef DEBUG
-		AfxMessageBox(L"广告内容格式有误，或者编码不正确", MB_OK | MB_SYSTEMMODAL);
-#endif // DEBUG
-		AdPageCanAccess = false;
-	}
-	
-	if (!AdPageCanAccess)//获取网页失败
-	{
-		//可以不锁,只是提醒你
-		std::lock_guard<std::mutex> guarder(lock_);
-		isWebPageAvailable_ = false;
-		return;
-	}
-	else
-	{
-		std::lock_guard<std::mutex> guarder(lock_);
-		isWebPageAvailable_ = true;
-	}
-}
-
 //我们的广告原页面是https://update.pkpm.cn/PKPM2010/Info/index.html
 bool CefForm::GetVersionPage()
 {
@@ -1249,15 +1155,13 @@ bool CefForm::GetVersionPage()
 
 bool CefForm::TellMeNewVersionExistOrNot()
 {
-	bool isWebPageAvailable = false;
-	isWebPageAvailable = isWebPageAvailable_;
-	if (!isWebPageAvailable)
+	if (!webPageData_.data_.lock()->isWebPageCooked_)
 		return false;
 	else
 	{
 		rapidjson::Document document;
 		try {
-			document.Parse(pageInfo_.c_str());
+			document.Parse(webPageData_.data_.lock()->pageInfo_.c_str());
 			if (!document.HasMember("UpdateUrl") ||
 				!document.HasMember("Advertise") ||
 				!document["Advertise"]["NationWide"].IsArray()
@@ -1288,15 +1192,12 @@ bool CefForm::TellMeNewVersionExistOrNot()
 
 std::string CefForm::TellMeAdvertisement()
 {
-	bool isAdvertisementAvailable = false;
-	{
-		isAdvertisementAvailable = isWebPageAvailable_;
-	}
-	if (!isAdvertisementAvailable)
+	if (!webPageData_.data_.lock()->isWebPageCooked_)
 		return ConfigManager::GetInstance().GetDefaultAdvertise();
 	else
 	{
-		if (pageInfo_.empty())
+		auto pageInfo = webPageData_.data_.lock()->pageInfo_;
+		if (pageInfo.empty())
 			return ConfigManager::GetInstance().GetDefaultAdvertise();
 		else
 		{
@@ -1388,19 +1289,14 @@ void CefForm::SetHeightLightIndex(const int _i)
 LRESULT CefForm::OnNcLButtonDbClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	if (!::IsZoomed(GetHWND()))
-	{
 		SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);
-	}
 	else
-	{
 		SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
-	}
 	return 0;
 }
 
 void CefForm::EnableAcceptFiles()
 {
-	//离屏渲染模式下，似乎需要手动开启拖拽文件支持
 	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);
 	auto hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
 	style |= WS_EX_ACCEPTFILES;
@@ -1430,33 +1326,6 @@ void CefForm::AttachClickCallbackToSkinButton()
 			});
 		return true;
 		});
-}
-
-int CefForm::RemainingTimeOfUserLock(std::string* SerialNumber)
-{
-	//参数:@ 模块号, @子模块号 @返回的授权码
-	//返回值: 剩余天数
-	typedef int(_stdcall *FuncInWinAuthorize)(int&, int&, char*);
-	auto pathOfWinAuthorize = nbase::win32::GetCurrentModuleDirectory()+L"Ribbon\\WinAuthorize.dll";
-	auto handle = LoadLibrary(pathOfWinAuthorize.c_str());
-	if (!handle)
-		return -1;
-	FuncInWinAuthorize dayLeftFunc = NULL;
-	dayLeftFunc = (FuncInWinAuthorize)GetProcAddress(handle, "_Login_SubMod2@12");
-	if (!dayLeftFunc)
-	{
-		FreeLibrary(handle);
-		return -1;
-	}		
-	int ty = 100;
-	int sub_ky = 0;
-	char gSN[17] = { 0 };
-	int dayLeft = 0;
-	dayLeft=dayLeftFunc(ty, sub_ky, gSN);
-	if(SerialNumber!=NULL)
-		*SerialNumber = gSN;
-	FreeLibrary(handle);
-	return dayLeft;
 }
 
 void CefForm::InitUiVariable()
@@ -1526,20 +1395,6 @@ void CefForm::ConsoleForDebug()
 			else if (str.find(L"Clear") != std::wstring::npos)
 			{
 				Alime::Console::Clear();
-			}
-			else if (str.find(L"Lock") != std::wstring::npos)
-			{
-				std::string authorizationCode;
-				auto daysLeft = RemainingTimeOfUserLock(&authorizationCode);
-				if (daysLeft == -1)
-				{
-					Alime::Console::SetColor(Alime::Console::RED);
-					Alime::Console::WriteLine(L"未知的错误");
-					Alime::Console::SetColor(Alime::Console::CYAN);
-				}					
-				else
-				Alime::Console::WriteLine(nbase::AnsiToUnicode(authorizationCode)+L"\n剩余天数:"+
-					std::to_wstring(daysLeft));
 			}
 			else if (str.find(L"Quit") != std::wstring::npos)
 			{
@@ -1614,24 +1469,4 @@ ui::HBox* CefForm::GetCaptionBox()
 nim_comp::CefControlBase* CefForm::GetCef()
 {
 	return this->cef_control_;
-}
-
-void CefForm::DisplayAuthorizationCodeDate()
-{
-	std::thread checkThread([this]() {
-		std::string sn;
-		int daysLeft = RemainingTimeOfUserLock(&sn);
-		if (daysLeft >= 0 && daysLeft < ConfigManager::GetInstance().DaysLeftToNotify())
-		{
-			nlohmann::json json;
-			json["dayLeft"] = daysLeft;
-			auto toSend = nbase::UTF8ToUTF16(json.dump());
-			cef_control_->CallJSFunction(L"showLicenseKey",
-				toSend,
-				ToWeakCallback([this](const std::string& /*dummyFunction*/) {
-					}
-			));
-		}
-		});
-	checkThread.detach();
 }
