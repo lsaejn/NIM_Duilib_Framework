@@ -39,4 +39,6 @@ namespace ui
 	typedef std::function<void(CefRefPtr<CefBrowser> browser, CefRefPtr<CefDownloadItem> download_item, CefRefPtr<CefDownloadItemCallback> callback)> OnDownloadUpdatedEvent;
 
 	typedef std::function<bool(CefDialogHandler::FileDialogMode mode, const CefString& title, const CefString& default_file_path, const std::vector<CefString>& accept_filters, int selected_accept_filter, CefRefPtr<CefFileDialogCallback> callback)> OnFileDialogEvent;
+
+	typedef std::function<bool(CefRefPtr<CefBrowser> browser, CefString & text)> OnTooltipEvent;
 }

@@ -21,17 +21,6 @@ public:
 	virtual ~CefControlBase(void);	
 
 public:
-	//
-	//void HideToolTip()
-	//{
-	//	browser_handler_->HideToolTip();
-	//}
-
-	//void DestroyToolTip()
-	//{
-	//	browser_handler_->DestroyToolTip();
-	//}
-
 
 	/**
 	* @brief 加载一个地址
@@ -327,6 +316,13 @@ public:
 	*/
 	void AttachFileDialog(const OnFileDialogEvent& callback) { cb_file_dialog_ = callback; }
 
+	/**
+	*@陈剑
+	*@离屏渲染下tooltip不显示的解决方案
+	*@
+	*/
+	void AttachTooltip(const OnTooltipEvent& callback) { cb_tool_tip_ = callback; }
+
 private:
 	// 处理BrowserHandler的HandlerDelegate委托接口
 	// 当浏览器渲染数据变化时，会触发此接口，此时把渲染数据保存到内存dc
@@ -425,7 +421,12 @@ private:
 
 	virtual bool OnExecuteCppCallbackFunc(int cpp_callback_id, const CefString& json_string) OVERRIDE;
 
+	virtual bool OnTooltip(CefRefPtr<CefBrowser> browser, CefString& text) OVERRIDE;
+
+	virtual std::wstring GetToolTipText() const OVERRIDE;
+
 protected:
+	std::wstring toolTipText_;
 	CefRefPtr<nim_comp::BrowserHandler> browser_handler_ = nullptr;
 	std::shared_ptr<nim_comp::CefJSBridge> js_bridge_;
 	CefString url_;
@@ -449,6 +450,7 @@ protected:
 	OnBeforeDownloadEvent		cb_before_download_ = nullptr;
 	OnDownloadUpdatedEvent		cb_download_updated_ = nullptr;
 	OnFileDialogEvent			cb_file_dialog_ = nullptr;
+	OnTooltipEvent			cb_tool_tip_ = nullptr;
 	OnDevToolAttachedStateChangeEvent cb_devtool_visible_change_ = nullptr;
 	int							js_callback_thread_id_ = -1; // 保存接收到 JS 调用 CPP 函数的代码所属线程，以后触发 JS 回调时把回调转到那个线程
 };

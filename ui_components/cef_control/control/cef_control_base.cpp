@@ -197,4 +197,17 @@ bool CefControlBase::OnExecuteCppCallbackFunc(int cpp_callback_id, const CefStri
 	return false;
 }
 
+bool CefControlBase::OnTooltip(CefRefPtr<CefBrowser> browser, CefString& text)
+{
+	toolTipText_ = text;
+	if (cb_tool_tip_)
+		return cb_tool_tip_(browser, text);
+	return false;
+}
+
+std::wstring CefControlBase::GetToolTipText() const
+{
+	return toolTipText_;
+}
+
 }

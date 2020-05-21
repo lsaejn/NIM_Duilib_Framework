@@ -24,14 +24,12 @@ public:
 class WebPageDownLoader: public QueryTask
 {
 public:
-	void Run(Functor after) override
+	void Run(Functor /*after*/) override
 	{
 		assert(!data_.lock()->isWebPageCooked_);
 		bool AdPageCanAccess = false;
 		AdPageCanAccess = GetVersionPage();
 		data_.lock()->isWebPageCooked_ = AdPageCanAccess;
-		if(after)
-			after();
 	}
 
 	struct innerData
@@ -88,11 +86,11 @@ public:
 	{
 		std::string sn;
 		int daysLeft = RemainingTimeOfUserLock(&sn);
-		if (daysLeft >= 0 && daysLeft < ConfigManager::GetInstance().DaysLeftToNotify())
+		if (daysLeft >= -1 && daysLeft < ConfigManager::GetInstance().DaysLeftToNotify())
 		{
 			data_.lock()->daysLeft_ = daysLeft;
 			data_.lock()->authorizationCode_ = sn;
-			if(after)
+			if (after)
 				after();
 		}
 	}

@@ -47,7 +47,6 @@ public:
 private:
 	/// <summary>控件点击事件,xml里面的一些控件用来调试很方便</summary>
 	bool OnClicked(ui::EventArgs* msg);
-	bool OnNavigate(ui::EventArgs* msg);
 	void OnLoadEnd(int httpStatusCode);
 	void InitUiVariable();
 	void AttachFunctionToShortCut();
@@ -134,15 +133,6 @@ private:
 	///<return>真实路径</return>
 	std::string PathChecker(const std::string& path, bool& legal);
 
-	/// <summary>以线程获取广告页面</summary>
-	void InitAdvertisement();
-
-	/// <summary>获取广告页面的线程函数</summary>
-	void AdvertisementThreadFunc();
-
-	/// <summary>旧代码，名字歪了。下载广告页。</summary>
-	bool GetVersionPage();
-
 	/// <summary>旧代码，名字歪了。获得工程的创建时间，返回快照是否存在</summary>
 	///<param name="timestamp">欲返回的时间戳</param >
 	///<param name="surfix">废弃，快照放到了别的函数</param >
@@ -191,8 +181,6 @@ private:
 	void ConsoleForDebug();
 
 	void InitSpdLog();
-
-	void DisplayAuthorizationCodeDate();
 public:
 
 	void AcceptDpiAdaptor(IAdaptor* acc);
@@ -214,14 +202,12 @@ private:
 	collection_utility::BoundedQueue<std::string> prjPaths_;
 	ShortCutHandler shortCutHandler_;
 	AppDllAdaptor appDll_;
-	std::mutex lock_;
-	std::atomic<bool> isWebPageAvailable_;
-	std::string pageInfo_; //guarded by lock_
 	std::wstring defaultCaption_;
 	int indexHeightLighted_;
 	Alime::CountDownLatch latch_;
 	Alime::ExecutorService pool_;
 	WebPageDownLoader webPageData_;
 	AuthorizationCodeDate lockDate_;
+	std::wstring tooltipText_;
 };
 

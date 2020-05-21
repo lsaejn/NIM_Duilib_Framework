@@ -474,4 +474,12 @@ bool BrowserHandler::OnFileDialog(
 		return false;
 }
 
+bool BrowserHandler::OnTooltip(CefRefPtr<CefBrowser> browser, CefString& text)
+{
+	if (handle_delegate_)
+		return handle_delegate_->OnTooltip(browser, text);
+	else
+		return CefDisplayHandler::OnTooltip(browser, text);
+}
+
 }

@@ -28,7 +28,6 @@ CefForm::CefForm()
 	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName",
 		6, FullPathOfPkpmIni().c_str())),
 	prjPaths_(maxPrjNum_),
-	isWebPageAvailable_(false),
 	cef_control_(NULL),
 	indexHeightLighted_(-1),
 	latch_(1),
@@ -200,15 +199,15 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		OutputDebugString(L"MOUSEWHEEL");
 	}
 	else if (uMsg == WM_SHOWAUTHORIZE)
-	{
-		//nlohmann::json json;
-		//json["dayLeft"] = daysLeft;
-		//auto toSend = nbase::UTF8ToUTF16(json.dump());
-		//cef_control_->CallJSFunction(L"showLicenseKey",
-		//	toSend,
-		//	ToWeakCallback([this](const std::string& /*dummyFunction*/) {
-		//		}
-		//));
+	{	
+		nlohmann::json json;
+		json["daysLeft"] =lockDate_.data_.lock()->daysLeft_;
+		auto toSend = nbase::UTF8ToUTF16(json.dump());
+		cef_control_->CallJSFunction(L"showLicenseKey",
+			toSend,
+			ToWeakCallback([this](const std::string& /*dummyFunction*/) {
+				}
+		));
 	}
 	else if(uMsg == WM_QUERYENDSESSION ||uMsg == WM_ENDSESSION)
 	{
@@ -462,7 +461,6 @@ void CefForm::RegisterCppFuncs()
 			vec.push_back(coreWithPara);
 			vec.push_back(secMenu);
 			vec.push_back(trdMenu);
-			//cef_control_->HideToolTip(); 系统tooltip被弃用
 			OnDbClickProject(vec);
 			std::string debugStr = R"({ "message": "call ONNEWPROJECT Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
@@ -1110,49 +1108,6 @@ bool CefForm::SetCfgPmEnv()
 	}
 }
 
-//我们的广告原页面是https://update.pkpm.cn/PKPM2010/Info/index.html
-bool CefForm::GetVersionPage()
-{
-	HttpRequest req;
-	req.server = ConfigManager::GetInstance().GetAdvertisementServer();
-	req.query = ConfigManager::GetInstance().GetAdvertisementQuery();
-	req.acceptTypes.push_back(L"text/html");
-	req.acceptTypes.push_back(L"application/xhtml+xml");
-	req.method = L"Get";
-	req.port = 80;
-	req.secure = false;
-	HttpResponse res;
-	HttpQuery(req, res);
-	if (200 != res.statusCode)
-	{
-		return false;
-	}
-	////////////else///////////////////
-	auto result = res.GetBodyUtf8();
-	auto astring = nbase::UnicodeToAnsi(result.c_str());
-	{
-		std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
-		//vs2010下，tr版本的正则表达式无法匹配"空白符"和字符串的组合
-		if (_MSC_VER <= 1600)
-			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {
-			return c == '\n' || c == '\r' || c == ' ';}), 
-				astring.end());
-		if (!std::regex_search(astring, reg))
-			return false;
-		std::smatch match;
-		if (std::regex_search(astring, match, reg))
-		{
-			pageInfo_ = match[3];
-			//考虑用户内网网页重定向的问题,简单处理即可
-			if (pageInfo_.find("UpdateUrl") == std::string::npos ||
-				pageInfo_.find("Version") == std::string::npos)
-				return false;
-			return true;
-		}
-	}
-	return false;
-}
-
 bool CefForm::TellMeNewVersionExistOrNot()
 {
 	if (!webPageData_.data_.lock()->isWebPageCooked_)
@@ -1201,40 +1156,44 @@ std::string CefForm::TellMeAdvertisement()
 			return ConfigManager::GetInstance().GetDefaultAdvertise();
 		else
 		{
-			std::vector<std::pair<std::string, std::string>> data;
-			rapidjson::Document document;
-			document.Parse(pageInfo_.c_str());
-			auto& arr = document["Advertise"]["NationWide"];
-			assert(arr.IsArray());
-			for (size_t i = 0; i < arr.Size(); ++i)
+			try
 			{
-				std::string adver_content(arr[i]["Advertisement"].GetString());
-				std::string adver_url(arr[i]["Url"].GetString());
-				data.push_back(std::make_pair(adver_content, adver_url));
+				std::vector<std::pair<std::string, std::string>> data;
+				rapidjson::Document document;
+				document.Parse(pageInfo.c_str());
+				auto& arr = document["Advertise"]["NationWide"];
+				assert(arr.IsArray());
+				for (size_t i = 0; i < arr.Size(); ++i)
+				{
+					std::string adver_content(arr[i]["Advertisement"].GetString());
+					std::string adver_url(arr[i]["Url"].GetString());
+					data.push_back(std::make_pair(adver_content, adver_url));
+				}
+				//////////begin/////////////////////
+				rapidjson::Document doc;
+				rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+				rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
+				for (size_t i = 0; i != data.size(); ++i)
+				{
+					rapidjson::Value obj(rapidjson::kObjectType);
+					rapidjson::Value content(rapidjson::kStringType);
+					content.SetString(data[i].first.c_str(), allocator);
+					obj.AddMember("key", content, allocator);
+					rapidjson::Value url(rapidjson::kStringType);
+					url.SetString(data[i].second.c_str(), allocator);
+					obj.AddMember("value", url, allocator);
+					array.PushBack(obj, allocator);
+				}
+				rapidjson::Value root(rapidjson::kObjectType);
+				root.AddMember("data", array, allocator);
+				rapidjson::StringBuffer s;
+				rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+				root.Accept(writer);
+				return nbase::AnsiToUtf8(s.GetString());
 			}
-			//////////begin/////////////////////
-			rapidjson::Document doc;
-			rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-
-			rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
-			for (size_t i = 0; i != data.size(); ++i)
-			{
-				rapidjson::Value obj(rapidjson::kObjectType);
-				rapidjson::Value content(rapidjson::kStringType);
-				content.SetString(data[i].first.c_str(), allocator);
-				obj.AddMember("key", content, allocator);
-				rapidjson::Value url(rapidjson::kStringType);
-				url.SetString(data[i].second.c_str(), allocator);
-				obj.AddMember("value", url, allocator);
-				array.PushBack(obj, allocator);
+			catch (...) {
+				return ConfigManager::GetInstance().GetDefaultAdvertise();
 			}
-			rapidjson::Value root(rapidjson::kObjectType);
-			root.AddMember("data", array, allocator);
-			rapidjson::StringBuffer s;
-			rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-			root.Accept(writer);
-			std::string toSend = s.GetString();//for debug
-			return nbase::AnsiToUtf8(s.GetString());
 		}
 	}
 	return ConfigManager::GetInstance().GetDefaultAdvertise();
@@ -1343,17 +1302,6 @@ void CefForm::InitUiVariable()
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
 	if (cef_control_dev_)
 		cef_control_->AttachDevTools(cef_control_dev_);
-	if (nim_comp::CefManager::GetInstance()->IsEnableOffsetRender())
-	{
-		if (cef_control_dev_)
-		{
-#ifdef DEBUG
-			cef_control_dev_->SetVisible(true);
-#else
-			cef_control_dev_->SetVisible(false);
-#endif
-		}
-	}
 }
 
 void CefForm::AttachFunctionToShortCut()

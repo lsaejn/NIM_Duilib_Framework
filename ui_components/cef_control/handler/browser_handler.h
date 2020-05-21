@@ -75,6 +75,8 @@ public:
 
 		virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int httpStatusCode) = 0;
 
+		virtual bool OnTooltip(CefRefPtr<CefBrowser> browser, CefString& text) = 0;
+
 		virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
 			CefRefPtr<CefFrame> frame,
 			ErrorCode errorCode,
@@ -140,21 +142,6 @@ public:
 	};
 
 public:
-	//Fix me
-	//virtual void HideToolTip()
-	//{
-	//	auto browser = GetBrowser();
-	//	if (browser == NULL)
-	//		return;
-	//	if (m_hwndTooltip != NULL)
-	//		::SendMessage(m_hwndTooltip, TTM_TRACKACTIVATE, FALSE, (LPARAM)&m_ToolTip);
-	//}
-
-	//virtual void DestroyToolTip()
-	//{
-	//	if (m_hwndTooltip != NULL)
-	//		::DestroyWindow(m_hwndTooltip);
-	//}
 	// 设置Cef浏览器对象所属的窗体的句柄
 	void SetHostWindow(HWND hwnd){ hwnd_ = hwnd; }
 
@@ -321,58 +308,8 @@ public:
 		int selected_accept_filter,
 		CefRefPtr<CefFileDialogCallback> callback) OVERRIDE;
 
-	//virtual bool OnDragEnter(CefRefPtr<CefBrowser> browser,
-	//	CefRefPtr<CefDragData> dragData,
-	//	cef_drag_operations_mask_t mask) {
-	//	return true;
-	//}
-
-	//virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
-	//	const CefKeyEvent& event,
-	//	CefEventHandle os_event) {
-	//	return false;
-	//}
-
-	//virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,
-	//	const CefKeyEvent& event,
-	//	CefEventHandle os_event,
-	//	bool* is_keyboard_shortcut) {
-	//	*is_keyboard_shortcut = true;
-	//	return false;
-	//}
-	//private:
-	//	TOOLINFO m_ToolTip;
-	//	HWND m_hwndTooltip=NULL;
-	//public:
-
-
-	//virtual bool OnTooltip(CefRefPtr<CefBrowser> browser,
-	//	CefString& text)
-	//{
-	//	if (text.empty())
-	//	{
-	//		if (m_hwndTooltip != NULL) 
-	//			::SendMessage(m_hwndTooltip, TTM_TRACKACTIVATE, FALSE, (LPARAM)&m_ToolTip);
-	//	}
-	//	::ZeroMemory(&m_ToolTip, sizeof(TOOLINFO));
-	//	m_ToolTip.cbSize = sizeof(TOOLINFO);
-	//	m_ToolTip.uFlags = TTF_IDISHWND;
-	//	m_ToolTip.hwnd = hwnd_;
-	//	m_ToolTip.uId = (UINT_PTR)hwnd_;
-	//	m_ToolTip.hinst = ::GetModuleHandle(NULL);
-	//	m_ToolTip.lpszText = const_cast<LPTSTR>((LPCTSTR)text.c_str());
-	//	::GetClientRect(hwnd_, &m_ToolTip.rect);
-	//	//m_ToolTip.rect = pHover->GetPos();
-	//	if (m_hwndTooltip == NULL) {
-	//		m_hwndTooltip = ::CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT,
-	//			CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwnd_, NULL, ::GetModuleHandle(NULL), NULL);
-	//		::SendMessage(m_hwndTooltip, TTM_ADDTOOL, 0, (LPARAM)&m_ToolTip);
-	//	}
-	//	::SendMessage(m_hwndTooltip, TTM_SETMAXTIPWIDTH, 0, 300);
-	//	::SendMessage(m_hwndTooltip, TTM_SETTOOLINFO, 0, (LPARAM)&m_ToolTip);
-	//	::SendMessage(m_hwndTooltip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&m_ToolTip);
-	//	return true;
-	//}
+	virtual bool OnTooltip(CefRefPtr<CefBrowser> browser,
+		CefString& text) OVERRIDE;
 
 protected:
 	CefRefPtr<CefBrowser>	browser_;
