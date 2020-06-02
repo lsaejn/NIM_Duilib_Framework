@@ -25,5 +25,9 @@ namespace application_utily
 	std::string FileEncode(const std::string& query);
 	void OpenDocument(const std::wstring& filePath);
 	bool CreateProcessWithCommand(const wchar_t* application, const wchar_t* command, HANDLE* process);
-	void GodBlessThisProcess();
+	void GodBlessThisProcess(wchar_t* god= L"ProcessGuard.exe");
+	int setenv(const char* name, const char* value, int overwrite);
+	char* realpath(const char* path, char* resolved_path);
+	std::wstring GetExePath();
+	bool GetClipBoardInfo(HWND wnd, std::string& filePath);
 }

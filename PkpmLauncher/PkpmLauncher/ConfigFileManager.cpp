@@ -25,6 +25,7 @@ ConfigManager::ConfigManager()
 	isAdaptDpiOn_(false),
 	deadline_(INT32_MAX),
 	styleNo_(0),
+	folderDialogType_(0),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -47,6 +48,7 @@ void ConfigManager::LoadConfigFile()
 			isWebPageRefreshOn_ = json[u8"enableRefresh"];
 			systemFolderSelection_ = json[u8"systemFolderSelection"];
 			defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
+			folderDialogType_ = json["folderDialogType"];
 			advertisementServer_ = nbase::UTF8ToUTF16(json["server"]);
 			advertisementQuery_ = nbase::UTF8ToUTF16(json["query"]);
 			cefFormWindowText_ = nbase::UTF8ToUTF16(json["windowText"]);
@@ -54,6 +56,7 @@ void ConfigManager::LoadConfigFile()
 			relativePathForHtmlRes_ = nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
 			skinFile_ = nbase::UTF8ToUTF16(json["skinFile"]);
 			skinFolder_ = nbase::UTF8ToUTF16(json["skinFolder"]);
+			nativeArticleFolder_ = nbase::UTF8ToUTF16(json["nativeArticleFolder"]);
 			if(json.find("interfaceStyleNo")!=json.end())//我们不知道什么时候上线这个功能
 				styleNo_ = json["interfaceStyleNo"];
 			deadline_ = json["deadline"];
@@ -62,7 +65,7 @@ void ConfigManager::LoadConfigFile()
 		}
 		catch (...)
 		{
-			::AfxMessageBox(L"读取配置文件失败");
+			::AfxMessageBox(L"读取配置文件 defaultConfig.json 失败");
 			std::abort();
 		}
 	}
@@ -117,6 +120,11 @@ std::wstring ConfigManager::GetSkinFolderPath() const
 	return skinFolder_;
 }
 
+std::wstring ConfigManager::GetNativeArticleFolder() const
+{
+	return nativeArticleFolder_;
+}
+
 bool ConfigManager::IsAdaptDpiOn() const
 {
 	return isAdaptDpiOn_;
@@ -135,6 +143,11 @@ int32_t ConfigManager::DaysLeftToNotify() const
 int32_t ConfigManager::GetInterfaceStyleNo() const
 {
 	return styleNo_;
+}
+
+int32_t ConfigManager::GetFolderDialogType() const
+{
+	return folderDialogType_;
 }
 
 //立刻保存是因为启动器可能多开

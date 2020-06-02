@@ -235,9 +235,11 @@
     <ClInclude Include="cef_form.h" />
     <ClInclude Include="ConfigFileManager.h" />
     <ClInclude Include="Alime\Console.h" />
+    <ClInclude Include="ConsoleDebugger.h" />
     <ClInclude Include="DpiAdaptor.h" />
     <ClInclude Include="Alime\FileSystem.h" />
     <ClInclude Include="Alime\HttpUtil.h" />
+    <ClInclude Include="FileDialog.h" />
     <ClInclude Include="Lock_util.h" />
     <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
@@ -360,6 +362,7 @@
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="ConfigFileManager.cpp" />
     <ClCompile Include="Alime\Console.cpp" />
+    <ClCompile Include="ConsoleDebugger.cpp" />
     <ClCompile Include="DpiAdaptor.cpp" />
     <ClCompile Include="Alime\FileSystem.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

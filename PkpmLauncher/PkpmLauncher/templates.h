@@ -1,7 +1,31 @@
 #pragma once
 
-template<typename... Args>
-void UNUSEDPARAMS(Args...)
+template<typename T>
+class ScopePtrDeletor
+{
+public:
+	ScopePtrDeletor(T* t) :ptr_(t) {}
+	~ScopePtrDeletor() { if (ptr) delete ptr; }
+	T* ptr_;
+};
+
+template<typename func= std::function<void()>>
+class ScopeFunc
+{
+public:
+	ScopeFunc(func f)
+		:f_(f)
+	{
+	}
+	~ScopeFunc()
+	{
+		f_();
+	}
+	func f_;
+};
+
+template<typename... Ts>
+void UNUSEDPARAMS(Ts&&... args)
 {
 }
 

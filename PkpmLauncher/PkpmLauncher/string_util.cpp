@@ -1,7 +1,12 @@
 #include "pch.h"
-#include "string_util.h"
-#include "RapidjsonForward.h"
+
 #include <string>
+
+#include "RapidjsonForward.h"
+
+#include "string_util.h"
+#include "templates.h"
+
 
 namespace string_utility
 {
@@ -58,8 +63,7 @@ namespace application_utily
 
 	std::string FullPathOfPkpmIniA()
 	{
-		static auto path = nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()
-			+ L"cfg/pkpm.ini");
+		static auto path = nbase::UnicodeToAnsi(FullPathOfPkpmIni());
 		return path;
 	}
 
@@ -93,9 +97,7 @@ namespace application_utily
 		std::string replace = "%";
 		replace += "0123456789ABCDEF"['#' / 16];
 		replace += "0123456789ABCDEF"['#' % 16];
-		nbase::StringReplaceAll("#",
-			replace,
-			result);
+		nbase::StringReplaceAll("#", replace, result);
 		return result;
 	}
 
@@ -152,13 +154,13 @@ namespace application_utily
 		return false;
 	}
 
-	void GodBlessThisProcess()
+	void GodBlessThisProcess(wchar_t* god)
 	{
 		wchar_t buffer[256] = { 0 };
 		auto param = L" " + std::to_wstring(::GetCurrentProcessId());
 		memcpy_s(buffer, 256 * sizeof(wchar_t), param.c_str(), param.length() * sizeof(wchar_t));
-		auto pathOfGodWindow = nbase::win32::GetCurrentModuleDirectory() + L"ProcessGuard.exe";
-		HANDLE handleOfGuard;
+		auto pathOfGodWindow = nbase::win32::GetCurrentModuleDirectory() + god;
+		HANDLE handleOfGuard= INVALID_HANDLE_VALUE;
 		application_utily::CreateProcessWithCommand(pathOfGodWindow.c_str(), buffer, &handleOfGuard);
 		if (handleOfGuard == INVALID_HANDLE_VALUE)
 		{
@@ -168,5 +170,91 @@ namespace application_utily
 		CloseHandle(handleOfGuard);
 	}
 
+	//not thread safe
+	int setenv(const char* name, const char* value, int overwrite) 
+	{
+		if (overwrite == 0 && getenv(name) != nullptr)
+		{
+			return 0;
+		}
+
+		if (*value != '\0')
+		{
+			auto e = _putenv_s(name, value);
+			if (e != 0)
+			{
+				errno = e;
+				return -1;
+			}
+			return 0;
+		}
+
+		if (_putenv_s(name, "  ") != 0)
+		{
+			errno = EINVAL;
+			return -1;
+		}
+		*getenv(name) = '\0';
+		*(getenv(name) + 1) = '=';
+		if (_wenviron != nullptr)
+		{
+			wchar_t buf[_MAX_ENV + 1];
+			size_t len;
+			if (mbstowcs_s(&len, buf, _MAX_ENV + 1, name, _MAX_ENV) != 0) {
+				errno = EINVAL;
+				return -1;
+			}
+			*_wgetenv(buf) = u'\0';
+			*(_wgetenv(buf) + 1) = u'=';
+		}
+
+		if (!SetEnvironmentVariableA(name, value)) {
+			errno = EINVAL;
+			return -1;
+		}
+		return 0;
+	}
+
+	char* realpath(const char* path, char* resolved_path)
+	{
+		return _fullpath(resolved_path, path, _MAX_PATH);
+	}
+
+	std::wstring GetExePath()
+	{
+		wchar_t buffer[65536];
+		GetModuleFileName(NULL, buffer, sizeof(buffer) / sizeof(*buffer));
+		int pos = -1;
+		int index = 0;
+		while (buffer[index])
+		{
+			if (buffer[index] == L'\\' || buffer[index] == L'/')
+			{
+				pos = index;
+			}
+			index++;
+		}
+		return std::wstring(buffer, pos + 1);
+	}
+
+	bool GetClipBoardInfo(HWND wnd, std::string& filePath)
+	{
+		if (OpenClipboard(wnd))
+		{
+			ScopeFunc guard([]() {CloseClipboard();});
+			if (IsClipboardFormatAvailable(CF_TEXT))
+			{
+				HANDLE hclip =INVALID_HANDLE_VALUE;
+				hclip=GetClipboardData(CF_TEXT);
+				if (hclip == INVALID_HANDLE_VALUE) 
+					return false;
+				char* pBuf = static_cast<char*>(GlobalLock(hclip));
+				GlobalUnlock(hclip);
+				filePath = std::move(std::string(pBuf));
+				return true;
+			}	
+		}
+		return false;
+	}
 }
 

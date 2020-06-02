@@ -3,6 +3,8 @@
 #include <memory>
 #include <windows.h>
 #include <gdiplus.h>
+
+#include "templates.h"
 #include "assert.h"
 
 using namespace Gdiplus;
@@ -11,17 +13,6 @@ using namespace Gdiplus;
 class ProjectPicZoomer
 {
 public:
-
-	template<typename T>
-	class ScopePtrDeletor
-	{
-	public:
-		ScopePtrDeletor(T* t):ptr_(t){}
-		~ScopePtrDeletor() { if (ptr) delete ptr; }
-		T* ptr_;
-	};
-
-public:
 	ProjectPicZoomer(const std::wstring& filePath)
 		:filePath_(filePath),
 		srcBitmap_(NULL)
@@ -29,7 +20,6 @@ public:
 		GdiplusStartupInput gdiplusStartupInput;
 		GdiplusStartup(&gdiToken_, &gdiplusStartupInput, NULL);
 		srcBitmap_ = new Bitmap(filePath_.c_str());
-		assert(srcBitmap_);
 	}
 	~ProjectPicZoomer()
 	{

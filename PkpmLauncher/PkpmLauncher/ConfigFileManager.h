@@ -24,9 +24,11 @@ public:
 	std::wstring GetRelativePathForHtmlRes() const;
 	std::wstring GetSkinFilePath() const;
 	std::wstring GetSkinFolderPath() const;
+	std::wstring GetNativeArticleFolder() const;
 	int32_t GetInterfaceStyleNo() const;
-	void SetInterfaceStyleNo(int32_t);
+	int32_t GetFolderDialogType() const;
 	int32_t DaysLeftToNotify() const;
+	void SetInterfaceStyleNo(int32_t);
 private:	
 	ConfigManager();
 
@@ -47,7 +49,9 @@ private:
 	std::wstring filePath_;
 	std::wstring skinFile_;
 	std::wstring skinFolder_;
+	std::wstring nativeArticleFolder_;
 	int32_t styleNo_;//界面风格编号
 	int32_t deadline_;
+	int32_t folderDialogType_;
 	nlohmann::json json_;
 };

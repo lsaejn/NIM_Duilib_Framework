@@ -45,6 +45,7 @@ public:
 	LRESULT CefForm::OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	static const std::wstring	kClassName;
 private:
+
 	/// <summary>控件点击事件,xml里面的一些控件用来调试很方便</summary>
 	bool OnClicked(ui::EventArgs* msg);
 	void OnLoadEnd(int httpStatusCode);
@@ -127,7 +128,7 @@ private:
 	///<param name="prjPath">工程路径</param >
 	void OnRightClickProject(const std::wstring& prjPath);
 
-	/// <summary>获得真实路径。因为用了c++17的函数，我不确定是否有问题</summary>
+	/// <summary>获取大小写敏感的路径</summary>
 	///<param name="path">原路径</param >
 	///<param name="prefix">返回是否合法</param >
 	///<return>真实路径</return>
@@ -178,8 +179,6 @@ private:
 	/// <summary>标题栏缩放处理</summary>
 	void ModifyScaleForCaption();
 
-	void ConsoleForDebug();
-
 	void InitSpdLog();
 public:
 
@@ -191,9 +190,7 @@ public:
 private:
 	nim_comp::CefControlBase* cef_control_;
 	nim_comp::CefControlBase* cef_control_dev_;
-	ui::Button*	 btn_dev_tool_;
 	ui::Button* skinSettings_;
-	ui::RichEdit* edit_url_;
 	ui::Label* label_;
 	ui::HBox* vistual_caption_;
 	ui::Window* this_window_;
@@ -204,10 +201,8 @@ private:
 	AppDllAdaptor appDll_;
 	std::wstring defaultCaption_;
 	int indexHeightLighted_;
-	Alime::CountDownLatch latch_;
 	Alime::ExecutorService pool_;
 	WebPageDownLoader webPageData_;
 	AuthorizationCodeDate lockDate_;
-	std::wstring tooltipText_;
 };
 

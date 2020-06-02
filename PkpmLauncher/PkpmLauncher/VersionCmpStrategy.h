@@ -58,26 +58,44 @@ class AscendingOrder: public IVersionCompareStrategy
 public:
 	virtual bool operator()(const std::string& lhs, const std::string& rhs) override
 	{
-		auto lhsElems = string_utility::string_split(lhs, ".");
-		auto rhsElems = string_utility::string_split(rhs, ".");
-		size_t countOfLhs = lhsElems.size();
-		size_t countOfRhs = rhsElems.size();
-		size_t countToCompared = countOfLhs < countOfRhs ? countOfLhs : countOfRhs;
-		for (size_t i = 0; i != countToCompared; ++i)
-		{
-			auto num1 = std::stoi(lhsElems[i]);
-			auto num2 = std::stoi(rhsElems[i]);
-			if (num1 != num2)
-				return num1 < num2;
-		}
-		if (countOfLhs > countOfRhs)
-			return false;
-		for (size_t i = countToCompared; i != rhsElems.size(); ++i)
-		{
-			if (std::stoi(rhsElems[i]) > 0)//ok
-				return true;
-		}
+		int ret = Compare(lhs, rhs);
+		if (ret == -1)
+			return true;
 		return false;
+	}
+private:
+	//@return -1 when lhs<rhs , 0 when lhs==rhs, 1 when lhs>rhs
+	int Compare(const std::string& lhs, const std::string& rhs)
+	{
+		auto lhsElems = StringsToIntegers(string_utility::string_split(lhs, "."));
+		auto rhsElems = StringsToIntegers(string_utility::string_split(rhs, "."));
+		TrimTailZeros(lhsElems); TrimTailZeros(rhsElems);
+		int numToCompare = lhsElems.size() <= rhsElems.size() ? lhsElems.size() : rhsElems.size();
+		for (size_t i = 0; i != numToCompare; ++i)
+		{
+			if (lhsElems[i] != rhsElems[i])
+				return lhsElems[i]<rhsElems[i]? -1: 1;
+		}
+		if (lhsElems.size()== rhsElems.size())
+			return 0;
+		return lhsElems.size() < rhsElems.size() ? -1 : 1;
+	}
+
+	std::vector<int> StringsToIntegers(const std::vector<std::string>& strs)
+	{
+		std::vector<int> numCol;
+		for (size_t i = 0; i != strs.size(); ++i)
+			numCol.push_back(std::stoi(strs[i]));
+		return numCol;
+	}
+
+	void TrimTailZeros(std::vector<int>& nums)
+	{
+		size_t  i = nums.size()-1;
+		for (; i >= 0; --i)
+			if (nums[i] != 0)
+				break;
+		nums.resize(i + 1);
 	}
 };
 
@@ -88,6 +106,7 @@ public:
 	{
 		if (a != b)
 			return true;
+		return false;
 	}
 };
 

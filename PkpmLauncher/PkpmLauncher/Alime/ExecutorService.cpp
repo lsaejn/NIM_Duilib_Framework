@@ -32,7 +32,6 @@ namespace Alime
             snprintf(id, sizeof id, "%d", i + 1);
             threads_.emplace_back(new std::thread(
                 std::bind(&ExecutorService::RunInThread, this), name_ + id));
-            //threads_[i]->detach();
         }
         if (numThreads == 0 && threadInitCallback_)
         {
@@ -43,9 +42,12 @@ namespace Alime
     void ExecutorService::Stop()
     {
         {
+            //我看不出锁的意义何在，muduo的cv和mutex是绑定的，和java一样
+            //但std的cv是自由的。这个锁对cv有什么影响？莫名其妙
             std::lock_guard lock(mutex_);
             running_ = false;
             notEmpty_.notify_all();
+            notFull_.notify_all();
         }
         for (auto& thr : threads_)
         {
@@ -53,6 +55,9 @@ namespace Alime
         }
     }
 
+    //这里有个潜在的bug，若是当前队列已满
+    //那么非本线程的生产者将阻塞在本函数。
+    //此时线程池执行stop，程序将永远阻塞。
     void ExecutorService::Run(Task task)
     {
         if (threads_.empty())
@@ -62,10 +67,12 @@ namespace Alime
         else
         {
             std::unique_lock lock(mutex_);
-            while (IsFull())
+            while (IsFull()&& running_)
             {
                 notFull_.wait(lock);
             }
+            if (!running_)
+                return;
             assert(!IsFull());
 
             queue_.push_back(std::move(task));
@@ -109,7 +116,6 @@ namespace Alime
 
     bool ExecutorService::IsFull() const
     {
-        //mutex_.assertLocked();
         return maxQueueSize_ > 0 && queue_.size() >= maxQueueSize_;
     }
 

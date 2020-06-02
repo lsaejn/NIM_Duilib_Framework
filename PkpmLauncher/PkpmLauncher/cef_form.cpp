@@ -5,6 +5,7 @@
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
 #include "VersionCmpStrategy.h"
+#include "FileDialog.h"
 
 #include "Alime/ProcessInfo.h"
 #include "Alime/HttpUtil.h"
@@ -22,15 +23,13 @@ using namespace Alime::HttpUtility;
 using namespace application_utily;
 
 const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
-const std::wstring	CefForm::kClassName= ConfigManager::GetInstance().GetCefFormClassName();
+const std::wstring CefForm::kClassName= ConfigManager::GetInstance().GetCefFormClassName();
 
 CefForm::CefForm()
-	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName",
-		6, FullPathOfPkpmIni().c_str())),
+	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName", 6, FullPathOfPkpmIni().c_str())),
 	prjPaths_(maxPrjNum_),
 	cef_control_(NULL),
 	indexHeightLighted_(-1),
-	latch_(1),
 	pool_("A girl lost her name, Arya")
 {
 	webDataReader_.Init();
@@ -106,12 +105,7 @@ LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled
 
 bool CefForm::OnClicked(ui::EventArgs* msg)
 {
-	std::wstring name = msg->pSender->GetName();
-	if (name == L"btn_wnd_max")
-	{
-		return false;
-	}
-	else if (name == L"closebtn")
+	if (msg->pSender->GetName() == L"closebtn")
 	{
 		//bug出现在Winxp的机器上，
 		std::thread t([this]() {
@@ -123,8 +117,7 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 			));
 		});
 		t.detach();
-		//丑陋0.0, 但是简单暴力
-		Sleep(200);
+		Sleep(200);//丑陋0.0, 但是简单暴力
 	}
 	return true;
 }
@@ -138,7 +131,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		HDROP hDropInfo = (HDROP)wParam;
 		UINT count;
-		TCHAR filePath[MAX_PATH] = { 0 };
+		wchar_t filePath[MAX_PATH] = { 0 };
 		count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 		if (count != 1)
 		{
@@ -166,8 +159,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (uMsg == WM_KEYDOWN)
 	{
-		//提供F5给前端
-		if (116 == wParam && ConfigManager::GetInstance().IsWebPageRefreshOn())
+		if (VK_F5 == wParam && ConfigManager::GetInstance().IsWebPageRefreshOn())
 			cef_control_->Refresh();
 	}
 	else if (uMsg == WM_SIZE)
@@ -203,8 +195,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		nlohmann::json json;
 		json["daysLeft"] =lockDate_.data_.lock()->daysLeft_;
 		auto toSend = nbase::UTF8ToUTF16(json.dump());
-		cef_control_->CallJSFunction(L"showLicenseKey",
-			toSend,
+		cef_control_->CallJSFunction(L"showLicenseKey", toSend,
 			ToWeakCallback([this](const std::string& /*dummyFunction*/) {
 				}
 		));
@@ -224,9 +215,8 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 bool CefForm::SwicthThemeTo(int index)
 {
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
-	auto sw=SkinSwitcherFatctory::Get(index);
-	if (!sw)
-		return false;
+	auto sw = SkinSwitcherFatctory::Get(index);
+	if (!sw)	return false;
 	sw->Switch(vistual_caption, label_);
 	return true;
 }
@@ -235,13 +225,13 @@ void CefForm::SaveThemeIndex(int index)
 {
 	auto path=application_utily::FullPathOfPkpmIni();
 	ConfigManager::GetInstance().SetInterfaceStyleNo(index);
-	WritePrivateProfileStringW(L"InterfaceStyle", L"index",
+	WritePrivateProfileString(L"InterfaceStyle", L"index",
 		std::to_wstring(index).c_str(), path.c_str());
 }
 
 void CefForm::OnLoadEnd(int httpStatusCode)
 {
-	UNREFERENCED_PARAMETER(httpStatusCode);
+	UNUSED(httpStatusCode);
 	pool_.Run(std::bind(&AuthorizationCodeDate::Run, &lockDate_, [this]() {
 		PostMessageW(WM_SHOWAUTHORIZE, 0, 0);
 		}));
@@ -275,23 +265,16 @@ void CefForm::ModifyScaleForCaption()
 	}
 }
 
+//早期的demo出现 网页调用c++函数时函数还没注册
 void CefForm::OnLoadStart()
 {
-	//早期的demo存在网页调用c++函数时函数还没注册的情况。
 	RegisterCppFuncs();
 	ModifyScaleForCef();
 }
 
+//不要试图以json来标识函数
 void CefForm::RegisterCppFuncs()
 {
-	//调试窗口，需要加上Toast资源文件夹，以便使用这个对话框。
-	cef_control_->RegisterCppFunc(L"ShowMessageBox", 
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-			nim_comp::Toast::ShowToast(nbase::UTF8ToUTF16(params), 3000, GetHWND());
-			callback(false, R"({ "message": "this is a messgae from c++" })");
-		})
-	);
-
 	cef_control_->RegisterCppFunc(L"ONRCLICKPRJ",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			rapidjson::StringStream input(params.c_str());
@@ -438,7 +421,7 @@ void CefForm::RegisterCppFuncs()
 		)
 	);
 
-	//fix me, ONGETDEfAULTMENUSELECTION 里的f....
+	//fix me, ONGETDEfAULTMENUSELECTION 里有个小写f....
 	cef_control_->RegisterCppFunc(L"ONGETDEfAULTMENUSELECTION",
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			auto selection =OnGetDefaultMenuSelection();
@@ -467,7 +450,6 @@ void CefForm::RegisterCppFuncs()
 			})
 	);
 
-	//
 	cef_control_->RegisterCppFunc(L"ONDROPFILES",
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			HDROP hDropInfo=NULL;
@@ -509,17 +491,7 @@ void CefForm::RegisterCppFuncs()
 	cef_control_->RegisterCppFunc(L"ONCTRLV",
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			std::string filePath;
-			if (OpenClipboard(GetHWND()))
-			{
-				if (IsClipboardFormatAvailable(CF_TEXT))
-				{
-					HANDLE hclip = GetClipboardData(CF_TEXT);
-					char* pBuf = static_cast<char*>(GlobalLock(hclip));
-					LocalUnlock(hclip);
-					filePath = std::move(std::string(pBuf));
-				}
-				CloseClipboard();
-			}
+			GetClipBoardInfo(GetHWND(), filePath);
 			if (!filePath.empty())
 			{
 				if (PathFileExistsA(filePath.c_str()) && PathIsDirectoryA(filePath.c_str()))
@@ -533,13 +505,6 @@ void CefForm::RegisterCppFuncs()
 						callback(true, nbase::AnsiToUtf8(debugStr));
 						return;
 					}
-
-				}
-				else
-				{
-					//LOG_ERROR<<"invalid path";
-					std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED." })";
-					callback(false, nbase::AnsiToUtf8(debugStr));
 				}
 			}
 			std::string debugStr = R"({ "call ONNEWPROJECT": "FAILED. empty Path" })";
@@ -575,7 +540,8 @@ void CefForm::RegisterCppFuncs()
 					callback(true, nbase::AnsiToUtf8(debugStr));
 				}
 			}
-			catch (...) {
+			catch (...)
+			{
 				std::string debugStr = R"({ "Call ONNEWPROJECT": "Fail." })";
 				callback(false, nbase::AnsiToUtf8(debugStr));
 			}
@@ -624,10 +590,32 @@ void CefForm::RegisterCppFuncs()
 			})
 	);
 
+	cef_control_->RegisterCppFunc(L"NATIVEARTICLES",
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
+			std::string content;
+			bool succ = nbase::ReadFileToString(ConfigManager::GetInstance().GetNativeArticleFolder()+L"nativeArticle.json", content);
+			if (succ)
+			{
+				nlohmann::json json = nlohmann::json::parse(content);
+				std::string prefix_in_u8 = nbase::UTF16ToUTF8(nbase::win32::GetCurrentModuleDirectory());
+				std::string path = json["nativeArticles"]["updateDescription"]["imgSrc"];
+				path = prefix_in_u8 + path;
+				json["nativeArticles"]["updateDescription"]["imgSrc"] = path;
+				path = json["nativeArticles"]["operationSkillAndFAQ"]["imgSrc"];
+				path = prefix_in_u8 + path;
+				json["nativeArticles"]["operationSkillAndFAQ"]["imgSrc"] = path;
+				std::string toSend = json.dump();
+				callback(true, toSend);
+			}
+			else
+				callback(false, R"({ "message": "NativeArticles failed" })");			
+			})
+	);
+
 	//标题栏暂时只支持修改背景色和文字颜色
 	//这个设置被我定义在resources\themes\default\cef\caption_style.xml中
 	//网页可以调用本接口切换风格
-	cef_control_->RegisterCppFunc(L"SetInterfaceStyle",
+	cef_control_->RegisterCppFunc(L"SETINTERFACESTYLE",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nlohmann::json json = nlohmann::json::parse(params);
 			int styleNo = json["index"];
@@ -641,7 +629,7 @@ void CefForm::RegisterCppFuncs()
 
 
 /*
-这是个旧函数
+出于内部有些2B有改配置文件的习惯。每次我都读配置文件。
 */
 std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 {
@@ -651,39 +639,35 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 	rapidjson::Document doc;
 	doc.SetObject();
 	rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-	rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
+	rapidjson::Value array(rapidjson::kArrayType);
 	std::vector<std::string> vec;
-	char prjPathStr[1024] = { 0 };
+	char buffer[1024] = { 0 };
 	for (int i = 0; i < maxPrjNum_; ++i)
 	{
-		auto workPathId = "WorkPath" + std::to_string((ULONGLONG)i);
-		memset(prjPathStr, 0, ArraySize(prjPathStr));
-		auto nRead = GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", prjPathStr, ArraySize(prjPathStr), fullpath.c_str());
-		if (!strcmp("error", prjPathStr))
+		auto workPathId = "WorkPath" + std::to_string(i);
+		memset(buffer, 0, ArraySize(buffer));
+		auto nRead = GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", buffer, ArraySize(buffer), fullpath.c_str());
+		if (!strcmp("error", buffer) || buffer[nRead - 1] != '\\')
 		{
 			//prjPathStr=="error"表明用户手动修改了配置文件!
 			continue;
 		}
-		else if (prjPathStr[nRead - 1] != '\\')
-		{
-			continue;
-		}
 		std::string timeStamp;
-		auto ret = GetPrjInfo(prjPathStr, timeStamp);
+		auto ret = GetPrjInfo(buffer, timeStamp);
 		rapidjson::Value obj(rapidjson::kObjectType);
 		if (ret)
 		{
-			vec.emplace_back(prjPathStr);
+			vec.emplace_back(buffer);
 			rapidjson::Value key(rapidjson::kStringType);
 			key.SetString(workPathId.c_str(), allocator);
 			rapidjson::Value value(rapidjson::kStringType);
-			value.SetString(prjPathStr, allocator);
+			value.SetString(buffer, allocator);
 			obj.AddMember("WorkPath", value, allocator);
 
 			value.SetString(timeStamp.c_str(), allocator);
 			obj.AddMember("Date", value, allocator);
 
-			std::string bmpPath = prjPathStr;
+			std::string bmpPath = buffer;
 			bmpPath += "BuildUp.bmp";
 			if (IsSnapShotExist(bmpPath))
 			{
@@ -719,38 +703,18 @@ bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 	{
 		return false;
 	}
-	struct stat statbuf;
-	if (stat(path.c_str(), &statbuf) == 0)
-	{	
-		if ((_S_IFMT & statbuf.st_mode) == _S_IFDIR)
-		{
-			auto seconds = statbuf.st_mtime;
-			auto tm_time = *localtime(&seconds);
-			char buf[64];
-			sprintf(buf, "%4d年%02d月%02d日 %02d:%02d",
-				tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
-				tm_time.tm_hour, tm_time.tm_min);
-			timestamp.assign(buf);
-			return true;
-		}
-	}
-	else
+	WIN32_FILE_ATTRIBUTE_DATA fileData;
+	GetFileAttributesExA(pathStr.c_str(), GetFileExInfoStandard, &fileData);
+	SYSTEMTIME systemTime;
+	bool res = FileTimeToSystemTime(&fileData.ftCreationTime, &systemTime);
+	if (res)
 	{
-		//vs2019编译的程序，winxp下 stat系列函数都会出现bug。我先保留上面的分支
-		//search " _stat not working on Windows XP"
-		WIN32_FILE_ATTRIBUTE_DATA fileData;
-		GetFileAttributesExA(pathStr.c_str(), GetFileExInfoStandard, &fileData);
-		SYSTEMTIME systemTime;
-		bool res = FileTimeToSystemTime(&fileData.ftCreationTime, &systemTime);
-		if (res)
-		{
-			char buf[128] = { 0 };
-			sprintf(buf, "%4d年%02d月%02d日 %02d:%02d",
-				systemTime.wYear, systemTime.wMonth, systemTime.wDay,
-				systemTime.wHour, systemTime.wMinute);
-			timestamp=buf;
-			return true;
-		}
+		char buf[128] = { 0 };
+		sprintf(buf, "%4d年%02d月%02d日 %02d:%02d",
+			systemTime.wYear, systemTime.wMonth, systemTime.wDay,
+			systemTime.wHour, systemTime.wMinute);
+		timestamp=buf;
+		return true;
 	}
 	return false;
 }
@@ -764,16 +728,12 @@ bool CefForm::IsSnapShotExist(const std::string& path)
 void CefForm::SetCaptionWithProjectName(const std::string& prjName)
 {
 	std::wstring captionWithPrefix;
-	if (defaultCaption_.empty())
-		captionWithPrefix = L"PKPM结构设计软件 10版 V5   ";
-	else
-		captionWithPrefix = defaultCaption_;
+	captionWithPrefix = defaultCaption_;
 	if (prjName.empty())
 	{
 		label_->SetText(defaultCaption_);
 		return;
-	}
-		
+	}	
 	auto prjNameU16 = nbase::UTF8ToUTF16(prjName);	
 	captionWithPrefix += Alime::FileSystem::GetAbbreviatedPath(prjNameU16);
 	label_->SetText(captionWithPrefix);
@@ -805,61 +765,20 @@ void CefForm::OnShortCut(const char* cutName)
 	shortCutHandler_.CallFunc(cutName);
 }
 
+
 std::string CefForm::OnNewProject()
 {
-	int useDevelopVersion = 0;
-	useDevelopVersion = ConfigManager::GetInstance().IsSystemFolderDialogOn();
-	if (!useDevelopVersion)
+	std::string defaultPath;
+	if (-1 == indexHeightLighted_ || !prjPaths_.size())
 	{
-		typedef void (*func)(const char*, char*);
-		auto hdll = LoadLibrary(L"PKPM2010V511.dll");
-		func ptr = (func)GetProcAddress(hdll, "OpenDlgSelectDir");
-		if (!ptr)
-		{
-			//LOG_FATAL<<
-			return {};
-		}
-		char result[MAX_PATH] = { 0 };
-		std::string defaultPath;
-		if (-1==indexHeightLighted_ || !prjPaths_.size())
-		{
-			OutputDebugString(L"dangerous operation");
-		}
-		else
-			defaultPath = prjPaths_[indexHeightLighted_];
-		ptr(defaultPath.c_str(), result);
-		FreeLibrary(hdll);
-		return result;
+		OutputDebugString(L"dangerous operation");
 	}
 	else
-	{
-		TCHAR  folderPath[MAX_PATH] = { 0 };
-		std::wstring path;
-		BROWSEINFO  sInfo;
-		::ZeroMemory(&sInfo, sizeof(BROWSEINFO));
-		sInfo.pidlRoot = 0;
-		sInfo.lpszTitle = _T("请选择新的工程路径");
-		sInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_EDITBOX
-			| BIF_DONTGOBELOWDOMAIN | BIF_USENEWUI;
-		sInfo.lpfn = NULL;
-
-		LPITEMIDLIST lpidlBrowse = ::SHBrowseForFolder(&sInfo);
-		if (lpidlBrowse != NULL)
-		{
-			if (::SHGetPathFromIDList(lpidlBrowse, folderPath))
-			{
-				path = folderPath;
-				::CoTaskMemFree(lpidlBrowse);
-				std::string dirName(nbase::UnicodeToAnsi(path));
-				dirName += "\\";
-				std::string path_of_pkpm_dot_ini =
-					nbase::UnicodeToAnsi(FullPathOfPkpmIni());//这个真的没有办法
-				AddWorkPaths(dirName, path_of_pkpm_dot_ini);
-				return nbase::UnicodeToAnsi(path);
-			}
-		}
-	}
-	return {};
+		defaultPath = prjPaths_[indexHeightLighted_];
+	auto type = FolderDialogFactory::GetFdType(ConfigManager::GetInstance().GetFolderDialogType());
+	auto dialog = FolderDialogFactory::GetFolderDialog(type);
+	auto folder=dialog->GetExistingDirectory(nullptr, defaultPath.c_str(), true);
+	return folder;
 }
 
 void CefForm::OnRightClickProject(const std::wstring& prjName)
@@ -908,9 +827,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
 	if (args.size() != 5)
-	{
 		MsgBox::Warning(GetHWND(), L"打开工程的参数不正确", L"严重错误");
-	}
 	if (!prjPaths_.size())
 	{
 		MsgBox::Warning(GetHWND(), L"工作目录不存在", L"严重错误");
@@ -921,9 +838,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		ShowWindow(false);
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
-		{
 			MsgBox::Warning(GetHWND(), L"工作目录错误或者没有权限", L"权限错误");
-		}
 		for (size_t i = 0; i != prjPaths_.size(); ++i)
 		{
 			if (prjPaths_[i] == path)
@@ -964,13 +879,9 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 		std::string workPathId = std::string("WorkPath") + std::to_string(i);
 		bool ret = false;
 		if (static_cast<size_t>(i) < prjPaths.size())
-		{		
 			ret=WritePrivateProfileStringA("WorkPath", workPathId.c_str(), prjPaths[i].c_str(), filename.c_str());
-		}			
 		else
-		{
 			ret=WritePrivateProfileStringA("WorkPath", workPathId.c_str(), NULL, filename.c_str());
-		}
 		if (!ret)
 			hasAdministratorsRights = false;
 	}
@@ -1005,7 +916,7 @@ bool CefForm::AddWorkPaths(const std::string& newProj, const std::string& filena
 {
 	if (newProj.empty())
 		return false;
-	bool isLegalPath;
+	bool isLegalPath=false;
 	auto realPathOfNewProj=PathChecker(newProj, isLegalPath);
 	if (!isLegalPath)
 		return false;
@@ -1046,66 +957,36 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 
 void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, const CStringA& appName2)
 {
-	CStringA appName1(appName1_);
-	ASSERT(!moduleName.IsEmpty());
-	ASSERT(!appName1.IsEmpty());
 	char str[128] = { 0 };
 	if (appName2.IsEmpty())
-	{
-		sprintf(str, "%s|%s", moduleName.GetString(), appName1.GetString());
-	}
+		sprintf(str, "%s|%s", moduleName.GetString(), appName1_.GetString());
 	else
-	{
-		sprintf(str, "%s|%s_%s", moduleName.GetString(), appName1.GetString(), appName2.GetString());
-	}
+		sprintf(str, "%s|%s_%s", moduleName.GetString(), appName1_.GetString(), appName2.GetString());
 	appDll_.Invoke_RunCommand(str);
 }
 
 //旧代码，vc程序员的素质堪忧，我大约有60%的时间是用来擦屎
 bool CefForm::SetCfgPmEnv()
 {
-	const int LENGTH_OF_ENV = 1024 * 8;
-	TCHAR* szOriEnvPath = new  TCHAR[LENGTH_OF_ENV];//所以这片内存去哪了....?这个屎我不擦
-	DWORD dwRet = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, LENGTH_OF_ENV);
-	if (!dwRet)
+	DWORD bufferSize = GetEnvironmentVariable(L"path", nullptr, 0);
+	std::wstring originalPathEnv;
+	if (bufferSize)
 	{
-		::AfxMessageBox(L"Error! Can not find Path", MB_OK | MB_SYSTEMMODAL);
-		return false;
-	}
-	else if (LENGTH_OF_ENV < dwRet)
-	{
-		delete[] szOriEnvPath;
-		szOriEnvPath = new  TCHAR[dwRet + 1];
-		DWORD dwRetNewAlloc;
-		dwRetNewAlloc = ::GetEnvironmentVariable(_T("PATH"), szOriEnvPath, dwRet);
-		ASSERT(dwRetNewAlloc <= dwRet);
-	}
-
-	CString strCFG = (nbase::win32::GetCurrentModuleDirectory() + L"CFG").c_str(); //svr::GetRegCFGPath();
-
-	TCHAR path[256];
-	GetModuleFileName(NULL, path, 256);
-	PathRemoveFileSpec(path);
-	CString strPM = path;
-	strPM += "\\Ribbon\\PM";
-
-	CString strPath;
-	strPath = strCFG + L";";
-	strPath += strPM + L";";
-	strPath += szOriEnvPath;
-	strPath.Trim();
-	int iv = SetEnvironmentVariable(_T("PATH"), strPath);
-	if (iv == 0)
-	{
-		AfxMessageBox(L"无法设置PATH路径", MB_OK | MB_SYSTEMMODAL);
-		delete[] szOriEnvPath;
-		return false;
-	}
-	else
-	{
-		delete[] szOriEnvPath;
+		originalPathEnv.resize(bufferSize);
+		GetEnvironmentVariable(L"path", &originalPathEnv[0], bufferSize);
+		std::wstring cfgPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG";
+		std::wstring pmModulePath = nbase::win32::GetCurrentModuleDirectory() + L"Ribbon\\PM";
+		if (!nbase::FilePathIsExist(cfgPath, true) || !nbase::FilePathIsExist(pmModulePath, true))
+		{
+			MessageBox(NULL, L"无法设置CFG或PM环境", L"提示", MB_OK);
+			return false;
+		}
+		std::wstring new_envirom(cfgPath + L";" + pmModulePath);
+		new_envirom.append(L";").append(originalPathEnv.c_str());
+		SetEnvironmentVariable(L"path", new_envirom.c_str());
 		return true;
 	}
+	return false;
 }
 
 bool CefForm::TellMeNewVersionExistOrNot()
@@ -1115,14 +996,15 @@ bool CefForm::TellMeNewVersionExistOrNot()
 	else
 	{
 		rapidjson::Document document;
-		try {
+		try
+		{
 			document.Parse(webPageData_.data_.lock()->pageInfo_.c_str());
-			if (!document.HasMember("UpdateUrl") ||
-				!document.HasMember("Advertise") ||
-				!document["Advertise"]["NationWide"].IsArray()
-				) return false;
+			if (!document.HasMember("UpdateUrl") ||!document.HasMember("Advertise") ||
+				!document["Advertise"]["NationWide"].IsArray())
+				return false;
 		}
-		catch (...) {
+		catch (...)
+		{
 			return false;
 		}	
 		std::wstring VersionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
@@ -1135,10 +1017,7 @@ bool CefForm::TellMeNewVersionExistOrNot()
 			if (document.HasMember("VersionString"))//临时加的
 			{
 				std::string versionString = document["VersionString"].GetString();
-				if (stradegy(versionString, LatestVersionOnLocal))
-					return false;
-				else
-					return true;
+				return stradegy(LatestVersionOnLocal, versionString);
 			}
 		}
 	}
@@ -1152,48 +1031,9 @@ std::string CefForm::TellMeAdvertisement()
 	else
 	{
 		auto pageInfo = webPageData_.data_.lock()->pageInfo_;
-		if (pageInfo.empty())
-			return ConfigManager::GetInstance().GetDefaultAdvertise();
-		else
+		if (!pageInfo.empty())
 		{
-			try
-			{
-				std::vector<std::pair<std::string, std::string>> data;
-				rapidjson::Document document;
-				document.Parse(pageInfo.c_str());
-				auto& arr = document["Advertise"]["NationWide"];
-				assert(arr.IsArray());
-				for (size_t i = 0; i < arr.Size(); ++i)
-				{
-					std::string adver_content(arr[i]["Advertisement"].GetString());
-					std::string adver_url(arr[i]["Url"].GetString());
-					data.push_back(std::make_pair(adver_content, adver_url));
-				}
-				//////////begin/////////////////////
-				rapidjson::Document doc;
-				rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-				rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
-				for (size_t i = 0; i != data.size(); ++i)
-				{
-					rapidjson::Value obj(rapidjson::kObjectType);
-					rapidjson::Value content(rapidjson::kStringType);
-					content.SetString(data[i].first.c_str(), allocator);
-					obj.AddMember("key", content, allocator);
-					rapidjson::Value url(rapidjson::kStringType);
-					url.SetString(data[i].second.c_str(), allocator);
-					obj.AddMember("value", url, allocator);
-					array.PushBack(obj, allocator);
-				}
-				rapidjson::Value root(rapidjson::kObjectType);
-				root.AddMember("data", array, allocator);
-				rapidjson::StringBuffer s;
-				rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-				root.Accept(writer);
-				return nbase::AnsiToUtf8(s.GetString());
-			}
-			catch (...) {
-				return ConfigManager::GetInstance().GetDefaultAdvertise();
-			}
+			return WebPageDownLoader::ParseWebPage(pageInfo);
 		}
 	}
 	return ConfigManager::GetInstance().GetDefaultAdvertise();
@@ -1212,23 +1052,18 @@ size_t CefForm::CorrectWorkPath()
 			prjPathStr, ArraySize(prjPathStr), FullPathOfPkpmIni().c_str());
 		if (std::wstring_view(prjPathStr) != L"error")
 		{
-			//fix me, 去掉这个判断
-			if (PathFileExists(prjPathStr) && PathIsDirectory(prjPathStr))
-			{
-				Alime::FileSystem::Folder folder(prjPathStr);
-				if (!folder.Exists())
-					continue;
-				std::wstring destPath;
-				if (!Alime::FileSystem::PathNameCaseSensitive(folder, destPath))
-					continue;
-				if (destPath.back() != L'\\')
-					destPath += L'\\';
-				if (std::find(vec.cbegin(), vec.cend(), destPath) == vec.cend())
-					vec.push_back(destPath);
-			}
+			Alime::FileSystem::Folder folder(prjPathStr);
+			if (!folder.Exists())	
+				continue;
+			std::wstring destPath;
+			if (!Alime::FileSystem::PathNameCaseSensitive(folder, destPath))
+				continue;
+			if (destPath.back() != L'\\')
+				destPath += L'\\';
+			if (std::find(vec.cbegin(), vec.cend(), destPath) == vec.cend())
+				vec.push_back(destPath);
 		}
 	}
-	//我们检查更多的工程，保留前6个有效工程，强迫用户使用新版本
 	for (int i = 0; i < 2*maxPrjNum_; ++i)
 	{
 		std::wstring workPathId = L"WorkPath"+std::to_wstring(i);
@@ -1276,11 +1111,10 @@ void CefForm::AttachClickCallbackToSkinButton()
 		ui::STRINGorID xml(L"settings_menu.xml");
 		pMenu->Init(xml, _T("xml"), point);
 		ui::ListBox* pVbox = dynamic_cast<ui::ListBox*>(pMenu->FindControl(L"themeWindow"));
+		if (!pVbox) return false;
 		pVbox->AttachSelect([this](ui::EventArgs* args) {
 			auto themeType = args->pSender->GetName();
-			int current = args->wParam;
-			assert(args->lParam == -1);
-			PostMessage(WM_THEME_SELECTED, current, -1);
+			PostMessage(WM_THEME_SELECTED, args->wParam, args->lParam);//lParam should always -1
 			return true;
 			});
 		return true;
@@ -1292,9 +1126,8 @@ void CefForm::InitUiVariable()
 	m_pRoot->AttachBubbledEvent(ui::kEventClick, nbase::Bind(&CefForm::OnClicked, this, std::placeholders::_1));
 	cef_control_ = dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control"));
 	cef_control_dev_ = dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control_dev"));
-	btn_dev_tool_ = dynamic_cast<ui::Button*>(FindControl(L"btn_dev_tool"));
 	label_ = dynamic_cast<ui::Label*>(FindControl(L"projectName"));
-	defaultCaption_ = label_->GetText();
+	defaultCaption_ = label_->GetText().empty()? L"PKPM结构软件  ": label_->GetText();
 	skinSettings_ = dynamic_cast<ui::Button*>(FindControl(L"settings"));
 	vistual_caption_ = dynamic_cast<ui::HBox*>(FindControl(L"vistual_caption"));
 	this_window_ = dynamic_cast<ui::Window*>(FindControl(L"main_wnd"));
@@ -1306,58 +1139,16 @@ void CefForm::InitUiVariable()
 
 void CefForm::AttachFunctionToShortCut()
 {
-	CallBack f = [this]() {
+	shortCutHandler_.SetCallBacks(GetHWND(), [this]() {
 		if (prjPaths_.IsIndexLegal(indexHeightLighted_))
 			prjPaths_.moveToFront(indexHeightLighted_);
 		if (!prjPaths_.empty())
-			SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
-		cef_control_->CallJSFunction(L"flush",
-			nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+			SaveWorkPaths(prjPaths_, FullPathOfPkpmIniA());
+		cef_control_->CallJSFunction(L"flush",L"{\"uselessMsg\":\"dummy\"}",
 			ToWeakCallback([this](const std::string& /*chosenData*/) {
 				}
-		));
-	};
-	this->shortCutHandler_.SetCallBacks(GetHWND(), f);
+		));});
 	shortCutHandler_.Init();
-}
-
-void CefForm::ConsoleForDebug()
-{
-	//一个控制台，给王工调试接口
-	Alime::Console::CreateConsole();
-	RECT rc;
-	GetWindowRect(m_hWnd, &rc);
-	Alime::Console::SetWindowPosition(rc.right-20, rc.top+20);
-	Alime::Console::SetWindowSize(400, rc.bottom - rc.top-28);
-	Alime::Console::SetTitle(L"Alime");
-	Alime::Console::SetColor(Alime::Console::CYAN);
-	std::thread t([this]() {
-		while (true)
-		{
-			auto str = Alime::Console::ReadLine();
-			if (str.find(L"SetCaption") != std::wstring::npos)
-			{
-				auto result = str.substr(10);
-				SetCaptionWithProjectName(u8"PKPM结构设计软件 10版 V5.1.1    " + nbase::UTF16ToUTF8(result));
-			}
-			else if (str.find(L"Clear") != std::wstring::npos)
-			{
-				Alime::Console::Clear();
-			}
-			else if (str.find(L"Quit") != std::wstring::npos)
-			{
-				break;
-			}
-			else 
-			{
-				Alime::Console::SetColor(1, 0, 0, 0);
-				Alime::Console::WriteLine(L"没有这个接口");
-				Alime::Console::SetColor(Alime::Console::CYAN);
-			}
-		}
-		FreeConsole();
-		});
-	t.detach();
 }
 
 void CefForm::InitSpdLog()
@@ -1368,30 +1159,17 @@ void CefForm::InitSpdLog()
 	if (PathFileExists(logFileNameW.c_str()) && !PathIsDirectory(logFileNameW.c_str()))//多余，存在就不可能是文件夹
 	{
 		bool ret=DeleteFile(logFileNameW.c_str());
-		if (!ret)
-		{
-			return;
-		}
+		if (!ret)  return;
 	}
-	{
-		Alime::FileSystem::Folder p(logFolderW);
-		if (!p.Exists())
-			p.Create(false);
-	}
+	Alime::FileSystem::Folder p(logFolderW);
+	if (!p.Exists())
+		p.Create(false);
 	try {
 		auto file_logger = spdlog::basic_logger_mt("fileLogger", LogsFile.c_str());
 		file_logger->set_pattern("[%Y%m%d %H:%M:%S.%f] [%t] [%l] [%v]");
 		file_logger->flush_on(spdlog::level::trace);
 		spdlog::set_default_logger(file_logger);
 		spdlog::set_level(spdlog::level::trace);
-#ifdef DEBUG
-		spdlog::info("Support for floats {:03.2f}", 1.23456);
-		spdlog::critical("Support for int: {1:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42, 33);
-		spdlog::info("Support for floats {1: 03.2f} and {1:03.2f}", 1.23456, 1.33333);
-		spdlog::info("Support for floats {0: 03.2f} and {1: 3.2f} {2}", 1.44456, 1.33333, "too");
-		spdlog::info("Positional args are {1} {0}..", "too", "supported");	
-#else
-#endif // DEBUG	
 	}
 	catch(...){
 		//can not open logFile

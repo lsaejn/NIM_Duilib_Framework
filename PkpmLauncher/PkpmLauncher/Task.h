@@ -5,12 +5,13 @@
 #include <string>
 #include <regex>
 
+#include "RapidjsonForward.h"
+#include "base/base.h"
+
 #include "Lock_util.h"
 #include "Alime/HttpUtil.h"
 #include "Alime/NonCopyable.h"
 #include "ConfigFileManager.h"
-
-#include "base/base.h"
 
 using namespace Alime::HttpUtility;
 typedef std::function<void()> Functor;
@@ -75,6 +76,47 @@ private:
 			}			
 		}
 		return false;
+	}
+public:
+	static std::string ParseWebPage(const std::string& pageInfo)
+	{
+		try
+		{
+			std::vector<std::pair<std::string, std::string>> data;
+			rapidjson::Document document;
+			document.Parse(pageInfo.c_str());
+			auto& arr = document["Advertise"]["NationWide"];
+			for (size_t i = 0; i < arr.Size(); ++i)
+			{
+				std::string adver_content(arr[i]["Advertisement"].GetString());
+				std::string adver_url(arr[i]["Url"].GetString());
+				data.push_back(std::make_pair(adver_content, adver_url));
+			}
+			rapidjson::Document doc;
+			rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+			rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
+			for (size_t i = 0; i != data.size(); ++i)
+			{
+				rapidjson::Value obj(rapidjson::kObjectType);
+				rapidjson::Value content(rapidjson::kStringType);
+				content.SetString(data[i].first.c_str(), allocator);
+				obj.AddMember("key", content, allocator);
+				rapidjson::Value url(rapidjson::kStringType);
+				url.SetString(data[i].second.c_str(), allocator);
+				obj.AddMember("value", url, allocator);
+				array.PushBack(obj, allocator);
+			}
+			rapidjson::Value root(rapidjson::kObjectType);
+			root.AddMember("data", array, allocator);
+			rapidjson::StringBuffer s;
+			rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+			root.Accept(writer);
+			return nbase::AnsiToUtf8(s.GetString());
+		}
+		catch (...)
+		{
+			return ConfigManager::GetInstance().GetDefaultAdvertise();
+		}
 	}
 };
 
