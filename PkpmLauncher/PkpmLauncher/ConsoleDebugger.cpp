@@ -6,7 +6,7 @@
 #include <thread>
 #include <unordered_map>
 
-void ConsoleDebugger::ConsoleForDebug(CefForm* wnd)
+void ConsoleDebugger::ConsoleForDebug(CefForm* /*wnd*/)
 {
 
 }

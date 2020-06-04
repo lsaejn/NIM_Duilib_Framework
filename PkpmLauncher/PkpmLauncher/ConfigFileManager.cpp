@@ -24,7 +24,7 @@ ConfigManager::ConfigManager()
 	:isAutoModifyWindowOn_(false),
 	isAdaptDpiOn_(false),
 	deadline_(INT32_MAX),
-	styleNo_(0),
+	styleIndex_(0),
 	folderDialogType_(0),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
@@ -56,18 +56,23 @@ void ConfigManager::LoadConfigFile()
 			relativePathForHtmlRes_ = nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
 			skinFile_ = nbase::UTF8ToUTF16(json["skinFile"]);
 			skinFolder_ = nbase::UTF8ToUTF16(json["skinFolder"]);
-			nativeArticleFolder_ = nbase::UTF8ToUTF16(json["nativeArticleFolder"]);
-			if(json.find("interfaceStyleNo")!=json.end())//我们不知道什么时候上线这个功能
-				styleNo_ = json["interfaceStyleNo"];
+			nativeArticlesPath_ = nbase::UTF8ToUTF16(json["nativeArticles"]);
+			webArticlesPath_ = nbase::UTF8ToUTF16(json["webArticles"]);
+			styleIndex_ = json["guiStyleInfo"]["styleIndex"];
+			styleName_ = nbase::UTF8ToUTF16(json["guiStyleInfo"]["styleName"]);
 			deadline_ = json["deadline"];
-			if (deadline_ <= 0)
-				deadline_ = 7;
+			deadline_ = deadline_ <= 0 ? 7 : deadline_;
 		}
 		catch (...)
 		{
 			::AfxMessageBox(L"读取配置文件 defaultConfig.json 失败");
 			std::abort();
 		}
+	}
+	else
+	{
+		::AfxMessageBox(L"无法找到 defaultConfig.json 失败");
+		std::abort();
 	}
 }
 
@@ -120,9 +125,14 @@ std::wstring ConfigManager::GetSkinFolderPath() const
 	return skinFolder_;
 }
 
-std::wstring ConfigManager::GetNativeArticleFolder() const
+std::wstring ConfigManager::GetNativeArticlePath() const
 {
-	return nativeArticleFolder_;
+	return nativeArticlesPath_;
+}
+
+std::wstring ConfigManager::GetWebArticlePath() const
+{
+	return webArticlesPath_;
 }
 
 bool ConfigManager::IsAdaptDpiOn() const
@@ -140,23 +150,29 @@ int32_t ConfigManager::DaysLeftToNotify() const
 	return deadline_;
 }
 
-int32_t ConfigManager::GetInterfaceStyleNo() const
-{
-	return styleNo_;
-}
-
 int32_t ConfigManager::GetFolderDialogType() const
 {
 	return folderDialogType_;
 }
 
-//立刻保存是因为启动器可能多开
-void ConfigManager::SetInterfaceStyleNo(int32_t no)
+std::pair<int, std::wstring> ConfigManager::GetGuiStyleInfo() const
 {
-	styleNo_ = no;
-	if (no != json_["interfaceStyleNo"])
+	return {styleIndex_, styleName_};
+}
+
+//前端没有说明为什么需要两个变量来标识主题
+//windows不用u8的原因是....?
+void ConfigManager::SetGuiStyleInfo(const std::pair<int, std::wstring>& info)
+{
+	styleIndex_ = info.first;
+	styleName_ = info.second;
+	if (styleIndex_ != json_["guiStyleInfo"]["styleIndex"] ||
+		styleName_!=  json_["guiStyleInfo"]["styleName"]
+		)
 	{
-		json_["interfaceStyleNo"] = no;		
+		json_["guiStyleInfo"]["styleIndex"] = styleIndex_;
+		json_["guiStyleInfo"]["styleName"] = nbase::UTF16ToUTF8(styleName_);
+
 		std::fstream file;
 		auto newFile = filePath_ + L"copy";
 		file.open(newFile, std::ios_base::out | std::ios_base::trunc);
@@ -183,5 +199,4 @@ void ConfigManager::SetInterfaceStyleNo(int32_t no)
 			Alime::FileSystem::File(filePath + L"backup").Delete();
 		}
 	}	
-	
 }

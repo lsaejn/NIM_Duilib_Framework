@@ -22,26 +22,31 @@ public:
 	virtual void Run(Functor after) = 0;
 };
 
-class WebPageDownLoader: public QueryTask
+class FileDownLoader : public QueryTask
 {
 public:
-	void Run(Functor /*after*/) override
+	void Run(Functor after) override
 	{
 		assert(!data_.lock()->isWebPageCooked_);
 		bool AdPageCanAccess = false;
-		AdPageCanAccess = GetVersionPage();
+		AdPageCanAccess = Download();
 		data_.lock()->isWebPageCooked_ = AdPageCanAccess;
+		if(after)	after();
 	}
 
 	struct innerData
 	{
-		bool isWebPageCooked_=false;
+		bool isWebPageCooked_ = false;
 		std::string pageInfo_;
 	};
 	SafeAccess<innerData> data_;
+	virtual bool Download() = 0;
+};
+
+class WebPageDownLoader: public FileDownLoader
+{
 private:
-	//no need to lock pageInfo_, 
-	bool GetVersionPage()
+	bool Download()
 	{
 		HttpRequest req;
 		req.server = ConfigManager::GetInstance().GetAdvertisementServer();
@@ -120,7 +125,7 @@ public:
 	}
 };
 
-//数据不是主动被调用，基本上可以随便写
+//no need to lock member
 class AuthorizationCodeDate : public QueryTask
 {
 public:
@@ -170,5 +175,24 @@ private:
 			*SerialNumber = gSN;
 		FreeLibrary(handle);
 		return dayLeft;
+	}
+};
+
+class ArticleDownLoader : public FileDownLoader
+{
+private:
+	bool Download() override
+	{
+		HttpRequest req;
+		std::wstring fullQuery= L"http://"+ConfigManager::GetInstance().GetAdvertisementServer()+
+			ConfigManager::GetInstance().GetWebArticlePath();
+		req.SetHost(fullQuery);
+		HttpResponse res;
+		HttpQuery(req, res);
+		if (200 != res.statusCode)
+			return false;
+		auto result = res.GetBodyUtf8();
+		data_.lock()->pageInfo_= nbase::UTF16ToUTF8(res.GetBodyUtf8());
+		return true;
 	}
 };

@@ -70,7 +70,7 @@ private:
 		auto lhsElems = StringsToIntegers(string_utility::string_split(lhs, "."));
 		auto rhsElems = StringsToIntegers(string_utility::string_split(rhs, "."));
 		TrimTailZeros(lhsElems); TrimTailZeros(rhsElems);
-		int numToCompare = lhsElems.size() <= rhsElems.size() ? lhsElems.size() : rhsElems.size();
+		auto numToCompare = lhsElems.size() <= rhsElems.size() ? lhsElems.size() : rhsElems.size();
 		for (size_t i = 0; i != numToCompare; ++i)
 		{
 			if (lhsElems[i] != rhsElems[i])

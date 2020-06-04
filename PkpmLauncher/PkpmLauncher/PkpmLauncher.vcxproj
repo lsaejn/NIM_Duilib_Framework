@@ -230,6 +230,7 @@
     <ClInclude Include="Alime\ExecutorService.h" />
     <ClInclude Include="Alime\ProcessInfo.h" />
     <ClInclude Include="AppDllAdaptor.h" />
+    <ClInclude Include="Article.h" />
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
@@ -358,6 +359,7 @@
     <ClCompile Include="Alime\ExecutorService.cpp" />
     <ClCompile Include="Alime\ProcessInfo.cpp" />
     <ClCompile Include="AppDllAdaptor.cpp" />
+    <ClCompile Include="Article.cpp" />
     <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="ConfigFileManager.cpp" />

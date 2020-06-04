@@ -6,14 +6,13 @@
 #include "AppDllAdaptor.h"
 #include "DpiAdaptor.h"
 #include "Task.h"
+#include "Article.h"
 
 #include "Alime/countDownLatch.h"
 #include "Alime/ExecutorService.h"
 #include <atomic>
 #include <mutex>
 
-
-#define WEBINTERFACE
 #define WM_THEME_SELECTED (WM_USER + 2)
 #define WM_SHOWMAINWINDOW (WM_USER + 3)
 #define WM_SETADVERTISEINJS (WM_USER + 4)
@@ -56,73 +55,74 @@ private:
 	/// <summary>前端读取工程列表,旧代码,见注释</summary>
 	///<param name="iniFileName">配置文件里的文件路径</param>
 	///<return>工程列表的json，名称+创建时间+略缩图路径</return>
-	WEBINTERFACE std::string ReadWorkPathFromFile(const std::string& iniFilePath);
+	std::string ReadWorkPathFromFile(const std::string& iniFilePath);
 
 	/// <summary>标题栏现在c++在处理，前端点击工程需要调用此函数</summary>
 	///<param name="name">标题栏名称</param >
-	WEBINTERFACE void SetCaptionWithProjectName(const std::string& prjname);
+	void SetCaptionWithProjectName(const std::string& prjname);
 	
 	/// <summary>菜单记忆功能，前端调用此函数获得文件里保存的索引</summary>
 	///<return>4个索引的json</return>
-	WEBINTERFACE std::string OnGetDefaultMenuSelection();
+	std::string OnGetDefaultMenuSelection();
 	
 	/// <summary>网页快捷事件</summary>
 	///<param name="name">网页上快捷键的字符串</param >
-	WEBINTERFACE void OnShortCut(const char* cutName);
+	void OnShortCut(const char* cutName);
 	
 	/// <summary>新建工程</summary>
 	///<return>用户选择的工程路径</return>
-	WEBINTERFACE std::string OnNewProject();
+	std::string OnNewProject();
 
 	/// <summary>网页左侧，数据转换调用的函数。因历史原因而存在的单独接口，参数名不准确</summary>
 	///<param name="module">模块,在这里，它总是"数据转换"</param >
 	///<param name="InterfaceName">接口名</param >
 	///<param name="workdir">工作目录</param >
-	WEBINTERFACE void DataFormatTransfer(const std::string& module, const std::string& InterfaceName, const std::string& workdir);
+	void DataFormatTransfer(const std::string& module, const std::string& InterfaceName, const std::string& workdir);
 
 	/// <summary>进入工程的函数，最重要的函数</summary>
 	///<param name="args">因为最初启动器是打算放到main里，所以老代码里使用了5个参数</param >
-	WEBINTERFACE void OnDbClickProject(const std::vector<std::string>& args);
+	void OnDbClickProject(const std::vector<std::string>& args);
 
 	/// <summary>某些三级菜单双击需要调用的函数，直接转到了OnDbClickProject</summary>
 	///<param name="args">同OnDbClickProject</param >
-	WEBINTERFACE void OnListMenu(const std::vector<std::string>& args);
+	void OnListMenu(const std::vector<std::string>& args);
 
 	/// <summary>打开本地文件的接口</summary>
 	///<param name="filePath">文件名以ribbon为根目录，这是历史原因</param >
-	WEBINTERFACE void OnOpenDocument(const std::string& filePath);
+	void OnOpenDocument(const std::string& filePath);
 
 	/// <summary>添加工程到文件</summary>
 	///<param name="newProj">新工程名</param >
 	///<param name="filePath">配置文件名</param >
 	///<return>工程是否增加成功</return>
-	WEBINTERFACE bool AddWorkPaths(const std::string& newProj, const std::string& filename);
+	bool AddWorkPaths(const std::string& newProj, const std::string& filename);
 
 	/// <summary>保存工程到文件,旧代码里是static函数，我也懒得再加一个函数了。</summary>
 	///<param name="prjPaths">工程列表，prjPaths原本不是成员函数</param >
 	///<param name="filePath">历史原因，配置文件路径</param >
-	WEBINTERFACE void SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPaths, const std::string& filePath);
+	void SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPaths, const std::string& filePath);
 
 	/// <summary>保存菜单索引。现在只有关闭时才保存文件。</summary>
 	///<param name="filePath">json, 一二三级菜单索引+加亮工程索引</param >
-	WEBINTERFACE void OnSetDefaultMenuSelection(const std::string& json_str);
+	void OnSetDefaultMenuSelection(const std::string& json_str);
 
 	/// <summary>告知前端广告内容。</summary>
 	///<return>广告内容的u8json，见接口文档</return>
-	WEBINTERFACE std::string TellMeAdvertisement();
+	std::string TellMeAdvertisement();
 
 	/// <summary>告知前端是否存在新版本。</summary>
 	///<return>bool</return>
-	WEBINTERFACE bool TellMeNewVersionExistOrNot();
+	bool TellMeNewVersionExistOrNot();
 
-	/// <summary>切换到索引为index的主题</summary>
+	/// <summary>标题栏切换到索引为index的主题</summary>
 	///<param name="index">索引</param >
 	///<return>是否成功</return>
 	bool SwicthThemeTo(int index);
 
 	/// <summary>保存用户的换肤选择</summary>
 	///<param name="index">索引</param >
-	void SaveThemeIndex(int index);
+	/// <param name="name">名称</param >
+	void SaveThemeIndex(int index, const std::wstring& name);
 
 	/// <summary>右键工程</summary>
 	///<param name="prjPath">工程路径</param >
@@ -170,7 +170,7 @@ private:
 	/// <summary>对话框接受文件拖拽</summary>
 	void EnableAcceptFiles();
 
-	/// <summary>换肤按钮的事件</summary>
+	/// <summary>废弃,换肤按钮的事件</summary>
 	void AttachClickCallbackToSkinButton();
 
 	/// <summary>Cef缩放处理</summary>
@@ -203,6 +203,7 @@ private:
 	int indexHeightLighted_;
 	Alime::ExecutorService pool_;
 	WebPageDownLoader webPageData_;
+	WebArticleReader webArticleReader_;
 	AuthorizationCodeDate lockDate_;
 };
 

@@ -26,8 +26,8 @@ typedef void (*func)(const char*, char*);
 class OldStyleFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* caption,
-		const char* dir, bool showDirsOnly)
+	virtual std::string GetExistingDirectory(const char* /*caption*/,
+		const char* dir, bool /*showDirsOnly*/)
 	{
 		auto path=nbase::win32::GetCurrentModuleDirectory();	
 		auto hdll = LoadLibrary((path+L"PKPM2010V511.dll").c_str());
@@ -47,8 +47,8 @@ public:
 class NativeFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* caption,
-		const char* dir, bool showDirsOnly)
+	virtual std::string GetExistingDirectory(const char* /*caption*/,
+		const char* /*dir*/, bool /*showDirsOnly*/)
 	{
 		IFileDialog* pfd = NULL;
 		HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog,
@@ -75,8 +75,8 @@ public:
 class QtFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* caption,
-		const char* dir, bool showDirsOnly)
+	virtual std::string GetExistingDirectory(const char* /*caption*/,
+		const char* /*dir*/, bool /*showDirsOnly*/)
 	{
 		auto path = nbase::win32::GetCurrentModuleDirectory();
 
@@ -101,8 +101,8 @@ public:
 class ShBrowserFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* caption,
-		const char* dir, bool showDirsOnly)
+	virtual std::string GetExistingDirectory(const char* /*caption*/,
+		const char* /*dir*/, bool /*showDirsOnly*/)
 	{
 		TCHAR  folderPath[MAX_PATH] = { 0 };
 		std::wstring path;

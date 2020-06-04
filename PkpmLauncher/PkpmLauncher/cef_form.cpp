@@ -34,9 +34,7 @@ CefForm::CefForm()
 {
 	webDataReader_.Init();
 	size_t numofPrj=CorrectWorkPath();
-	if (numofPrj > 0)
-		indexHeightLighted_ = 0;
-	ReadWorkPathFromFile("CFG/pkpm.ini");
+	indexHeightLighted_ = numofPrj > 0 ? 0 : -1;
 	InitSpdLog();
 	AppendThreadTask();
 }
@@ -45,7 +43,8 @@ void CefForm::AppendThreadTask()
 {
 	pool_.SetMaxQueueSize(4);
 	pool_.Run(std::bind(&WebPageDownLoader::Run, &webPageData_, std::function<void()>()));
-	pool_.Start(1);
+	pool_.Run(std::bind(&WebArticleReader::Run, &webArticleReader_, [this]() {webArticleReader_.Init();}));
+	pool_.Start(2);
 }
 
 CefForm::~CefForm()
@@ -85,15 +84,14 @@ void CefForm::InitWindow()
 	SetIcon(128);
 	SetWindowText(GetHWND(), ConfigManager::GetInstance().GetCefFormWindowText().c_str());
 	InitUiVariable();
-	auto cefHtmlPath= nbase::win32::GetCurrentModuleDirectory()+ ConfigManager::GetInstance().GetRelativePathForHtmlRes();
-	cef_control_->LoadURL(cefHtmlPath);
+	cef_control_->LoadURL(nbase::win32::GetCurrentModuleDirectory() + ConfigManager::GetInstance().GetRelativePathForHtmlRes());
 	EnableAcceptFiles();
 	SetCfgPmEnv();
 	appDll_.InitPkpmAppFuncPtr();
 	appDll_.Invoke_InitPkpmApp();
 	AttachFunctionToShortCut();
 	AttachClickCallbackToSkinButton();
-	SwicthThemeTo(ConfigManager::GetInstance().GetInterfaceStyleNo());
+	SwicthThemeTo(ConfigManager::GetInstance().GetGuiStyleInfo().first);
 	ModifyScaleForCaption();
 }
 
@@ -174,11 +172,10 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (uMsg == WM_THEME_SELECTED)
 	{
-		OutputDebugString(std::to_wstring(wParam).c_str());
 		assert(lParam == -1);
 		auto ret=SwicthThemeTo(wParam);
 		if(ret)
-			SaveThemeIndex(wParam);
+			SaveThemeIndex(wParam, L"defaultStyle");
 	}
 	else if (uMsg == WM_SHOWMAINWINDOW)
 	{
@@ -216,17 +213,17 @@ bool CefForm::SwicthThemeTo(int index)
 {
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
 	auto sw = SkinSwitcherFatctory::Get(index);
-	if (!sw)	return false;
+	if (!sw)
+		return false;
 	sw->Switch(vistual_caption, label_);
 	return true;
 }
 
-void CefForm::SaveThemeIndex(int index)
+void CefForm::SaveThemeIndex(int index, const std::wstring& name)
 {
 	auto path=application_utily::FullPathOfPkpmIni();
-	ConfigManager::GetInstance().SetInterfaceStyleNo(index);
-	WritePrivateProfileString(L"InterfaceStyle", L"index",
-		std::to_wstring(index).c_str(), path.c_str());
+	ConfigManager::GetInstance().SetGuiStyleInfo({ index,name });
+	WritePrivateProfileString(L"InterfaceStyle", L"index", std::to_wstring(index).c_str(), path.c_str());
 }
 
 void CefForm::OnLoadEnd(int httpStatusCode)
@@ -590,43 +587,65 @@ void CefForm::RegisterCppFuncs()
 			})
 	);
 
-	cef_control_->RegisterCppFunc(L"NATIVEARTICLES",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-			std::string content;
-			bool succ = nbase::ReadFileToString(ConfigManager::GetInstance().GetNativeArticleFolder()+L"nativeArticle.json", content);
-			if (succ)
+	cef_control_->RegisterCppFunc(L"GETWEBARTICLES",
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
+			if (webArticleReader_.is_good())
 			{
-				nlohmann::json json = nlohmann::json::parse(content);
-				std::string prefix_in_u8 = nbase::UTF16ToUTF8(nbase::win32::GetCurrentModuleDirectory());
-				std::string path = json["nativeArticles"]["updateDescription"]["imgSrc"];
-				path = prefix_in_u8 + path;
-				json["nativeArticles"]["updateDescription"]["imgSrc"] = path;
-				path = json["nativeArticles"]["operationSkillAndFAQ"]["imgSrc"];
-				path = prefix_in_u8 + path;
-				json["nativeArticles"]["operationSkillAndFAQ"]["imgSrc"] = path;
-				std::string toSend = json.dump();
-				callback(true, toSend);
+				auto content = webArticleReader_.RawString();
+				callback(true, content);
 			}
 			else
-				callback(false, R"({ "message": "NativeArticles failed" })");			
+			{
+				auto ptr = IArticleReader::GetArticleReader(IArticleReader::ArticleType::NATIVE_WEB);
+				ptr->Init();
+				if (ptr->is_good())
+				{
+					std::string content;
+					content = ptr->RawString();
+					callback(true, content);
+				}
+				else 
+					callback(false, R"({ "message": "GETNATIVEARTICLES failed, this should not happen" })");
+			}
 			})
 	);
 
-	//标题栏暂时只支持修改背景色和文字颜色
-	//这个设置被我定义在resources\themes\default\cef\caption_style.xml中
-	//网页可以调用本接口切换风格
-	cef_control_->RegisterCppFunc(L"SETINTERFACESTYLE",
+	cef_control_->RegisterCppFunc(L"GETNATIVEARTICLES",
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
+			std::string content;
+			auto ptr = IArticleReader::GetArticleReader(IArticleReader::ArticleType::NATIVE);
+			ptr->Init();
+			if (ptr->is_good())
+			{
+				content = ptr->RawString();
+				callback(true, content);
+			}
+			else 
+				callback(false, R"({ "message": "GETNATIVEARTICLES failed, this should not happen" })");
+			})
+	);
+
+	cef_control_->RegisterCppFunc(L"SETSTYLE",
 		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
 			nlohmann::json json = nlohmann::json::parse(params);
-			int styleNo = json["index"];
-			bool ret=this->SwicthThemeTo(styleNo);
+			int styleIndex = json["styleIndex"];
+			std::wstring styleName= nbase::UTF8ToUTF16(json["styleName"]);
+			bool ret=this->SwicthThemeTo(styleIndex);
 			if(ret)
-				this->SaveThemeIndex(styleNo);
+				this->SaveThemeIndex(styleIndex, styleName);
 			})
 	);
 
+	cef_control_->RegisterCppFunc(L"GETSTYLE",
+		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
+			nlohmann::json json;
+			auto info=ConfigManager::GetInstance().GetGuiStyleInfo();
+			json["styleIndex"] = info.first;
+			json["styleName"] = nbase::UTF16ToUTF8(info.second);
+			callback(true, json.dump());
+			})
+	);
 }
-
 
 /*
 出于内部有些2B有改配置文件的习惯。每次我都读配置文件。
@@ -765,7 +784,6 @@ void CefForm::OnShortCut(const char* cutName)
 	shortCutHandler_.CallFunc(cutName);
 }
 
-
 std::string CefForm::OnNewProject()
 {
 	std::string defaultPath;
@@ -870,7 +888,6 @@ void CefForm::OnOpenDocument(const std::string& filename)
 	application_utily::OpenDocument(wstr);
 }
 
-
 void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPaths, const std::string& filename)
 {
 	bool hasAdministratorsRights = true;
@@ -965,7 +982,6 @@ void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, con
 	appDll_.Invoke_RunCommand(str);
 }
 
-//旧代码，vc程序员的素质堪忧，我大约有60%的时间是用来擦屎
 bool CefForm::SetCfgPmEnv()
 {
 	DWORD bufferSize = GetEnvironmentVariable(L"path", nullptr, 0);
@@ -1039,7 +1055,6 @@ std::string CefForm::TellMeAdvertisement()
 	return ConfigManager::GetInstance().GetDefaultAdvertise();
 }
 
-//大致修一下路径
 size_t CefForm::CorrectWorkPath()
 {
 	std::vector<std::wstring> vec;

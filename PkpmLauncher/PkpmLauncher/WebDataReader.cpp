@@ -49,13 +49,18 @@ void WebDataReader::Load()
 		std::wstring filePath = p.path().generic_wstring();
         {
             auto copy = nbase::UnicodeToAnsi(filePath);
-            std::transform(copy.begin(), copy.end(), copy.begin(), ::toupper);
+            nbase::UpperString(copy);
+            std::transform(copy.begin(), copy.end(), copy.begin(), [](char c) {
+                if (c >= 'a' && c<= 'z')
+                    c -= 'a' - 'A'; return c;
+                });
             if (!string_utility::endWith(copy.c_str(), ".XML"))
                 continue;
         }     
 		std::string content;
 		bool succ = nbase::ReadFileToString(filePath, content);
-		ASSERT(succ);
+		if(!succ)
+            MessageBox(NULL, filePath.c_str(), L"读取配置文件错误", MB_ICONINFORMATION);
         //这里需要改，不应该存完整路径,，而且还是u8的。
         //不改主要是懒，其次我忘了前端传递的文件名带了几层路径。
         std::string u8fileName = p.path().filename().generic_u8string();
