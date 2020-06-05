@@ -25,7 +25,7 @@ public:
 };
 
 template<typename... Ts>
-void UNUSEDPARAMS(Ts&&... args)
+void UNUSEDPARAMS(const Ts&... args)
 {
 }
 

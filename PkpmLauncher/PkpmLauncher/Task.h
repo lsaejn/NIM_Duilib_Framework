@@ -4,6 +4,7 @@
 
 #include <string>
 #include <regex>
+#include <memory>
 
 #include "RapidjsonForward.h"
 #include "base/base.h"
@@ -20,6 +21,7 @@ class QueryTask: public noncopyable
 {
 public:
 	virtual void Run(Functor after) = 0;
+	virtual ~QueryTask() = default;
 };
 
 class FileDownLoader : public QueryTask
@@ -31,7 +33,8 @@ public:
 		bool AdPageCanAccess = false;
 		AdPageCanAccess = Download();
 		data_.lock()->isWebPageCooked_ = AdPageCanAccess;
-		if(after)	after();
+		if(after)
+			after();
 	}
 
 	struct innerData
@@ -126,7 +129,8 @@ public:
 };
 
 //no need to lock member
-class AuthorizationCodeDate : public QueryTask
+class AuthorizationCodeDate : public QueryTask, 
+	public std::enable_shared_from_this<AuthorizationCodeDate>
 {
 public:
 	void Run(Functor after) override
@@ -135,8 +139,8 @@ public:
 		int daysLeft = RemainingTimeOfUserLock(&sn);
 		if (daysLeft >= -1 && daysLeft < ConfigManager::GetInstance().DaysLeftToNotify())
 		{
-			data_.lock()->daysLeft_ = daysLeft;
-			data_.lock()->authorizationCode_ = sn;
+			data_.daysLeft_ = daysLeft;
+			data_.authorizationCode_ = sn;
 			if (after)
 				after();
 		}
@@ -147,7 +151,7 @@ public:
 		int daysLeft_ = -1;
 		std::string authorizationCode_;
 	};
-	SafeAccess<innerData> data_;
+	innerData data_;
 private:
 	int RemainingTimeOfUserLock(std::string* SerialNumber)
 	{

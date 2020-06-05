@@ -204,6 +204,5 @@ private:
 	Alime::ExecutorService pool_;
 	WebPageDownLoader webPageData_;
 	WebArticleReader webArticleReader_;
-	AuthorizationCodeDate lockDate_;
 };
 

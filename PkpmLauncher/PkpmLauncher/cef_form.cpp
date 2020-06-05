@@ -190,12 +190,14 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	else if (uMsg == WM_SHOWAUTHORIZE)
 	{	
 		nlohmann::json json;
-		json["daysLeft"] =lockDate_.data_.lock()->daysLeft_;
+		auto ptr = (AuthorizationCodeDate*)wParam;
+		json["daysLeft"] = ptr->data_.daysLeft_;
 		auto toSend = nbase::UTF8ToUTF16(json.dump());
 		cef_control_->CallJSFunction(L"showLicenseKey", toSend,
 			ToWeakCallback([this](const std::string& /*dummyFunction*/) {
 				}
 		));
+		delete ptr;
 	}
 	else if(uMsg == WM_QUERYENDSESSION ||uMsg == WM_ENDSESSION)
 	{
@@ -211,6 +213,11 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 bool CefForm::SwicthThemeTo(int index)
 {
+	if (index < 0)
+	{
+		spdlog::critical("bad theme index: {0:d}", index);
+		return false;
+	}
 	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
 	auto sw = SkinSwitcherFatctory::Get(index);
 	if (!sw)
@@ -226,11 +233,11 @@ void CefForm::SaveThemeIndex(int index, const std::wstring& name)
 	WritePrivateProfileString(L"InterfaceStyle", L"index", std::to_wstring(index).c_str(), path.c_str());
 }
 
-void CefForm::OnLoadEnd(int httpStatusCode)
+void CefForm::OnLoadEnd(int /*httpStatusCode*/)
 {
-	UNUSED(httpStatusCode);
-	pool_.Run(std::bind(&AuthorizationCodeDate::Run, &lockDate_, [this]() {
-		PostMessageW(WM_SHOWAUTHORIZE, 0, 0);
+	auto lockDatePtr = new AuthorizationCodeDate();
+	pool_.Run(std::bind(&AuthorizationCodeDate::Run, lockDatePtr, [this, lockDatePtr]() {
+		PostMessageW(WM_SHOWAUTHORIZE, WPARAM(lockDatePtr), 0);
 		}));
 }
 
