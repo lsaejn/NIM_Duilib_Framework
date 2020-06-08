@@ -154,7 +154,7 @@ private:
 	///<param name="moduleName">二级菜单</param >
 	///<param name="appName1">三级菜单</param >
 	///<param name="appName2">基本上没有</param >
-	void run_cmd(const CStringA& moduleName, const CStringA& appName1, const CStringA& appName2);
+	void run_cmd(const std::string& moduleName, const std::string& appName1, const std::string& appName2);
 
 	/// <summary>老函数，设置PM环境变量</summary>
 	bool SetCfgPmEnv();

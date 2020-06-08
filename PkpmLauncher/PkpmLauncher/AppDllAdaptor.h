@@ -18,8 +18,8 @@ public:
 	AppDllAdaptor();
 	~AppDllAdaptor();
 	bool InitPkpmAppFuncPtr();
-	CString GetPkpmXXXXiniPathName();
-	CString GetAppPath();
+	std::wstring GetPkpmXXXXiniPathName();
+	std::wstring GetAppPath();
 
 	//返回值应改为引用传回
 	const char* Invoke_InitPkpmApp()

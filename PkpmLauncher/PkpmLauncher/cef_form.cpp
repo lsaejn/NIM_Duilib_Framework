@@ -42,9 +42,9 @@ CefForm::CefForm()
 void CefForm::AppendThreadTask()
 {
 	pool_.SetMaxQueueSize(4);
+	pool_.Start(2);
 	pool_.Run(std::bind(&WebPageDownLoader::Run, &webPageData_, std::function<void()>()));
 	pool_.Run(std::bind(&WebArticleReader::Run, &webArticleReader_, [this]() {webArticleReader_.Init();}));
-	pool_.Start(2);
 }
 
 CefForm::~CefForm()
@@ -834,7 +834,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 			MessageBox(NULL, L"工作目录错误或者没有权限", L"PKPMV51", 1);
 			return;
 		}
-		run_cmd(module.c_str(), app.c_str(), "");
+		run_cmd(module, app, "");
 		SetCurrentDirectoryA(oldWorkPath);
 		for (size_t i = 0; i != prjPaths_.size(); ++i)
 		{
@@ -875,7 +875,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		}
 		std::thread t([=]() {
 			SetCurrentDirectoryA(path.c_str());
-			run_cmd(args[3].c_str(), args[4].c_str(), "");
+			run_cmd(args[3], args[4], "");
 			::PostMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
 			});
 		t.detach();
@@ -979,14 +979,14 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 	SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
 }
 
-void CefForm::run_cmd(const CStringA& moduleName, const CStringA& appName1_, const CStringA& appName2)
+void CefForm::run_cmd(const std::string& moduleName, const std::string& appName1, const std::string& appName2)
 {
-	char str[128] = { 0 };
-	if (appName2.IsEmpty())
-		sprintf(str, "%s|%s", moduleName.GetString(), appName1_.GetString());
-	else
-		sprintf(str, "%s|%s_%s", moduleName.GetString(), appName1_.GetString(), appName2.GetString());
-	appDll_.Invoke_RunCommand(str);
+	std::string cmdStr;
+	
+	cmdStr = moduleName + "|" + appName1;
+	if (!appName2.empty())
+		cmdStr += "_" + appName2;
+	appDll_.Invoke_RunCommand(cmdStr.data());
 }
 
 bool CefForm::SetCfgPmEnv()

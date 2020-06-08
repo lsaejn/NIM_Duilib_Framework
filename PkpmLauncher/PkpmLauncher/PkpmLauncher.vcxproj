@@ -23,7 +23,7 @@
     <ProjectGuid>{135BCC27-6E9D-4929-90FA-3B64C3FE53C5}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <RootNamespace>MFCApplication1</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
     <ProjectName>PkpmV5</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -32,7 +32,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -246,7 +246,6 @@
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="Alime\NonCopyable.h" />
     <ClInclude Include="PicZoom.h" />
-    <ClInclude Include="pkpm2014svr.h" />
     <ClInclude Include="RapidjsonForward.h" />
     <ClInclude Include="SpdLogForward.h" />
     <ClInclude Include="rapidjson\allocators.h" />
@@ -340,7 +339,6 @@
     <ClInclude Include="spdlog\tweakme.h" />
     <ClInclude Include="spdlog\version.h" />
     <ClInclude Include="string_util.h" />
-    <ClInclude Include="svr.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="templates.h" />
     <ClInclude Include="VersionCmpStrategy.h" />
@@ -352,8 +350,6 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ThirdParty\xml2json.h" />
-    <ClInclude Include="XmlInfo\InfoItem.h" />
-    <ClInclude Include="XmlInfo\SlimXml.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Alime\ExecutorService.cpp" />
@@ -371,10 +367,8 @@
     </ClCompile>
     <ClCompile Include="Alime\HttpUtil.cpp" />
     <ClCompile Include="MsgDialog.cpp" />
-    <ClCompile Include="pkpm2014svr.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
     <ClCompile Include="string_util.cpp" />
-    <ClCompile Include="svr.cpp" />
     <ClCompile Include="WebDataReader.cpp" />
     <ClCompile Include="MessageLoop.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -384,8 +378,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="XmlInfo\InfoItem.cpp" />
-    <ClCompile Include="XmlInfo\SlimXml.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PkpmV5.rc" />

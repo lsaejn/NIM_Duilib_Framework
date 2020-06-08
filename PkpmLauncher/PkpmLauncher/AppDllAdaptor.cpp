@@ -19,9 +19,9 @@ bool AppDllAdaptor::InitPkpmAppFuncPtr()
 {
 	TCHAR dll_name[40];
 	auto debugStr = GetPkpmXXXXiniPathName();
-	GetPrivateProfileString(_T("CONFIG"), _T("DLL"), _T("pkpmappx.dll"), dll_name, sizeof(dll_name), GetPkpmXXXXiniPathName());
-	CString dll_path = GetAppPath() + dll_name;
-	hd = LoadLibrary(dll_path);
+	GetPrivateProfileString(_T("CONFIG"), _T("DLL"), _T("pkpmappx.dll"), dll_name, sizeof(dll_name), GetPkpmXXXXiniPathName().c_str());
+	auto dll_path = GetAppPath() + dll_name;
+	hd = LoadLibrary(dll_path.c_str());
 	if (hd == NULL)
 	{
 		//LOG_FATAL<<
@@ -39,35 +39,29 @@ bool AppDllAdaptor::InitPkpmAppFuncPtr()
 	return true;
 }
 
-CString AppDllAdaptor::GetPkpmXXXXiniPathName()
+std::wstring AppDllAdaptor::GetPkpmXXXXiniPathName()
 {
 	TCHAR path0[MAX_PATH];
 	GetModuleFileName(NULL, path0, MAX_PATH);
-	CString ini_file = path0;
-	ini_file.MakeLower();//不用make了，已经没法更low了
-	//我赶时间
-	auto index=ini_file.ReverseFind(_T('\\'));
-	ini_file = ini_file.Left(index) + _T("\\PKPM2010V51.ini");
-	if (_taccess(ini_file, 0) != 0)
+	std::wstring ini_file = path0;
+	auto index=ini_file.rfind(_T('\\'));
+	ini_file = ini_file.substr(0,index) + _T("\\PKPM2010V51.ini");
+	if (_taccess(ini_file.c_str(), 0) != 0)
 	{
-		CString fmt;
-		fmt = _T("Can not Find \n") + ini_file;
-		CString info;
-		info.Format(fmt.GetBuffer(), ini_file);
-		AfxMessageBox(info, MB_ICONSTOP);
+		auto fmt = _T("Can not Find \n") + ini_file;
+		AfxMessageBox(fmt.c_str(), MB_ICONSTOP);
 		return _T("");
 	}
-	//f**k!
-	CString iniFile = ini_file;
-	return iniFile;
+	return  ini_file;
 }
 
-CString AppDllAdaptor::GetAppPath()
+std::wstring AppDllAdaptor::GetAppPath()
 {
 	TCHAR path[256];
 	GetModuleFileName(NULL, path, 256);
 	PathRemoveFileSpec(path);
-	return CString(path) + _T("\\");
+	std::wstring result(path);
+	return result + _T("\\");
 }
 
 

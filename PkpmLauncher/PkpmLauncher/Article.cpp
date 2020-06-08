@@ -86,7 +86,7 @@ void NativeArticleReader::RelativeToReadPath()
 	}
 	catch (...)
 	{
-		AfxMessageBox(L"NativeArticleReader, 解析配置文件错误", MB_SYSTEMMODAL);
+		MessageBox(NULL,L"NativeArticleReader, 解析配置文件错误", L"错误", MB_SYSTEMMODAL);
 	}
 }
 

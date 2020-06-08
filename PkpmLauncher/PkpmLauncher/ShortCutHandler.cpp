@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "ShortCutHandler.h"
-#include "svr.h"
-#include "pkpm2014svr.h"
 #include "templates.h"
 
 const wchar_t* separator = L"\\";
@@ -23,14 +21,6 @@ std::wstring GetCfgPath_Inner()
 	return cfgPath;
 }
 
-
-CString get_cfg_path_reg_key()
-{
-	return GetCfgPath_Inner().c_str();
-}
-
-
-
 class ShortCutHandlerImpl
 {
 public:
@@ -49,8 +39,8 @@ public:
 		HMODULE dll_;
 	};
 private:
-	CString m_strNameOfIntegrity;
-	CString m_strNameOfPManager;
+	std::wstring m_strNameOfIntegrity;
+	std::wstring m_strNameOfPManager;
 	HMODULE dll_;
 	DllScopeGuarder guard_;
 	CallBack DoBeforeCallFunc_;//调用前的函数,一般是隐藏主窗口
@@ -63,13 +53,11 @@ public:
 		GetPrivateProfileString(_T("CONFIG"), _T("INTEGRITYCHECK"), _T("PkpmIntegrityCheck.exe"),
 			filename_Integrity, sizeof(filename_Integrity) - 1, m_ini_file);
 		m_strNameOfIntegrity = filename_Integrity;
-		m_strNameOfIntegrity.Trim();
 
 		TCHAR filename_PManager[128];
 		GetPrivateProfileString(_T("CONFIG"), _T("PMANAGER"), _T("PMANAGER.exe"), 
 			filename_PManager, sizeof(filename_PManager), m_ini_file);
 		m_strNameOfPManager = filename_PManager;
-		m_strNameOfPManager.Trim();
 
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
 		path += L"PKPM2010V511.dll";
@@ -128,9 +116,8 @@ public:
 		if (ret != IDOK)
 			return;
 		std::wstring cfgpa = nbase::win32::GetCurrentModuleDirectory()+L"CFG\\"+ _T("RegPKPMCtrl.exe");
-		CString cmdline;
-		cmdline.Format(L"/n,/select,%s", cfgpa.c_str());
-		::ShellExecute(NULL, L"open", L"explorer.exe", cmdline, NULL, SW_SHOWNORMAL);
+		std::wstring cmdline = L"/n,/select," + cfgpa;
+		::ShellExecute(NULL, L"open", L"explorer.exe", cmdline.c_str(), NULL, SW_SHOWNORMAL);
 	}
 
 	void OnContactUs()
@@ -140,12 +127,12 @@ public:
 
 	void OnIntegrityCheck()
 	{
-		CString regcmd = svr::GetRegCFGPath() + m_strNameOfIntegrity;
+		std::wstring regcmd = GetCfgPath_Inner() + m_strNameOfIntegrity;
 		CFile fi;
-		if (fi.Open(regcmd, CFile::readOnly, NULL, NULL))
+		if (fi.Open(regcmd.c_str(), CFile::readOnly, NULL, NULL))
 		{
 			fi.Close();
-			ShellExecute(NULL, _T("open"), regcmd, NULL, NULL, SW_NORMAL);
+			ShellExecute(NULL, _T("open"), regcmd.c_str(), NULL, NULL, SW_NORMAL);
 		}
 		else
 			AfxMessageBox(L"无法找到程序或者您已经在运行程序");
@@ -163,25 +150,18 @@ public:
 	{
 		if (!mainWnd)
 		{
-			//不应该出现这种情况
 			AfxMessageBox(L"主窗口尚未初始化完成", MB_SYSTEMMODAL);
 			std::abort();
 		}
-
-		CString cfgpath = GetCfgPath_Inner().c_str();
-		CString exePathName = cfgpath + _T("PKPMAuthorize.exe");
-		if (-1 == _taccess(exePathName, 0))
+		std::wstring exePathName = GetCfgPath_Inner() + _T("PKPMAuthorize.exe");
+		if (-1 == _taccess(exePathName.c_str(), 0))
 		{
-			CString strHint;
-			strHint += _T("File belowed is not existed.\n");
-			strHint += exePathName;
-			MessageBox(NULL,strHint, _T("lockconfig"),1);
+			AfxMessageBox((L"无法找到该程序 "+exePathName).c_str(), MB_SYSTEMMODAL);
 			return;
 		}
-
 		TCHAR STRPATH[MAX_PATH];
 		ZeroMemory(STRPATH, sizeof(TCHAR) * MAX_PATH);
-		_tcscpy_s(STRPATH, MAX_PATH, exePathName.GetBuffer());
+		_tcscpy_s(STRPATH, MAX_PATH, exePathName.c_str());
 		STARTUPINFO info = { 0 };
 		info.cb = sizeof(STARTUPINFO);
 		PROCESS_INFORMATION prinfo;
@@ -195,7 +175,6 @@ public:
 
 	void OnUserManual()
 	{
-		//CString helpPath = GetAppPath() + "Help\\UserGuider";
 		//::ShellExecute(0, "open", "explorer.exe", helpPath, NULL, SW_SHOWNORMAL);
 	}
 
@@ -206,57 +185,16 @@ public:
 
 	void OnBnClickedBtnFileMgr()
 	{
-		CArray<MODULE_PATH> modPaths;
-		CString strPatTDGL;
-		if (svr::getModulePath(modPaths))
+		std::wstring path = nbase::win32::GetCurrentModuleDirectory() + L"TDGL\\" + m_strNameOfPManager.c_str();
+		if (!PathFileExists(path.c_str()))
 		{
-			for (int i = 0; i != modPaths.GetSize(); ++i)
-			{
-				if (!modPaths[i].m_name.CompareNoCase(L"TDGL"))
-				{
-					strPatTDGL = modPaths[i].m_path;
-					toolsvr::FixPathStr(strPatTDGL);
-					break;
-				}
-			}
-		}
-
-		if (strPatTDGL.IsEmpty())
-		{
-			CString strHint;
-			strHint.Format(L"无法找到安装目录TDGL");
-			MessageBox(NULL, strHint, L"错误提示", 1);
+			AfxMessageBox(L"无法找到模型打包程序 PMANAGER.exe");
 			return;
 		}
-
-		
-		CString strCfgPa;
-		cfgpathsvr::GetAppPathByCFGPATHMarker(get_cfg_path_reg_key(), strCfgPa);
-		toolsvr::FixPathStr(strCfgPa);
-		if (strCfgPa.IsEmpty())
-			strCfgPa = svr::GetRegCFGPath();
-
-		CString regcmd = strPatTDGL + m_strNameOfPManager;
-		if (!PathFileExists(regcmd))
-		{
-			regcmd = (nbase::win32::GetCurrentModuleDirectory() + L"TDGL\\").c_str() + m_strNameOfPManager;
-			CString cmdParm = L"-f ";
-			cmdParm += (L"\"" + GetCfgPath_Inner() + L"pkpm.ini\"").c_str();
-			ShellExecute(NULL, L"open", regcmd, cmdParm, NULL, SW_NORMAL);
-			return;
-		}
-
-		strCfgPa = (nbase::win32::GetCurrentModuleDirectory() + L"CFG\\").c_str();
-		CString cmdParm = L"-f ";
-		cmdParm += L"\"" + strCfgPa + L"pkpm.ini\"";
-		CFile fi;
-		if (fi.Open(regcmd, CFile::readOnly, NULL, NULL))
-		{
-			fi.Close();
-			ShellExecute(NULL, L"open", regcmd, cmdParm, NULL, SW_NORMAL);
-		}
-		else
-			AfxMessageBox(L"无法找到程序或者您已经在运行程序");
+		std::wstring cmdParm = L"-f ";
+		cmdParm += (L"\"" + GetCfgPath_Inner() + L"pkpm.ini\"").c_str();
+		ShellExecute(NULL, L"open", path.c_str(), cmdParm.c_str(), NULL, SW_NORMAL);
+		return;
 	}
 };
 
