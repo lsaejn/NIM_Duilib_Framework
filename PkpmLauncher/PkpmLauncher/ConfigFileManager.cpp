@@ -15,13 +15,13 @@ void ConfigManager::CheckAdaptDpi()
 			return;
 		nlohmann::json json;
 		ifs >> json;
-		isAutoModifyWindowOn_ = json[u8"enableAutoModifyWindow"];
+		isManualAdaptDpiOn_ = json[u8"enableAutoModifyWindow"];
 		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
 	}
 }
 
 ConfigManager::ConfigManager()
-	:isAutoModifyWindowOn_(false),
+	:isManualAdaptDpiOn_(false),
 	isAdaptDpiOn_(false),
 	deadline_(INT32_MAX),
 	styleIndex_(0),
@@ -43,7 +43,7 @@ void ConfigManager::LoadConfigFile()
 		auto& json = json_;
 		try
 		{
-			isAutoModifyWindowOn_ = json[u8"enableAutoModifyWindow"];
+			isManualAdaptDpiOn_ = json[u8"enableManualAdaptDpi"];
 			isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
 			isWebPageRefreshOn_ = json[u8"enableRefresh"];
 			systemFolderSelection_ = json[u8"systemFolderSelection"];
@@ -116,7 +116,7 @@ std::wstring ConfigManager::GetRelativePathForHtmlRes() const
 	return relativePathForHtmlRes_;
 }
 
-std::wstring ConfigManager::GetSkinFilePath() const
+std::wstring ConfigManager::GetSkinFile() const
 {
 	return skinFile_;
 }
@@ -142,7 +142,7 @@ bool ConfigManager::IsAdaptDpiOn() const
 
 bool ConfigManager::IsModifyWindowOn() const
 {
-	return isAutoModifyWindowOn_;
+	return isManualAdaptDpiOn_;
 }
 
 int32_t ConfigManager::DaysLeftToNotify() const

@@ -173,15 +173,8 @@ private:
 	/// <summary>废弃,换肤按钮的事件</summary>
 	void AttachClickCallbackToSkinButton();
 
-	/// <summary>Cef缩放处理</summary>
-	void ModifyScaleForCef();
-
-	/// <summary>标题栏缩放处理</summary>
-	void ModifyScaleForCaption();
-
 	void InitSpdLog();
 public:
-
 	void AcceptDpiAdaptor(IAdaptor* acc);
 	ui::Label* GetCaptionLabel();
 	ui::HBox* GetCaptionBox();

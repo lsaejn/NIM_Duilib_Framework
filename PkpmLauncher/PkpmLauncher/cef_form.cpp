@@ -1,16 +1,6 @@
 #include "pch.h"
-#include "cef_form.h"
-#include "string_util.h"
-#include "MsgDialog.h"
-#include "SkinSwitcher.h"
-#include "ConfigFileManager.h"
-#include "VersionCmpStrategy.h"
-#include "FileDialog.h"
 
-#include "Alime/ProcessInfo.h"
-#include "Alime/HttpUtil.h"
-#include "Alime/FileSystem.h"
-#include "Alime/Console.h"
+#include<cmath>
 
 #include <filesystem>
 #include <regex>
@@ -18,6 +8,18 @@
 #include "RapidjsonForward.h"
 #include "SpdlogForward.h"
 #include "nlohmann/json.hpp"
+#include "Alime/ProcessInfo.h"
+#include "Alime/HttpUtil.h"
+#include "Alime/FileSystem.h"
+#include "Alime/Console.h"
+
+#include "cef_form.h"
+#include "string_util.h"
+#include "MsgDialog.h"
+#include "SkinSwitcher.h"
+#include "ConfigFileManager.h"
+#include "VersionCmpStrategy.h"
+#include "FileDialog.h"
 
 using namespace Alime::HttpUtility;
 using namespace application_utily;
@@ -59,7 +61,7 @@ std::wstring CefForm::GetSkinFolder()
 
 std::wstring CefForm::GetSkinFile()
 {
-	return ConfigManager::GetInstance().GetSkinFilePath();
+	return DpiAdaptorFactory::GetAdaptor()->SelectSkinFile();
 }
 
 std::wstring CefForm::GetWindowClassName() const
@@ -92,7 +94,6 @@ void CefForm::InitWindow()
 	AttachFunctionToShortCut();
 	AttachClickCallbackToSkinButton();
 	SwicthThemeTo(ConfigManager::GetInstance().GetGuiStyleInfo().first);
-	ModifyScaleForCaption();
 }
 
 LRESULT CefForm::OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -241,39 +242,13 @@ void CefForm::OnLoadEnd(int /*httpStatusCode*/)
 		}));
 }
 
-void CefForm::ModifyScaleForCef()
-{
-	if (ConfigManager::GetInstance().IsAdaptDpiOn())
-		return;
-	else if (ConfigManager::GetInstance().IsModifyWindowOn())
-	{
-		UINT dpi=ui::DpiManager::GetMainMonitorDPI();
-		auto scale=MulDiv(dpi, 100, 96);	
-		///see www.magpcss.org/ceforum/viewtopic.php?f=6&t=11491
-		cef_control_->SetZoomLevel(scale / 100.0f);
-		if (cef_control_dev_)
-			cef_control_dev_->SetZoomLevel(scale / 100.0f);
-	}
-}
-
-void CefForm::ModifyScaleForCaption()
-{
-	if (ConfigManager::GetInstance().IsAdaptDpiOn())
-		return;
-	else if (ConfigManager::GetInstance().IsModifyWindowOn())
-	{
-		//fix me, 未完成
-		DefaultDpiAdaptor helper;
-		AcceptDpiAdaptor(&helper);
-		return;
-	}
-}
-
 //早期的demo出现 网页调用c++函数时函数还没注册
 void CefForm::OnLoadStart()
 {
 	RegisterCppFuncs();
-	ModifyScaleForCef();
+	//fix me
+	AcceptDpiAdaptor(DpiAdaptorFactory::GetAdaptor().get());
+	//ModifyScaleForCef();
 }
 
 //不要试图以json来标识函数
@@ -982,7 +957,6 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 void CefForm::run_cmd(const std::string& moduleName, const std::string& appName1, const std::string& appName2)
 {
 	std::string cmdStr;
-	
 	cmdStr = moduleName + "|" + appName1;
 	if (!appName2.empty())
 		cmdStr += "_" + appName2;
@@ -1202,6 +1176,7 @@ void CefForm::InitSpdLog()
 void CefForm::AcceptDpiAdaptor(IAdaptor* acc)
 {
 	acc->AdaptCaption(this);
+	acc->AdaptCefWindow(this);
 }
 
 ui::Label* CefForm::GetCaptionLabel()

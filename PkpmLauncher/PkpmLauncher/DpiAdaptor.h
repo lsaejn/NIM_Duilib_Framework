@@ -1,5 +1,6 @@
 #pragma once
 #include "Alime/NonCopyable.h"
+#include "ConfigFileManager.h"
 #include <memory>
 
 /*
@@ -14,9 +15,10 @@ class IAdaptor
 public:
 	virtual void AdaptCaption(CefForm*)=0;
 	virtual void AdaptCefWindow(CefForm*)=0;
+	virtual std::wstring SelectSkinFile();
+	UINT GetDpi();
+	double GetScale();
 };
-
-
 
 class DefaultDpiAdaptor:public IAdaptor
 {
@@ -25,12 +27,39 @@ public:
 
 	virtual void AdaptCaption(CefForm* _window)  override;
 	virtual void AdaptCefWindow(CefForm* _window) override;
+	double GetZoomLevel();
+	std::wstring SelectSkinFile();
+private:
+	std::wstring SkinFileAsDpi(const std::wstring& file, const std::wstring& suffix);
+};
+
+class EmptyDpiAdaptor :public IAdaptor
+{
+public:
+	EmptyDpiAdaptor() = default;
+
+	virtual void AdaptCaption(CefForm* /*_window*/) {};
+	virtual void AdaptCefWindow(CefForm* /*_window*/) {};
 };
 
 class DpiAdaptorFactory:public noncopyable
 {
 public:
-	//std::shared_ptr<IAdaptor> 
+	enum class AdaptorTy
+	{
+		Default,
+		CaptionInclude
+	};
+
+	static std::shared_ptr<IAdaptor> GetAdaptor()
+	{
+		if(ConfigManager::GetInstance().IsAdaptDpiOn() ||
+			ConfigManager::GetInstance().IsModifyWindowOn()
+			)
+			return std::make_shared<DefaultDpiAdaptor>();
+		else
+			return std::make_shared<EmptyDpiAdaptor>();
+	}
 
 private:
 	DpiAdaptorFactory() = default;

@@ -22,7 +22,7 @@ public:
 	std::wstring GetCefFormWindowText() const;
 	std::wstring GetCefFormClassName() const;
 	std::wstring GetRelativePathForHtmlRes() const;
-	std::wstring GetSkinFilePath() const;
+	std::wstring GetSkinFile() const;
 	std::wstring GetSkinFolderPath() const;
 	std::wstring GetNativeArticlePath() const;
 	std::wstring GetWebArticlePath() const;
@@ -37,7 +37,7 @@ private:
 	void CheckAdaptDpi();
 	void LoadConfigFile();
 private:
-	bool isAutoModifyWindowOn_;
+	bool isManualAdaptDpiOn_;
 	bool isAdaptDpiOn_;
 	bool systemFolderSelection_;
 	bool isWebPageRefreshOn_;

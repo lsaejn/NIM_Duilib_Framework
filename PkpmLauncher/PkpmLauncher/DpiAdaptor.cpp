@@ -2,9 +2,32 @@
 #include "DpiAdaptor.h"
 #include "cef_form.h"
 
+UINT IAdaptor::GetDpi()
+{
+	UINT dpi = ui::DpiManager::GetMainMonitorDPI();
+	return dpi;
+}
 
+double IAdaptor::GetScale()
+{
+	auto dpi = GetDpi();
+	auto scale = MulDiv(dpi, 100, 96) / 100.0;
+	return scale;
+}
+
+std::wstring IAdaptor::SelectSkinFile()
+{
+	return ConfigManager::GetInstance().GetSkinFile();
+}
+
+/*
+使用网易的dpi可以省掉很多工作量，我们只需要选择加载的图片即可。
+不过这还是太麻烦了。
+本函数暂时被启用。
+*/
 void DefaultDpiAdaptor::AdaptCaption(CefForm* _window)
 {
+	return;
 	auto label = _window->GetCaptionLabel();
 	UNREFERENCED_PARAMETER(label);
 	auto vistual_caption_ = _window->GetCaptionBox();
@@ -32,5 +55,37 @@ void DefaultDpiAdaptor::AdaptCaption(CefForm* _window)
  void DefaultDpiAdaptor::AdaptCefWindow(CefForm* _window)
 {
 	auto* cef = _window->GetCef();
-	UNREFERENCED_PARAMETER(cef);
+	cef->SetZoomLevel(static_cast<float>(GetZoomLevel()));
 }
+
+ double DefaultDpiAdaptor::GetZoomLevel()
+ {
+	 auto scale = GetScale();
+	 ///see www.magpcss.org/ceforum/viewtopic.php?f=6&t=11491
+	 auto level = log(scale) / log(1.2);
+	 return level;
+ }
+
+ std::wstring DefaultDpiAdaptor::SelectSkinFile()
+ {
+	 auto scale = MulDiv(GetDpi(), 100, 96);
+	 auto defaultFile=IAdaptor::SelectSkinFile();
+	 if (scale < 125)
+		 return defaultFile;
+	 else if (scale >= 125 && scale <= 350)
+	 {
+		 return SkinFileAsDpi(defaultFile,L"2k");
+	 }		 
+	 else
+	 {
+		 return SkinFileAsDpi(defaultFile, L"4k");
+	 }		 
+ }
+
+ std::wstring DefaultDpiAdaptor::SkinFileAsDpi(const std::wstring& file,
+	 const std::wstring& suffix)
+ {
+	 auto i=file.rfind('.');
+	 auto result = file.substr(0, i) + suffix + file.substr(i);
+	 return result;
+ }
