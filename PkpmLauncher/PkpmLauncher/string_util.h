@@ -4,7 +4,7 @@
 
 
 template<typename Ty, size_t nSize>
-size_t ArraySize(Ty(&Arg)[nSize])
+constexpr size_t ArraySize(Ty(&Arg)[nSize])
 {
 	(void)Arg;
 	return nSize;

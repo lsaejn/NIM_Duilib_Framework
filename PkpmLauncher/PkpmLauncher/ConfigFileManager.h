@@ -1,9 +1,13 @@
 #pragma once
-#include "Alime/NonCopyable.h"
+
 #include "nlohmann/json.hpp"
 
+#include "Alime/NonCopyable.h"
+
+
+
 //reader
-class ConfigManager: public noncopyable
+class ConfigManager : public noncopyable
 {
 public:
 	static ConfigManager& GetInstance()

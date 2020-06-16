@@ -129,8 +129,8 @@ public:
 };
 
 //no need to lock member
-class AuthorizationCodeDate : public QueryTask, 
-	public std::enable_shared_from_this<AuthorizationCodeDate>
+class AuthorizationCodeDate : public QueryTask
+	/*, public std::enable_shared_from_this<AuthorizationCodeDate>*/
 {
 public:
 	void Run(Functor after) override

@@ -1,12 +1,43 @@
 #include "pch.h"
-#include "ConfigFileManager.h"
+
 #include <fstream>
+
 #include "Alime/FileSystem.h"
 
-/*
-enableAdaptDpi为真，则使用duilib的适放机制。需要修改资源以避免图片模糊。
-enableAdaptDpi为假，则完全自己处理
-*/
+#include "ConfigFileManager.h"
+#include "MsgDialog.h"
+#include "string_util.h"
+
+
+//换肤的结果会被pkpmmain使用，所以最后还是决定把结果丢到pkpm.ini里
+//方案是前端定的。 0-black 1-blue。我也不知道为什么搞这么奇怪
+class PkpmConfigManager
+{
+public:
+
+	static std::pair<int, std::wstring> GetGuiStyleInfo()
+	{
+		auto path = application_utily::FullPathOfPkpmIni();
+		int styleIndex = GetPrivateProfileInt(L"InterfaceStyle", L"index", 0, path.c_str());
+		wchar_t buffer[32] = { 0 };
+		GetPrivateProfileStringW(L"InterfaceStyle", L"name", L"black", buffer, ArraySize(buffer), path.c_str());
+		std::wstring styleName = buffer;
+		return { styleIndex , styleName };
+	}
+
+	static void SetGuiStyleInfo(const std::pair<int, std::wstring>& info)
+	{
+		auto path = application_utily::FullPathOfPkpmIni();
+		int ret = 0;
+		ret = WritePrivateProfileString(L"InterfaceStyle", L"index", std::to_wstring(info.first).c_str(), path.c_str());
+		ret = WritePrivateProfileString(L"InterfaceStyle", L"name", info.second.c_str(), path.c_str());
+		if (!ret)
+			MsgBox::Show(L"无法保存换肤信息", true);
+	}
+
+};
+
+//////////////////////////////ConfigManager//////////////////////////////
 void ConfigManager::CheckAdaptDpi()
 {
 	{
@@ -58,8 +89,8 @@ void ConfigManager::LoadConfigFile()
 			skinFolder_ = nbase::UTF8ToUTF16(json["skinFolder"]);
 			nativeArticlesPath_ = nbase::UTF8ToUTF16(json["nativeArticles"]);
 			webArticlesPath_ = nbase::UTF8ToUTF16(json["webArticles"]);
-			styleIndex_ = json["guiStyleInfo"]["styleIndex"];
-			styleName_ = nbase::UTF8ToUTF16(json["guiStyleInfo"]["styleName"]);
+			//styleIndex_ = json["guiStyleInfo"]["styleIndex"];
+			//styleName_ = nbase::UTF8ToUTF16(json["guiStyleInfo"]["styleName"]);
 			deadline_ = json["deadline"];
 			deadline_ = deadline_ <= 0 ? 7 : deadline_;
 		}
@@ -157,46 +188,12 @@ int32_t ConfigManager::GetFolderDialogType() const
 
 std::pair<int, std::wstring> ConfigManager::GetGuiStyleInfo() const
 {
-	return {styleIndex_, styleName_};
+	return PkpmConfigManager::GetGuiStyleInfo();
 }
 
 //前端没有说明为什么需要两个变量来标识主题
 //windows不用u8的原因是....?
 void ConfigManager::SetGuiStyleInfo(const std::pair<int, std::wstring>& info)
 {
-	styleIndex_ = info.first;
-	styleName_ = info.second;
-	if (styleIndex_ != json_["guiStyleInfo"]["styleIndex"] ||
-		styleName_!=  json_["guiStyleInfo"]["styleName"]
-		)
-	{
-		json_["guiStyleInfo"]["styleIndex"] = styleIndex_;
-		json_["guiStyleInfo"]["styleName"] = nbase::UTF16ToUTF8(styleName_);
-
-		std::fstream file;
-		auto newFile = filePath_ + L"copy";
-		file.open(newFile, std::ios_base::out | std::ios_base::trunc);
-		if (file.is_open()&& file.good())
-		{		
-			auto str=json_.dump();
-			file.write(str.c_str(), str.size());
-		}
-		file.close();
-
-		Alime::FileSystem::File originFile = filePath_;
-		if (!originFile.Rename(L"backup"))
-			return;
-		auto fileName = Alime::FileSystem::FilePath(filePath_).GetName();
-		auto filePath = Alime::FileSystem::FilePath(filePath_).GetFolder().GetFullPathWithSurfix();
-		Alime::FileSystem::File fileToSave = newFile;			
-		if (!fileToSave.Rename(fileName))
-		{
-			originFile.Rename(fileName);
-			fileToSave.Delete();
-		}
-		else
-		{
-			Alime::FileSystem::File(filePath + L"backup").Delete();
-		}
-	}	
+	return PkpmConfigManager::SetGuiStyleInfo(info);
 }

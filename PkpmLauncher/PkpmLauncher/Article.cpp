@@ -73,7 +73,7 @@ void NativeArticleReader::RelativeToReadPath()
 	{
 		nlohmann::json json = nlohmann::json::parse(fileContent_);
 		std::string prefix_in_u8 = nbase::UTF16ToUTF8(nbase::win32::GetCurrentModuleDirectory());
-		nlohmann::json articles = json["nativeArticles"];
+		nlohmann::json &articles = json["nativeArticles"];
 		for (json::iterator it = articles.begin(); it != articles.end(); ++it)
 		{
 			std::string relativePath = (*it)["imgSrc"];

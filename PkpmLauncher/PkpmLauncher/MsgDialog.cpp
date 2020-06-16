@@ -17,8 +17,15 @@ namespace MsgBox
 		nim_comp::ShowMsgBox(wnd, NULL, content, false, title, false, L"È·¶¨", false);
 	}
 
-	void Show(const std::wstring& content)
+	void Show(const std::wstring& content, bool debugNeeded)
 	{
-		AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
+		if(debugNeeded == false)
+			AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
+		else
+		{
+#ifdef DEBUG
+			AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
+#endif // DEBUG
+		}
 	}
 }

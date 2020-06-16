@@ -121,12 +121,12 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
+/// <summary>
+/// windowImpBase里有大部分的处理函数，窗口级的处理最好放到函数里
+/// </summary>
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_LBUTTONDOWN)
-	{
-	}
-	else if (uMsg == WM_DROPFILES)
+	if (uMsg == WM_DROPFILES)
 	{
 		HDROP hDropInfo = (HDROP)wParam;
 		UINT count;
@@ -184,20 +184,19 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetCurrentDirectory(appPath.c_str());
 		ShowWindow();
 	}
-	else if (uMsg == WM_MOUSEWHEEL)
-	{
-		OutputDebugString(L"MOUSEWHEEL");
-	}
 	else if (uMsg == WM_SHOWAUTHORIZE)
 	{	
 		nlohmann::json json;
 		auto ptr = (AuthorizationCodeDate*)wParam;
-		json["daysLeft"] = ptr->data_.daysLeft_;
-		auto toSend = nbase::UTF8ToUTF16(json.dump());
-		cef_control_->CallJSFunction(L"showLicenseKey", toSend,
-			ToWeakCallback([this](const std::string& /*dummyFunction*/) {
-				}
-		));
+		if (-1 != ptr->data_.daysLeft_)
+		{
+			json["daysLeft"] = ptr->data_.daysLeft_;
+			auto toSend = nbase::UTF8ToUTF16(json.dump());
+			cef_control_->CallJSFunction(L"showLicenseKey", toSend,
+				ToWeakCallback([this](const std::string& /*dummyFunction*/) {
+					}
+			));
+		}
 		delete ptr;
 	}
 	else if(uMsg == WM_QUERYENDSESSION ||uMsg == WM_ENDSESSION)
@@ -219,19 +218,25 @@ bool CefForm::SwicthThemeTo(int index)
 		spdlog::critical("bad theme index: {0:d}", index);
 		return false;
 	}
-	nim_comp::Box* vistual_caption = dynamic_cast<nim_comp::Box*>(FindControl(L"vistual_caption"));
+	//fix me
+	if(1)
+	{
+		auto wrapedCap=SkinFatctory().GetWrappedCaption(this, index);
+		if (!wrapedCap)
+			return false;
+		wrapedCap->ReDraw();
+		return true;
+	}
 	auto sw = SkinSwitcherFatctory::Get(index);
 	if (!sw)
 		return false;
-	sw->Switch(vistual_caption, label_);
+	sw->Switch(vistual_caption_, label_);
 	return true;
 }
 
 void CefForm::SaveThemeIndex(int index, const std::wstring& name)
 {
-	auto path=application_utily::FullPathOfPkpmIni();
 	ConfigManager::GetInstance().SetGuiStyleInfo({ index,name });
-	WritePrivateProfileString(L"InterfaceStyle", L"index", std::to_wstring(index).c_str(), path.c_str());
 }
 
 void CefForm::OnLoadEnd(int /*httpStatusCode*/)
@@ -248,7 +253,6 @@ void CefForm::OnLoadStart()
 	RegisterCppFuncs();
 	//fix me
 	AcceptDpiAdaptor(DpiAdaptorFactory::GetAdaptor().get());
-	//ModifyScaleForCef();
 }
 
 //不要试图以json来标识函数
@@ -649,9 +653,8 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 		memset(buffer, 0, ArraySize(buffer));
 		auto nRead = GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", buffer, ArraySize(buffer), fullpath.c_str());
 		if (!strcmp("error", buffer) || buffer[nRead - 1] != '\\')
-		{
-			//prjPathStr=="error"表明用户手动修改了配置文件!
-			continue;
+		{	
+			continue;//prjPathStr=="error"表明用户手动修改了配置文件!
 		}
 		std::string timeStamp;
 		auto ret = GetPrjInfo(buffer, timeStamp);
@@ -749,7 +752,7 @@ std::string CefForm::OnGetDefaultMenuSelection()
 	{
 		memset(indexRet, 0, sizeof(indexRet));
 		GetPrivateProfileStringA("Html", toRead[i], "error", indexRet, sizeof(indexRet),
-			nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
+			FullPathOfPkpmIniA().c_str());
 		if (i == n - 1 && prjPaths_.size() == 0)
 		{
 			dict.push_back(std::make_pair(toRead[i], "-1"));
@@ -784,9 +787,7 @@ std::string CefForm::OnNewProject()
 void CefForm::OnRightClickProject(const std::wstring& prjName)
 {
 	if (PathFileExists(prjName.c_str()) && PathIsDirectory(prjName.c_str()))
-	{
 		application_utily::OpenDocument(prjName);
-	}
 	else
 		MsgBox::Warning(GetHWND(), L"工程目录无法打开，可能已经被删除" ,L"路径错误");
 }
@@ -826,11 +827,9 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
-	if (args.size() != 5)
-		MsgBox::Warning(GetHWND(), L"打开工程的参数不正确", L"严重错误");
-	if (!prjPaths_.size())
+	if (args.size() != 5 || !prjPaths_.size())
 	{
-		MsgBox::Warning(GetHWND(), L"工作目录不存在", L"严重错误");
+		MsgBox::Warning(GetHWND(), L"工作目录或参数不存在", L"严重错误");
 		return;
 	}
 	std::string path(args[0]);
@@ -887,8 +886,7 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 	if (!hasAdministratorsRights)
 	{
 		MsgBox::Warning(GetHWND(), L"无法保存工程信息，建议使用管理员权限打开本软件", L"权限错误");
-	}
-		
+	}	
 }
 
 std::string CefForm::PathChecker(const std::string& newProj, bool &legal)
@@ -1173,10 +1171,10 @@ void CefForm::InitSpdLog()
 	}
 }
 
-void CefForm::AcceptDpiAdaptor(IAdaptor* acc)
+void CefForm::AcceptDpiAdaptor(IAdaptor* visitor)
 {
-	acc->AdaptCaption(this);
-	acc->AdaptCefWindow(this);
+	visitor->AdaptCaption(this);
+	visitor->AdaptCefWindow(this);
 }
 
 ui::Label* CefForm::GetCaptionLabel()

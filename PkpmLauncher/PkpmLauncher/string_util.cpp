@@ -57,7 +57,7 @@ namespace application_utily
 {
 	std::wstring FullPathOfPkpmIni()
 	{
-		static auto path = nbase::win32::GetCurrentModuleDirectory() + L"cfg/pkpm.ini";
+		static auto path = nbase::win32::GetCurrentModuleDirectory() + L"cfg\\pkpm.ini";
 		return path;
 	}
 
