@@ -23,7 +23,7 @@ std::wstring IAdaptor::SelectSkinFile()
 /*
 使用网易的dpi可以省掉很多工作量，我们只需要选择加载的图片即可。
 不过这还是太麻烦了。
-本函数暂时被启用。
+Fix me 。本函数暂时未启用。
 */
 void DefaultDpiAdaptor::AdaptCaption(CefForm* _window)
 {

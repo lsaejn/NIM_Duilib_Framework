@@ -11,7 +11,9 @@
 #endif
 
 /*
-内存泄露是正常的，见LazyInstance的注释。
+内存泄露是正常的，见LazyInstance的注释。通常就是两个loop指针。
+另一个原因就是授权码查询函数，这个函数实在是查询时间太长了。
+导致动态库
 */
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,

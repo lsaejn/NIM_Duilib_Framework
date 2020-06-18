@@ -4,6 +4,7 @@
 #include <memory>
 #include <functional>
 #include <exception>
+#include <vector>
 
 #include "Alime/NonCopyable.h"
 
@@ -14,31 +15,36 @@ using DpiMsgCallback = std::function<void (ui::Control*)>;
 DpiMsgCallback emptyFunc;
 
 //怎么简单怎么写了,你要相信启动界面上面的东西会越来越多
+//标题栏上要处理的东西也会越来越多
 class Component
 {
 public:
 	Component()
-		:elem_(nullptr)
+		:target_(nullptr)
 	{
+	}
 
+	~Component()
+	{
 	}
 
 	Component* Combine(Component* Component)
 	{
-		elem_ = Component;
+		if(Component)
+			target_.reset(Component);
 		return this;
 	}
 
 	void ReDraw()
 	{
 		ReDrawSelf();
-		if(elem_)
-			elem_->ReDraw();
+		if(target_)
+			target_->ReDraw();
 	}
 
 protected:
 	virtual void ReDrawSelf() = 0;
-	Component* elem_;
+	std::shared_ptr<Component> target_;
 };
 
 class WrappedUiElement: public Component
@@ -110,35 +116,62 @@ public:
 	std::shared_ptr<WrappedUiElement> GetWrappedCaption(CefForm* form, int index)
 	{
 		std::shared_ptr<WrappedUiElement> smart_ptr;
-		if (!index)
+		if (0==index)
 			smart_ptr.reset(new BlackWrappedCaption(form));
-		if (index == 1)
+		if (1==index)
 			smart_ptr.reset(new BlueWrappedCaption(form));
 		return smart_ptr;
 	}
 
 };
 
-class SkinInfoLoader
+//fix me, 没写完
+struct SkinInfoLoader
 {
 public:
 	SkinInfoLoader()
 	{
+		bool ok = Init();
+	}
+
+
+	bool Init()
+	{
 		auto pathOfSkinXml = nbase::win32::GetCurrentModuleDirectory()
 			+ L"resources\\themes\\default\\cef\\caption_style.xml";
 		ui::CMarkup cm;
-		cm.LoadFromFile(pathOfSkinXml.c_str());
+		bool ret = cm.LoadFromFile(pathOfSkinXml.c_str());
+		if (!ret) return false;
 		auto rootNode = cm.GetRoot();
-		defaultIndex_ =std::stoi( rootNode.GetAttributeValue(L"default_index"));
-		if (rootNode.HasChildren())
+		defaultIndex_ = std::stoi(rootNode.GetAttributeValue(L"default_index"));
+		int index = 0;
+		if (!rootNode.HasChildren()) return false;
+		auto theme = rootNode.GetChild();
+		while (theme.IsValid())
 		{
-			auto child = rootNode.GetChild();
-		}
+			auto arributeNode = theme.GetChild();
+			while (arributeNode.IsValid())
+			{
+				//skinfoMap[index].push_back({ theme.GetName(),theme.GetAttributeName});
+			}
+
+			if (theme.HasSiblings())
+				theme = theme.GetSibling();
+			index++;
+		}	
 	}
 
-	std::unordered_map<std::string, std::string> skinfoMap;
+	struct theme
+	{
+		using Arribute = std::pair<std::string, std::string>;
+		int index;
+		std::string themeName;
+		std::vector<std::pair<std::string, std::vector<Arribute>>> arributes;
+	};	
+	std::vector<theme> themes;
 	int defaultIndex_;
 };
+
 
 class SkinSwitcher
 {

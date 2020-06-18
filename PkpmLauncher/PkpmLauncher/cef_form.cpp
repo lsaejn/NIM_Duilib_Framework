@@ -121,9 +121,7 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
-/// <summary>
 /// windowImpBase里有大部分的处理函数，窗口级的处理最好放到函数里
-/// </summary>
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_DROPFILES)
@@ -1009,7 +1007,7 @@ bool CefForm::TellMeNewVersionExistOrNot()
 			AscendingOrder stradegy;//fix me
 			std::sort(vec.begin(), vec.end(), stradegy);
 			const auto& LatestVersionOnLocal = vec.back();
-			if (document.HasMember("VersionString"))//临时加的
+			if (document.HasMember("VersionString"))//fix me
 			{
 				std::string versionString = document["VersionString"].GetString();
 				return stradegy(LatestVersionOnLocal, versionString);
@@ -1027,9 +1025,7 @@ std::string CefForm::TellMeAdvertisement()
 	{
 		auto pageInfo = webPageData_.data_.lock()->pageInfo_;
 		if (!pageInfo.empty())
-		{
 			return WebPageDownLoader::ParseWebPage(pageInfo);
-		}
 	}
 	return ConfigManager::GetInstance().GetDefaultAdvertise();
 }

@@ -153,6 +153,9 @@ public:
 	};
 	innerData data_;
 private:
+
+
+	/// 返回值没必要细分，为-2表示 加载动态库失败
 	int RemainingTimeOfUserLock(std::string* SerialNumber)
 	{
 		//参数:@ 模块号, @子模块号 @返回的授权码
@@ -162,13 +165,13 @@ private:
 		auto pathOfWinAuthorize = nbase::win32::GetCurrentModuleDirectory() + L"Ribbon\\WinAuthorize.dll";
 		auto handle = LoadLibrary(pathOfWinAuthorize.c_str());
 		if (!handle)
-			return -1;
+			return -2;
 		FuncInWinAuthorize dayLeftFunc = NULL;
 		dayLeftFunc = (FuncInWinAuthorize)GetProcAddress(handle, "_Login_SubMod2@12");
 		if (!dayLeftFunc)
 		{
 			FreeLibrary(handle);
-			return -1;
+			return -2;
 		}
 		int ty = 100;
 		int sub_ky = 0;
