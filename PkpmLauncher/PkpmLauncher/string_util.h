@@ -30,4 +30,5 @@ namespace application_utily
 	char* realpath(const char* path, char* resolved_path);
 	std::wstring GetExePath();
 	bool GetClipBoardInfo(HWND wnd, std::string& filePath);
+	void OpenBimExe();
 }

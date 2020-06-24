@@ -273,6 +273,14 @@ void CefForm::RegisterCppFuncs()
 			rapidjson::Document document;
 			document.ParseStream(input);
 			std::string filePath=document["filePath"].GetString();
+			//fix me， 极度不合理的需求，导致硬编码函数要改名了
+			if (string_utility::endWith(filePath.c_str(), "Dummy.xml"))
+			{
+				std::string lastQuery = webDataReader_.LastQuery();
+				if (lastQuery.empty())
+					return;
+				application_utily::OpenBimExe();			
+			}
 			WebDataVisitorInU8 visitor(filePath);
 			webDataReader_.Accept(&visitor);
 			auto re = visitor.GetValue();
@@ -805,7 +813,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 		BOOL ret = SetCurrentDirectoryA(workdir.c_str());
 		if (!ret)
 		{
-			MessageBox(NULL, L"工作目录错误或者没有权限", L"PKPMV51", 1);
+			MessageBox(NULL, L"工作目录错误或者没有权限", L"错误", 1);
 			return;
 		}
 		run_cmd(module, app, "");

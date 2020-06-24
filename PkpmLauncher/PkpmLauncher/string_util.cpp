@@ -6,6 +6,7 @@
 
 #include "string_util.h"
 #include "templates.h"
+#include "RegKeyRW.h"
 
 
 namespace string_utility
@@ -256,5 +257,48 @@ namespace application_utily
 		}
 		return false;
 	}
+
+	void OpenBimExe()
+	{
+		LPCTSTR cpp_data = L"SOFTWARE\\PKPM\\PKPM-BIM建筑协同设计系统";
+		HKEY hKey = NULL;
+		//@根表名称 @要打开的子表项;@固定值-0;@申请的权限;@返回句柄；
+		if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_LOCAL_MACHINE, cpp_data, 0, KEY_READ| KEY_WOW64_64KEY, &hKey))
+			return;
+		DWORD KeyCnt = 0;
+		DWORD KeyMaxLen = 0;
+		DWORD NameCnt = 0;
+		DWORD NameMaxLen = 0;
+		DWORD MaxDateLen = 0;
+		std::wstring bimPath;
+		if (ERROR_SUCCESS == RegQueryInfoKey(hKey, NULL, NULL, 0, &KeyCnt, &KeyMaxLen, NULL, &NameCnt, &NameMaxLen, &MaxDateLen, NULL, NULL))
+		{
+			for (DWORD dwIndex = 0; dwIndex < NameCnt; dwIndex++)
+			{
+				DWORD DateSize = MaxDateLen + 1;
+				DWORD NameSize = NameMaxLen + 1;
+				DWORD Type = 0;
+				wchar_t* szValueName = new wchar_t[NameSize];
+				LPBYTE szValueDate = (LPBYTE)malloc(DateSize);
+				RegEnumValue(hKey, dwIndex, szValueName, &NameSize, NULL, &Type, szValueDate, &DateSize);
+				if (std::wstring(szValueName) == L"PATH")
+				{
+					bimPath = (wchar_t*)(szValueDate);
+					delete szValueName;
+					break;
+				}			
+				delete szValueName;
+			}
+		}
+		if (!bimPath.empty())
+		{
+			CreateProcessWithCommand(bimPath.c_str(), NULL, NULL);
+		}
+		else
+		{
+			ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
+		}
+	}
+
 }
 

@@ -1,7 +1,10 @@
 #include "pch.h"
-#include "AppDllAdaptor.h"
+
 #include <tchar.h>
 #include <io.h>
+
+#include "AppDllAdaptor.h"
+#include "ConfigFileManager.h"
 
 
 AppDllAdaptor::AppDllAdaptor()
@@ -17,10 +20,7 @@ AppDllAdaptor::~AppDllAdaptor()
 
 bool AppDllAdaptor::InitPkpmAppFuncPtr()
 {
-	TCHAR dll_name[40];
-	auto debugStr = GetPkpmXXXXiniPathName();
-	GetPrivateProfileString(_T("CONFIG"), _T("DLL"), _T("pkpmappx.dll"), dll_name, sizeof(dll_name), GetPkpmXXXXiniPathName().c_str());
-	auto dll_path = GetAppPath() + dll_name;
+	auto dll_path = GetAppPath() + ConfigManager::GetInstance().GetLaunchDllName();
 	hd = LoadLibrary(dll_path.c_str());
 	if (hd == NULL)
 	{
@@ -34,7 +34,7 @@ bool AppDllAdaptor::InitPkpmAppFuncPtr()
 	if (!fuc_InitPkpmApp || !fuc_RunCommand || !fuc_GetMenu || !fuc_AdjustProOrder)
 	{
 		//LOG_FATAL<<
-		::AfxMessageBox(L"pkpmv51.dll, 动态库错误");
+		::AfxMessageBox(L"AppDllAdaptor, 无法从动态库导入函数");
 	}
 	return true;
 }
@@ -45,7 +45,7 @@ std::wstring AppDllAdaptor::GetPkpmXXXXiniPathName()
 	GetModuleFileName(NULL, path0, MAX_PATH);
 	std::wstring ini_file = path0;
 	auto index=ini_file.rfind(_T('\\'));
-	ini_file = ini_file.substr(0,index) + _T("\\PKPM2010V51.ini");
+	ini_file = ini_file.substr(0,index) + _T("\\")+ConfigManager::GetInstance().GetLaunchDllName();
 	if (_taccess(ini_file.c_str(), 0) != 0)
 	{
 		auto fmt = _T("Can not Find \n") + ini_file;

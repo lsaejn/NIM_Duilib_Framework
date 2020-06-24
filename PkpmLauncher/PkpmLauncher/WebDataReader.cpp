@@ -31,9 +31,17 @@ const std::string WebDataReader::ReadSpecific(const std::string& filePath) const
 {
     auto iter = xmlData_.find(filePath);
     if (iter != xmlData_.end())
+    {
+        lastQueryFilePath_ = filePath;
         return iter->second;
+    }     
     else
         return {};
+}
+
+std::string WebDataReader::LastQuery()
+{
+    return lastQueryFilePath_;
 }
 
 void WebDataReader::Load()

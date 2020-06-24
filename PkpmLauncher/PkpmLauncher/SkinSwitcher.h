@@ -158,7 +158,8 @@ public:
 			if (theme.HasSiblings())
 				theme = theme.GetSibling();
 			index++;
-		}	
+		}
+		return true;
 	}
 
 	struct theme

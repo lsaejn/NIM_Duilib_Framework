@@ -18,6 +18,10 @@ public:
 	AppDllAdaptor();
 	~AppDllAdaptor();
 	bool InitPkpmAppFuncPtr();
+	/// <summary>
+	/// 废弃，不想程序依赖PKPM2010V51.ini，但这个文件被多版本依赖。
+	/// </summary>
+	/// <returns></returns>
 	std::wstring GetPkpmXXXXiniPathName();
 	std::wstring GetAppPath();
 

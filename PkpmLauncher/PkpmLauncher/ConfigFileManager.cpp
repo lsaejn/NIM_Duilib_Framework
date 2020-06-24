@@ -89,6 +89,7 @@ void ConfigManager::LoadConfigFile()
 			skinFolder_ = nbase::UTF8ToUTF16(json["skinFolder"]);
 			nativeArticlesPath_ = nbase::UTF8ToUTF16(json["nativeArticles"]);
 			webArticlesPath_ = nbase::UTF8ToUTF16(json["webArticles"]);
+			launchDllName_= nbase::UTF8ToUTF16(json["launchDllName"]);
 			//styleIndex_ = json["guiStyleInfo"]["styleIndex"];
 			//styleName_ = nbase::UTF8ToUTF16(json["guiStyleInfo"]["styleName"]);
 			deadline_ = json["deadline"];
@@ -179,6 +180,11 @@ bool ConfigManager::IsModifyWindowOn() const
 int32_t ConfigManager::DaysLeftToNotify() const
 {
 	return deadline_;
+}
+
+std::wstring ConfigManager::GetLaunchDllName() const
+{
+	return launchDllName_;
 }
 
 int32_t ConfigManager::GetFolderDialogType() const

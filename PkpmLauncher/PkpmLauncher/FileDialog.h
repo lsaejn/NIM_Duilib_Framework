@@ -55,16 +55,17 @@ public:
 			NULL,
 			CLSCTX_INPROC_SERVER,
 			IID_PPV_ARGS(&pfd));
-
-		DWORD dwFlags;;
+		if (S_OK!=hr) return {};
+		DWORD dwFlags;
 		hr = pfd->GetOptions(&dwFlags);
 		hr = pfd->SetOptions(dwFlags | FOS_PICKFOLDERS);
 		hr = pfd->Show(NULL);
-		IShellItem* psiResult;
+		IShellItem* psiResult=NULL;
 		hr = pfd->GetResult(&psiResult);
+		if (S_OK!=hr || !psiResult) return {};
 		PWSTR pszFilePath = NULL;
-		hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH,
-			&pszFilePath);
+		hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+		if (S_OK!=hr || !pszFilePath) return {};
 		std::string result = nbase::UTF16ToUTF8(pszFilePath);
 		CoTaskMemFree(pszFilePath);
 		pfd->Release();

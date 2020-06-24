@@ -36,12 +36,15 @@ public:
 	virtual void Accept(IWebDataVisitor* visitor) override;
 	//<fileName in u8,content in u8>
 	typedef std::unordered_map<std::string, std::string> XmlDataPair;
+
+	std::string LastQuery();
 private:
 	//一个遗留问题，前端不愿意处理菜单内容
 	//数据转换的菜单需要我来删除掉
 	bool ModifyDataWithTag(const std::string& data, std::string& result);
 	void Load();
 	XmlDataPair xmlData_;
+	mutable std::string lastQueryFilePath_;
 };
 
 

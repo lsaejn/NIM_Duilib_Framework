@@ -6,10 +6,6 @@ const wchar_t* separator = L"\\";
 const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112";
 const wchar_t* urlAboutPkpm = L"https://www.pkpm.cn";
 
-
-TCHAR* m_ini_file = _T("PKPM2010V51.ini");
-
-
 std::wstring GetCfgPath_Inner()
 {
 	static std::wstring cfgPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
@@ -49,15 +45,8 @@ private:
 public:
 	ShortCutHandlerImpl()
 	{
-		TCHAR filename_Integrity[128] = { 0 };
-		GetPrivateProfileString(_T("CONFIG"), _T("INTEGRITYCHECK"), _T("PkpmIntegrityCheck.exe"),
-			filename_Integrity, sizeof(filename_Integrity) - 1, m_ini_file);
-		m_strNameOfIntegrity = filename_Integrity;
-
-		TCHAR filename_PManager[128];
-		GetPrivateProfileString(_T("CONFIG"), _T("PMANAGER"), _T("PMANAGER.exe"), 
-			filename_PManager, sizeof(filename_PManager), m_ini_file);
-		m_strNameOfPManager = filename_PManager;
+		m_strNameOfIntegrity = L"PkpmIntegrityCheck.exe";
+		m_strNameOfPManager = L"PMANAGER.exe";
 
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
 		path += L"PKPM2010V511.dll";

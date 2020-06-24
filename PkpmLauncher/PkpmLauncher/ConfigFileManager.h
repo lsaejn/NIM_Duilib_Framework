@@ -34,6 +34,7 @@ public:
 	void SetGuiStyleInfo(const std::pair<int, std::wstring>& info);
 	int32_t GetFolderDialogType() const;
 	int32_t DaysLeftToNotify() const;
+	std::wstring GetLaunchDllName() const;
 private:	
 	ConfigManager();
 
@@ -46,6 +47,7 @@ private:
 	bool systemFolderSelection_;
 	bool isWebPageRefreshOn_;
 	std::string defaultAdvertise_;
+	std::wstring launchDllName_;
 	std::wstring advertisementServer_;
 	std::wstring advertisementQuery_;
 	std::wstring cefFormWindowText_;

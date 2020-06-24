@@ -132,7 +132,7 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V52.exe D:\PKPMV52_200630\PKPM2010V52.exe</Command>
+      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V52.exe D:\PKPMV52\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <Manifest>
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
@@ -195,7 +195,7 @@
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\PkpmLauncher\Release\PKPM2010V52.exe D:\PKPMV52_200630\PKPM2010V52.exe</Command>
+      <Command>copy D:\works\NimDuilibFramework\PkpmLauncher\Release\PKPM2010V52.exe D:\PKPMV52\PKPM2010V52.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -247,6 +247,7 @@
     <ClInclude Include="Alime\NonCopyable.h" />
     <ClInclude Include="PicZoom.h" />
     <ClInclude Include="RapidjsonForward.h" />
+    <ClInclude Include="RegKeyRW.h" />
     <ClInclude Include="SpdLogForward.h" />
     <ClInclude Include="rapidjson\allocators.h" />
     <ClInclude Include="rapidjson\document.h" />
@@ -367,6 +368,7 @@
     </ClCompile>
     <ClCompile Include="Alime\HttpUtil.cpp" />
     <ClCompile Include="MsgDialog.cpp" />
+    <ClCompile Include="RegKeyRW.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
     <ClCompile Include="string_util.cpp" />
     <ClCompile Include="WebDataReader.cpp" />
