@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "windows.h"
 #include "RegKeyRW.h"
+#include <string>
+#include <locale.h>
 const int buffSize = 256;
 
 /*

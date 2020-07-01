@@ -33,6 +33,15 @@
     <ClInclude Include="lock_util.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="lineInfo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="logging.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="logger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UpdateOnline.cpp">

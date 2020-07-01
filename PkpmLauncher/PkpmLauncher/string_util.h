@@ -16,7 +16,6 @@ namespace string_utility
 	std::vector<std::string> string_split(const std::string& s, std::string&& c);
 }
 
-//基本上是为了替换掉老代码的pkpmsvr.h/cpp和 pkpm2014svr.h/cpp
 namespace application_utily
 {	
 	std::wstring FullPathOfPkpmIni();
