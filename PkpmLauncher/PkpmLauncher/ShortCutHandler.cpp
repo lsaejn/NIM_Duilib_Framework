@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ShortCutHandler.h"
 #include "templates.h"
+#include "string_util.h"
 
 const wchar_t* separator = L"\\";
 const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112";
@@ -172,6 +173,12 @@ public:
 		ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
 	}
 
+	//2020/07/13 新增图模大师
+	void OnOpenModelViewerMaster()
+	{
+		application_utily::OnOpenModelViewerMaster();
+	}
+
 	void OnBnClickedBtnFileMgr()
 	{
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory() + L"TDGL\\" + m_strNameOfPManager.c_str();
@@ -213,6 +220,7 @@ void ShortCutHandler::Init()
 	SHORTCUTFUNC(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "用户手册", OnUserManual)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "在线更新", OnUpdateOnline)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "图模大师", OnOpenModelViewerMaster)
 }
 
 void ShortCutHandler::CallFunc(const std::string& cutName)

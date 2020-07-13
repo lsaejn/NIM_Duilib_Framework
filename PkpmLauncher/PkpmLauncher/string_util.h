@@ -30,4 +30,5 @@ namespace application_utily
 	std::wstring GetExePath();
 	bool GetClipBoardInfo(HWND wnd, std::string& filePath);
 	void OpenBimExe();
+	void OnOpenModelViewerMaster();//Í¼Ä£´óÊ¦PKPM_Model_Master
 }

@@ -300,5 +300,58 @@ namespace application_utily
 		}
 	}
 
+	void OnOpenModelViewerMaster()
+	{
+		HKEY hKey;
+		std::string strAppRegeditPath;
+		char szProductType[MAX_PATH] = { 0 };
+		memset(szProductType, 0, sizeof(szProductType));
+		DWORD dwBuflen = MAX_PATH;
+		LONG  lRet = 0;
+		std::string strAppName = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{58af3989-b2ef-5277-b804-306f2873c8f7}";
+
+		//下面是打开注册表,只有打开后才能做其他操作
+		lRet = RegOpenKeyExA(HKEY_LOCAL_MACHINE,          //要打开的根键
+			strAppName.c_str(),                             //要打开的子子键
+			0,                                               //这个一定为0
+			KEY_QUERY_VALUE | KEY_WOW64_64KEY,               //指定打开方式,此为读,KEY_WOW64_64KEY是64位
+			&hKey);                                          //用来返回句柄
+
+		if (lRet != ERROR_SUCCESS)                        //判断是否打开成功
+		{
+			AfxMessageBox(L"未找到 图模大师.exe,请安装后重试");
+			return;
+		}
+		else
+		{
+			//下面开始查询
+			lRet = RegQueryValueExA(hKey,                 //打开注册表时返回的句柄
+				"UninstallString",                     //要查询的名称,查询的软件安装目录在这里
+				NULL,                                        //一定为NULL或者0
+				NULL,
+				(LPBYTE)szProductType,                       //我们要的东西放在这里
+				&dwBuflen);
+
+			if (lRet != ERROR_SUCCESS)                    //判断是否查询成功
+			{
+				AfxMessageBox(L"未找到 图模大师.exe,请安装后重试");
+				return;
+			}
+			else
+			{
+				RegCloseKey(hKey);
+				strAppRegeditPath = szProductType;
+			}
+		}
+		int npos = strAppRegeditPath.rfind('\\');
+		strAppRegeditPath = strAppRegeditPath.substr(0, npos);
+		std::string strTmpexe;
+		strTmpexe = strAppRegeditPath.substr(1, strAppRegeditPath.length() - 1);
+		std::string TMDS_exepath = strTmpexe + "\\图模大师.exe";//+" -i "+ JSpath;
+		char CPara[MAX_PATH] = { 0 };
+		strcpy_s(CPara, TMDS_exepath.c_str());
+		WinExec(CPara, 0);
+	}
+
 }
 
