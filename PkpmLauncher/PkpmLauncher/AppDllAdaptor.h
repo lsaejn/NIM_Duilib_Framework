@@ -49,14 +49,14 @@ public:
 	}
 
 private:
-	FP_INITPKPMAPP fuc_InitPkpmApp;
-	FP_RUNCOMMAND  fuc_RunCommand;
-	FP_PKPMCONFIG fuc_PkpmConfig;
-	FP_GETMENUTXT fuc_GetMenu;
-	FP_GENCOMPFILE fuc_GenCompFile;
-	FP_ADJUSTPROORDER fuc_AdjustProOrder;
-	FP_ISPROJECTWISEVAILED fuc_IsProjectWiseVailed;
-	HMODULE hd;
+	FP_INITPKPMAPP fuc_InitPkpmApp=NULL;
+	FP_RUNCOMMAND  fuc_RunCommand = NULL;
+	FP_PKPMCONFIG fuc_PkpmConfig = NULL;
+	FP_GETMENUTXT fuc_GetMenu = NULL;
+	FP_GENCOMPFILE fuc_GenCompFile = NULL;
+	FP_ADJUSTPROORDER fuc_AdjustProOrder = NULL;
+	FP_ISPROJECTWISEVAILED fuc_IsProjectWiseVailed = NULL;
+	HMODULE hd = NULL;
 };
 
 #endif

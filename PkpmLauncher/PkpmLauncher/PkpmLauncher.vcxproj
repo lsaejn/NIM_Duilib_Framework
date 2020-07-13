@@ -91,7 +91,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
-    <TargetName>PKPM2010V52</TargetName>
+    <TargetName>PKPM2010V51</TargetName>
     <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>

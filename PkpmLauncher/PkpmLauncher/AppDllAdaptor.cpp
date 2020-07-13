@@ -24,7 +24,7 @@ bool AppDllAdaptor::InitPkpmAppFuncPtr()
 	hd = LoadLibrary(dll_path.c_str());
 	if (hd == NULL)
 	{
-		//LOG_FATAL<<
+		::AfxMessageBox((L"¶¯Ì¬¿â¼ÓÔØÊ§°Ü"+ dll_path).c_str());
 		return false;
 	}
 	fuc_InitPkpmApp = (FP_INITPKPMAPP)GetProcAddress(hd, "InitPkpmApp");
