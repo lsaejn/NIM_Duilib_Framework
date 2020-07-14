@@ -263,8 +263,11 @@ namespace application_utily
 		LPCTSTR cpp_data = L"SOFTWARE\\PKPM\\PKPM-BIM建筑协同设计系统";
 		HKEY hKey = NULL;
 		//@根表名称 @要打开的子表项;@固定值-0;@申请的权限;@返回句柄；
-		if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_LOCAL_MACHINE, cpp_data, 0, KEY_READ| KEY_WOW64_64KEY, &hKey))
+		if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_LOCAL_MACHINE, cpp_data, 0, KEY_READ | KEY_WOW64_64KEY, &hKey))
+		{
+			ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
 			return;
+		}
 		DWORD KeyCnt = 0;
 		DWORD KeyMaxLen = 0;
 		DWORD NameCnt = 0;

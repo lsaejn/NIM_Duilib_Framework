@@ -241,7 +241,9 @@ void CefForm::OnLoadEnd(int /*httpStatusCode*/)
 {
 	auto lockDatePtr = new AuthorizationCodeDate();
 	pool_.Run(std::bind(&AuthorizationCodeDate::Run, lockDatePtr, [this, lockDatePtr]() {
-		PostMessageW(WM_SHOWAUTHORIZE, WPARAM(lockDatePtr), 0);
+		auto ret=PostMessageW(WM_SHOWAUTHORIZE, WPARAM(lockDatePtr), 0);
+		if (!ret)
+			delete lockDatePtr;
 		}));
 }
 
