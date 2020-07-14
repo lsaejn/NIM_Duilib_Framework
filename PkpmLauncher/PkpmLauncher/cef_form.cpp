@@ -279,9 +279,8 @@ void CefForm::RegisterCppFuncs()
 			if (string_utility::endWith(filePath.c_str(), "Dummy.xml"))
 			{
 				std::string lastQuery = webDataReader_.LastQuery();
-				if (lastQuery.empty())
-					return;
-				application_utily::OpenBimExe();			
+				if (!lastQuery.empty())
+					application_utily::OpenBimExe();			
 			}
 			WebDataVisitorInU8 visitor(filePath);
 			webDataReader_.Accept(&visitor);
@@ -429,6 +428,11 @@ void CefForm::RegisterCppFuncs()
 			std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));
 			std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
 			std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
+			if (secMenu == "BIMÈí¼þ")
+			{
+				application_utily::OpenBimExe();
+				return;
+			}
 			std::vector<std::string> vec;
 			vec.push_back(prjPath_ansi); 
 			vec.push_back(pathOfCore);
