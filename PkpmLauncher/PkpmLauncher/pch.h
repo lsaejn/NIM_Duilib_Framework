@@ -27,5 +27,5 @@
 #include "ui_components/ui_cef_control.h"
 
 
-
+#include "MsgDialog.h"
 #endif //PCH_H

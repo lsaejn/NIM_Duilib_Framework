@@ -5,7 +5,6 @@
 #include "Alime/FileSystem.h"
 
 #include "ConfigFileManager.h"
-#include "MsgDialog.h"
 #include "string_util.h"
 
 

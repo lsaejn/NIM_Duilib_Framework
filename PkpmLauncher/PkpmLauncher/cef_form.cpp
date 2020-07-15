@@ -15,7 +15,6 @@
 
 #include "cef_form.h"
 #include "string_util.h"
-#include "MsgDialog.h"
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
 #include "VersionCmpStrategy.h"
@@ -428,7 +427,7 @@ void CefForm::RegisterCppFuncs()
 			std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));
 			std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
 			std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
-			if (secMenu == "BIM软件")
+			if (secMenu == "BIM软件" || secMenu == "BIM软件系列")
 			{
 				application_utily::OpenBimExe();
 				return;

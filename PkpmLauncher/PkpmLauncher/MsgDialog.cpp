@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "MsgDialog.h"
+#include "duilib/Utils/MultiLangSupport.h"
 
 namespace MsgBox
 {
@@ -17,6 +17,12 @@ namespace MsgBox
 		nim_comp::ShowMsgBox(wnd, NULL, content, false, title, false, L"确定", false);
 	}
 
+	void WarningViaID(HWND wnd, const std::wstring& id, const std::wstring& title)
+	{
+		std::wstring content = ui::MutiLanSupport::GetInstance()->GetStringViaID(id);
+		nim_comp::ShowMsgBox(wnd, NULL, content, false, title, false, L"确定", false);
+	}
+
 	void Show(const std::wstring& content, bool debugNeeded)
 	{
 		if(debugNeeded == false)
@@ -27,5 +33,14 @@ namespace MsgBox
 			AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
 #endif // DEBUG
 		}
+	}
+
+
+
+
+	void ShowViaID(const std::wstring& id)
+	{
+		std::wstring content=ui::MutiLanSupport::GetInstance()->GetStringViaID(id);
+		AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
 	}
 }
