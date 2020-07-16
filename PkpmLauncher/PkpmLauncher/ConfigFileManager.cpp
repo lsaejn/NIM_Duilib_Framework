@@ -67,42 +67,35 @@ void ConfigManager::LoadConfigFile()
 {
 	std::string content;
 	bool succ = nbase::ReadFileToString(filePath_, content);
-	if (succ)
+	if (!succ)
 	{
-		 json_ = nlohmann::json::parse(content);
-		auto& json = json_;
-		try
-		{
-			isManualAdaptDpiOn_ = json[u8"enableManualAdaptDpi"];
-			isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
-			isWebPageRefreshOn_ = json[u8"enableRefresh"];
-			systemFolderSelection_ = json[u8"systemFolderSelection"];
-			defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
-			folderDialogType_ = json["folderDialogType"];
-			advertisementServer_ = nbase::UTF8ToUTF16(json["server"]);
-			advertisementQuery_ = nbase::UTF8ToUTF16(json["query"]);
-			cefFormWindowText_ = nbase::UTF8ToUTF16(json["windowText"]);
-			cefFormClassName_ = nbase::UTF8ToUTF16(json["className"]);
-			relativePathForHtmlRes_ = nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
-			skinFile_ = nbase::UTF8ToUTF16(json["skinFile"]);
-			skinFolder_ = nbase::UTF8ToUTF16(json["skinFolder"]);
-			nativeArticlesPath_ = nbase::UTF8ToUTF16(json["nativeArticles"]);
-			webArticlesPath_ = nbase::UTF8ToUTF16(json["webArticles"]);
-			launchDllName_= nbase::UTF8ToUTF16(json["launchDllName"]);
-			//styleIndex_ = json["guiStyleInfo"]["styleIndex"];
-			//styleName_ = nbase::UTF8ToUTF16(json["guiStyleInfo"]["styleName"]);
-			deadline_ = json["deadline"];
-			deadline_ = deadline_ <= 0 ? 7 : deadline_;
-		}
-		catch (...)
-		{
-			::AfxMessageBox(L"读取配置文件 defaultConfig.json 失败");
-			std::abort();
-		}
+		::AfxMessageBox(L"无法找到或读取 defaultConfig.json");
+		std::abort();
 	}
-	else
+	try
 	{
-		::AfxMessageBox(L"无法找到 defaultConfig.json 失败");
+		json_ = nlohmann::json::parse(content);
+		auto& json = json_;
+		isManualAdaptDpiOn_ = json[u8"enableManualAdaptDpi"];
+		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
+		isWebPageRefreshOn_ = json[u8"enableRefresh"];
+		systemFolderSelection_ = json[u8"systemFolderSelection"];
+		defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
+		folderDialogType_ = json["folderDialogType"];
+		advertisementServer_ = nbase::UTF8ToUTF16(json["server"]);
+		advertisementQuery_ = nbase::UTF8ToUTF16(json["query"]);
+		cefFormWindowText_ = nbase::UTF8ToUTF16(json["windowText"]);
+		cefFormClassName_ = nbase::UTF8ToUTF16(json["className"]);
+		relativePathForHtmlRes_ = nbase::UTF8ToUTF16(json["relativePathForHtmlRes"]);
+		skinFile_ = nbase::UTF8ToUTF16(json["skinFile"]);
+		skinFolder_ = nbase::UTF8ToUTF16(json["skinFolder"]);
+		nativeArticlesPath_ = nbase::UTF8ToUTF16(json["nativeArticles"]);
+		webArticlesPath_ = nbase::UTF8ToUTF16(json["webArticles"]);
+		launchDllName_= nbase::UTF8ToUTF16(json["launchDllName"]);
+		deadline_ = json["deadline"];
+		deadline_ = deadline_ <= 0 ? 7 : deadline_;
+	}catch (...){
+		::AfxMessageBox(L"读取配置文件 defaultConfig.json 失败");
 		std::abort();
 	}
 }

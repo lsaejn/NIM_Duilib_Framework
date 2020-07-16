@@ -27,7 +27,7 @@ const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectI
 const std::wstring CefForm::kClassName= ConfigManager::GetInstance().GetCefFormClassName();
 
 CefForm::CefForm()
-	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName", 6, FullPathOfPkpmIni().c_str())),
+	:maxPrjNum_(GetPrivateProfileInt(L"WorkPath", L"MaxPathName", 8, FullPathOfPkpmIni().c_str())),
 	prjPaths_(maxPrjNum_),
 	cef_control_(NULL),
 	indexHeightLighted_(-1),
@@ -419,26 +419,26 @@ void CefForm::RegisterCppFuncs()
 	);
 
 	cef_control_->RegisterCppFunc(L"DBCLICKPROJECT",
-		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {
-			nlohmann::json json = nlohmann::json::parse(params);
+		ToWeakCallback([this](const std::string& params, nim_comp::ReportResultFunction callback) {		
 			//旧代码，实际上只需要3个参数, 为了不给前端造成疑惑，就不改了
-			std::string prjPath_ansi = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathSelected"]));
-			std::string pathOfCore = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathOfCore"]));
-			std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));
-			std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
-			std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
-			if (secMenu == "BIM软件" || secMenu == "BIM软件系列")
-			{
-				application_utily::OpenBimExe();
-				return;
+			try {
+				nlohmann::json json = nlohmann::json::parse(params);
+				std::string prjPath_ansi = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathSelected"]));
+				std::string pathOfCore = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathOfCore"]));//废弃
+				std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));//废弃
+				std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
+				std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
+				if (secMenu == "BIM软件" || secMenu == "BIM软件系列")
+				{
+					application_utily::OpenBimExe();
+					return;
+				}
+				std::vector<std::string> vec{prjPath_ansi, pathOfCore, coreWithPara, secMenu, trdMenu};
+				OnDbClickProject(vec);
 			}
-			std::vector<std::string> vec;
-			vec.push_back(prjPath_ansi); 
-			vec.push_back(pathOfCore);
-			vec.push_back(coreWithPara);
-			vec.push_back(secMenu);
-			vec.push_back(trdMenu);
-			OnDbClickProject(vec);
+			catch (...) {
+				MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_NO_PROJECT", L"TITLE_ERROR");
+			}
 			std::string debugStr = R"({ "message": "call ONNEWPROJECT Success." })";
 			callback(true, nbase::AnsiToUtf8(debugStr));
 			})
@@ -601,8 +601,11 @@ void CefForm::RegisterCppFuncs()
 					content = ptr->RawString();
 					callback(true, content);
 				}
-				else 
+				else
+				{
+					//几乎不可能出错。希望前端检查返回值
 					callback(false, R"({ "message": "GETNATIVEARTICLES failed, this should not happen" })");
+				}
 			}
 			})
 	);
@@ -800,7 +803,7 @@ void CefForm::OnRightClickProject(const std::wstring& prjName)
 	if (PathFileExists(prjName.c_str()) && PathIsDirectory(prjName.c_str()))
 		application_utily::OpenDocument(prjName);
 	else
-		MsgBox::Warning(GetHWND(), L"工程目录无法打开，可能已经被删除" ,L"路径错误");
+		MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_PROJECT_DELETED", L"TITLE_PROJECT_ERROR");
 }
 
 //有问题,我应该让前端调用时就把工程路径和索引一块过来
@@ -808,7 +811,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 {
 	if (!prjPaths_.size())
 	{
-		MsgBox::Warning(GetHWND(), L"请先选择工作目录", L"错误");
+		MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP", L"TITLE_ERROR");
 		return;
 	}
 	{
@@ -818,7 +821,7 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 		BOOL ret = SetCurrentDirectoryA(workdir.c_str());
 		if (!ret)
 		{
-			MessageBox(NULL, L"工作目录错误或者没有权限", L"错误", 1);
+			MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_NO_DIR_ACCESS_OR_ELSE", L"TITLE_ERROR");
 			return;
 		}
 		run_cmd(module, app, "");
@@ -848,7 +851,10 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		ShowWindow(false);
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
-			MsgBox::Warning(GetHWND(), L"工作目录错误或者没有权限", L"权限错误");
+		{
+			MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_NO_DIR_ACCESS_OR_ELSE", L"TITLE_ACCESS_ERROR");
+			return;
+		}		
 		for (size_t i = 0; i != prjPaths_.size(); ++i)
 		{
 			if (prjPaths_[i] == path)
@@ -984,7 +990,7 @@ bool CefForm::SetCfgPmEnv()
 		std::wstring pmModulePath = nbase::win32::GetCurrentModuleDirectory() + L"Ribbon\\PM";
 		if (!nbase::FilePathIsExist(cfgPath, true) || !nbase::FilePathIsExist(pmModulePath, true))
 		{
-			MessageBox(NULL, L"无法设置CFG或PM环境", L"提示", MB_OK);
+			MsgBox::ShowViaID(L"ERROR_TIP_SET_PM_ENV", L"TITLE_ERROR");
 			return false;
 		}
 		std::wstring new_envirom(cfgPath + L";" + pmModulePath);
@@ -1129,6 +1135,8 @@ void CefForm::InitUiVariable()
 	m_pRoot->AttachBubbledEvent(ui::kEventClick, nbase::Bind(&CefForm::OnClicked, this, std::placeholders::_1));
 	cef_control_ = dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control"));
 	cef_control_dev_ = dynamic_cast<nim_comp::CefControlBase*>(FindControl(L"cef_control_dev"));
+	if (cef_control_dev_)
+		cef_control_->AttachDevTools(cef_control_dev_);
 	label_ = dynamic_cast<ui::Label*>(FindControl(L"projectName"));
 	defaultCaption_ = label_->GetText().empty()? L"PKPM结构软件  ": label_->GetText();
 	skinSettings_ = dynamic_cast<ui::Button*>(FindControl(L"settings"));
@@ -1136,8 +1144,6 @@ void CefForm::InitUiVariable()
 	this_window_ = dynamic_cast<ui::Window*>(FindControl(L"main_wnd"));
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
-	if (cef_control_dev_)
-		cef_control_->AttachDevTools(cef_control_dev_);
 }
 
 void CefForm::AttachFunctionToShortCut()

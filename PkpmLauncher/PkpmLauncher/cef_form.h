@@ -73,7 +73,7 @@ private:
 	///<return>用户选择的工程路径</return>
 	std::string OnNewProject();
 
-	/// <summary>网页左侧，数据转换调用的函数。因历史原因而存在的单独接口，参数名不准确</summary>
+	/// <summary>数据转换。新版本里已废弃，但保留此接口，可以让程序向下兼容(前提是使用新配置文件)</summary>
 	///<param name="module">模块,在这里，它总是"数据转换"</param >
 	///<param name="InterfaceName">接口名</param >
 	///<param name="workdir">工作目录</param >

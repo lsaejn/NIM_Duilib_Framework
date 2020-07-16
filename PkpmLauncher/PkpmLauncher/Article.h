@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <atomic>
 
 #include "Alime/NonCopyable.h"
 #include "Task.h"
@@ -28,20 +29,35 @@ public:
 	};
 	static ReadPtr GetArticleReader(ArticleType t);
 	
-	/// <summary>初始化</summary>
-	/// <param name="filePath">本参数是配置文件路，而非推送文章路径</param>
 	IArticleReader();
 	~IArticleReader() = default;
 
+	/// <summary>
+	/// 将资源读到内存，并设置state
+	/// </summary>
 	virtual void Init() = 0;
+
+	/// <summary>
+	/// 是否成功下载
+	/// </summary>
 	bool is_good();
+
+	/// <summary>
+	/// 下载到的原始字符串
+	/// </summary>
+	/// <returns></returns>
 	std::string RawString() const;
+
+	/// <summary>
+	/// 原始字符串里读取文章对象
+	/// </summary>
+	/// <returns></returns>
 	virtual std::vector<Article> Parse() const= 0;
 	
 protected:
 	virtual bool Read()=0;
-	bool state_;
-	std::wstring path_;
+	std::atomic<bool> state_;//bool本身就是原子的
+	std::wstring path_;//文章信息路径
 	std::string fileContent_;
 };
 
@@ -60,6 +76,9 @@ private:
 	ArticleDownLoader download_;
 };
 
+/// <summary>
+/// 从本地读取文章信息，这些文章/图片通常随版本更新而更新
+/// </summary>
 class NativeArticleReader : public IArticleReader
 {
 public:
@@ -68,11 +87,18 @@ public:
 	virtual void Init() override;
 protected:
 	virtual bool Read() override;
+
+	/// <summary>
+	/// 特殊初始化。配置文件里只能写相对路径，交给网页时，要将路径改为绝对路径，并且以file协议编码
+	/// </summary>
 	virtual void SpecificInit();
 private:
 	void RelativeToReadPath();
 };
 
+/// <summary>
+/// 从本地读取网络文章条目。网络不佳/断开时，程序只能从本地读取文章信息
+/// </summary>
 class NativeWebArticleReader : public NativeArticleReader
 {
 public:

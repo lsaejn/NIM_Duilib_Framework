@@ -2,15 +2,11 @@
 #ifndef _APP_DLL_ADAPTOR_H_
 #define  _APP_DLL_ADAPTOR_H_
 
-
-
+/// <summary>
+/// 现在，启动dll只需要提供两个接口即可。
+/// </summary>
 typedef  const char* (*FP_INITPKPMAPP)();
-typedef  void  (*FP_RUNCOMMAND)(CHAR* strCmd); 
-typedef  void  (*FP_PKPMCONFIG)(); //参数设置
-typedef  void  (*FP_GETMENUTXT)(CHAR* filebuf,int &nLen);//得到菜单文件 
-typedef void (*FP_GENCOMPFILE)();
-typedef bool (*FP_ADJUSTPROORDER)(const CHAR* profess,CHAR** names,int nCount);
-typedef bool (*FP_ISPROJECTWISEVAILED)(CHAR* pwPath,int& pwPathLen);
+typedef  void  (*FP_RUNCOMMAND)(CHAR* strCmd);
 
 class AppDllAdaptor
 {
@@ -18,12 +14,6 @@ public:
 	AppDllAdaptor();
 	~AppDllAdaptor();
 	bool InitPkpmAppFuncPtr();
-	/// <summary>
-	/// 废弃，不想程序依赖PKPM2010V51.ini，但这个文件被多版本依赖。
-	/// </summary>
-	/// <returns></returns>
-	std::wstring GetPkpmXXXXiniPathName();
-	std::wstring GetAppPath();
 
 	//返回值应改为引用传回
 	const char* Invoke_InitPkpmApp()
@@ -40,22 +30,9 @@ public:
 			fuc_RunCommand(strCmd);
 	}
 
-	//参数应为const char*
-	bool Invoke_IsProjectWiseVailed(char* pwPath, int& pwPathLen)
-	{
-		if(fuc_IsProjectWiseVailed)
-			return fuc_IsProjectWiseVailed(pwPath, pwPathLen);
-		return false;
-	}
-
 private:
 	FP_INITPKPMAPP fuc_InitPkpmApp=NULL;
 	FP_RUNCOMMAND  fuc_RunCommand = NULL;
-	FP_PKPMCONFIG fuc_PkpmConfig = NULL;
-	FP_GETMENUTXT fuc_GetMenu = NULL;
-	FP_GENCOMPFILE fuc_GenCompFile = NULL;
-	FP_ADJUSTPROORDER fuc_AdjustProOrder = NULL;
-	FP_ISPROJECTWISEVAILED fuc_IsProjectWiseVailed = NULL;
 	HMODULE hd = NULL;
 };
 
