@@ -174,6 +174,8 @@ private:
 	void AttachClickCallbackToSkinButton();
 
 	void InitSpdLog();
+
+	void OpenBimExe();
 public:
 	void AcceptDpiAdaptor(IAdaptor* acc);
 	ui::Label* GetCaptionLabel();

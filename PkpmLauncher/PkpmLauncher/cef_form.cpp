@@ -19,6 +19,7 @@
 #include "ConfigFileManager.h"
 #include "VersionCmpStrategy.h"
 #include "FileDialog.h"
+#include "DuiDialog/circleDialog.h"
 
 using namespace Alime::HttpUtility;
 using namespace application_utily;
@@ -279,7 +280,7 @@ void CefForm::RegisterCppFuncs()
 			{
 				std::string lastQuery = webDataReader_.LastQuery();
 				if (!lastQuery.empty())
-					application_utily::OpenBimExe();			
+					OpenBimExe();			
 			}
 			WebDataVisitorInU8 visitor(filePath);
 			webDataReader_.Accept(&visitor);
@@ -430,7 +431,7 @@ void CefForm::RegisterCppFuncs()
 				std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
 				if (secMenu == "BIM软件" || secMenu == "BIM软件系列")
 				{
-					application_utily::OpenBimExe();
+					OpenBimExe();
 					return;
 				}
 				std::vector<std::string> vec{prjPath_ansi, pathOfCore, coreWithPara, secMenu, trdMenu};
@@ -1205,4 +1206,29 @@ ui::HBox* CefForm::GetCaptionBox()
 nim_comp::CefControlBase* CefForm::GetCef()
 {
 	return this->cef_control_;
+}
+
+void CefForm::OpenBimExe()
+{
+	nim_comp::CircleBox* bx=nim_comp::ShowCircleBox(GetHWND(), NULL, L"正在尝试打开BIM程序");
+	std::wstring bimPath;
+	bool res=application_utily::FindBimExe(bimPath);
+	if (res)
+		res=application_utily::OpenBimExe(bimPath);
+	if (!res)
+	{
+		if (!bx)
+		{
+			ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
+		}
+		else
+		{
+			nbase::ThreadManager::PostTask([bx]() {
+				bx->SetTitle(L"未安装BIM软件，正在跳转到网站");
+				nbase::ThreadManager::PostDelayedTask([]() {
+					ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
+					}, nbase::TimeDelta::FromSeconds(1));
+				});
+		}
+	}
 }

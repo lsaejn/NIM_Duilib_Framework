@@ -25,14 +25,14 @@ bool AppDllAdaptor::InitPkpmAppFuncPtr()
 	hd = LoadLibrary(dll_path.c_str());
 	if (hd == NULL)
 	{
-		::AfxMessageBox((L"动态库加载失败"+ dll_path).c_str());
+		MsgBox::ShowViaIDWithSpecifiedCtn(dll_path, L"TITLE_DLL_ERROR");
 		return false;
 	}
 	fuc_InitPkpmApp = (FP_INITPKPMAPP)GetProcAddress(hd, "InitPkpmApp");
 	fuc_RunCommand = (FP_RUNCOMMAND)GetProcAddress(hd, "RunCommand");
 	if (!fuc_InitPkpmApp || !fuc_RunCommand)
 	{
-		::AfxMessageBox(L"AppDllAdaptor, 无法从动态库导入函数");
+		MsgBox::ShowViaIDWithSpecifiedTitle(L"ERROR_FAIL_TO_DEC_FUNCTION_FROM_DLL", L"AppDllAdaptor.dll");
 	}
 	return true;
 }

@@ -86,7 +86,7 @@ void NativeArticleReader::RelativeToReadPath()
 	}
 	catch (...)
 	{
-		MessageBox(NULL,L"NativeArticleReader, 解析配置文件错误", L"错误", MB_SYSTEMMODAL);
+		MsgBox::ShowViaIDWithSpecifiedCtn(L"NativeArticleReader", L"TITLE_PARSE_ERROR");
 	}
 }
 
@@ -143,9 +143,7 @@ void NativeWebArticleReader::EraseNativeArticles()
 	}
 	catch (...)
 	{
-#ifdef DEBUG
-		AfxMessageBox(L"NativeWebArticleReader, 解析配置文件错误", MB_SYSTEMMODAL);
-#endif // DEBUG
+		MsgBox::ShowViaIDWithSpecifiedCtn(L"NativeWebArticleReader", L"TITLE_PARSE_ERROR");
 		state_ = false;
 	}
 }

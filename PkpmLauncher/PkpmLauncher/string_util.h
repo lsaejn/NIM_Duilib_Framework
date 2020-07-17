@@ -29,6 +29,7 @@ namespace application_utily
 	char* realpath(const char* path, char* resolved_path);
 	std::wstring GetExePath();
 	bool GetClipBoardInfo(HWND wnd, std::string& filePath);
-	void OpenBimExe();
+	bool FindBimExe(std::wstring& resultPath);
+	bool OpenBimExe(const std::wstring& bimPath);
 	void OnOpenModelViewerMaster();//Í¼Ä£´óÊ¦PKPM_Model_Master
 }

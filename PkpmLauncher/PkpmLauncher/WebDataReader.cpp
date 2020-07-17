@@ -49,7 +49,7 @@ void WebDataReader::Load()
     auto path = nbase::win32::GetCurrentModuleDirectory() + kRelativePathForPkpmAppMenu;
     if (!std::filesystem::exists(path))
     {
-        ::AfxMessageBox(L"您的安装可能不完整,无法找到CFG/PKPMAPPMENU文件夹");
+        MsgBox::ShowViaID(L"ERROR_TIP_FIND_APPMENU_ERROR", L"TITLE_ERROR");
         std::abort();
     }
     for (auto& p : std::filesystem::directory_iterator(path))
@@ -66,9 +66,8 @@ void WebDataReader::Load()
                 continue;
         }     
 		std::string content;
-		bool succ = nbase::ReadFileToString(filePath, content);
-		if(!succ)
-            MessageBox(NULL, filePath.c_str(), L"读取配置文件错误", MB_ICONINFORMATION);
+        if (!nbase::ReadFileToString(filePath, content))
+            MsgBox::ShowViaIDWithSpecifiedCtn(filePath, L"TITLE_FIND_FILE_ERROR");
         //这里需要改，不应该存完整路径,，而且还是u8的。
         //不改主要是懒，其次我忘了前端传递的文件名带了几层路径。
         std::string u8fileName = p.path().filename().generic_u8string();
@@ -82,7 +81,7 @@ void WebDataReader::Load()
         catch (...)
         {
             //log_err<<
-            MessageBox(NULL, filePath.c_str(), L"无效的配置文件", MB_ICONINFORMATION);
+            MsgBox::ShowViaIDWithSpecifiedCtn(filePath, L"TITLE_CONFIG_ERROR");
             continue;
         }
         std::string modifiedU8;

@@ -12,7 +12,7 @@ std::wstring GetCfgPath_Inner()
 	static std::wstring cfgPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
 	if (!PathFileExists(cfgPath.c_str()))
 	{
-		AfxMessageBox(L"安装目录下没有CFG文件夹");
+		MsgBox::ShowViaID(L"ERROR_TIP_FIND_CFG_FOLDER_ERROR", L"TITLE_FOLDER_ERROR");
 		std::abort();
 	}
 	return cfgPath;
@@ -125,7 +125,7 @@ public:
 			ShellExecute(NULL, _T("open"), regcmd.c_str(), NULL, NULL, SW_NORMAL);
 		}
 		else
-			AfxMessageBox(L"无法找到程序或者您已经在运行程序");
+			MsgBox::ShowViaID(L"ERROR_TIP_FIND_APP_ERROR", L"TITLE_ERROR");
 	}
 
 	void OnParameterSettings()
@@ -140,13 +140,13 @@ public:
 	{
 		if (!mainWnd)
 		{
-			AfxMessageBox(L"主窗口尚未初始化完成", MB_SYSTEMMODAL);
+			AfxMessageBox(L"Fatal error, can not find main window", MB_SYSTEMMODAL);
 			std::abort();
 		}
 		std::wstring exePathName = GetCfgPath_Inner() + _T("PKPMAuthorize.exe");
 		if (-1 == _taccess(exePathName.c_str(), 0))
 		{
-			AfxMessageBox((L"无法找到该程序 "+exePathName).c_str(), MB_SYSTEMMODAL);
+			MsgBox::ShowViaIDWithSpecifiedCtn(exePathName, L"TITLE_FIND_FILE_ERROR");
 			return;
 		}
 		TCHAR STRPATH[MAX_PATH];
@@ -180,11 +180,11 @@ public:
 	}
 
 	void OnBnClickedBtnFileMgr()
-	{
+	{	
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory() + L"TDGL\\" + m_strNameOfPManager.c_str();
 		if (!PathFileExists(path.c_str()))
 		{
-			AfxMessageBox(L"无法找到模型打包程序 PMANAGER.exe");
+			MsgBox::ShowViaIDWithSpecifiedCtn(path, L"TITLE_FIND_FILE_ERROR");
 			return;
 		}
 		std::wstring cmdParm = L"-f ";

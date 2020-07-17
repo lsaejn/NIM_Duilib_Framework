@@ -69,7 +69,7 @@ void ConfigManager::LoadConfigFile()
 	bool succ = nbase::ReadFileToString(filePath_, content);
 	if (!succ)
 	{
-		::AfxMessageBox(L"无法找到或读取 defaultConfig.json");
+		MsgBox::Show(L"Fatal error, fail to find config file", (std::wstring)L"defaultConfig.json");
 		std::abort();
 	}
 	try
@@ -95,7 +95,7 @@ void ConfigManager::LoadConfigFile()
 		deadline_ = json["deadline"];
 		deadline_ = deadline_ <= 0 ? 7 : deadline_;
 	}catch (...){
-		::AfxMessageBox(L"读取配置文件 defaultConfig.json 失败");
+		MsgBox::Show(L"Fatal error, fail to parse config file", (std::wstring)L"defaultConfig.json");
 		std::abort();
 	}
 }

@@ -240,6 +240,7 @@
     <ClInclude Include="DpiAdaptor.h" />
     <ClInclude Include="Alime\FileSystem.h" />
     <ClInclude Include="Alime\HttpUtil.h" />
+    <ClInclude Include="DuiDialog\circleDialog.h" />
     <ClInclude Include="FileDialog.h" />
     <ClInclude Include="Lock_util.h" />
     <ClInclude Include="MsgDialog.h" />
@@ -367,6 +368,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Alime\HttpUtil.cpp" />
+    <ClCompile Include="DuiDialog\circleDialog.cpp" />
     <ClCompile Include="MsgDialog.cpp" />
     <ClCompile Include="RegKeyRW.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
