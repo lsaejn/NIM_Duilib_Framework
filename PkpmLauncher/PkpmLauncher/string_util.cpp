@@ -314,14 +314,13 @@ namespace application_utily
 		LONG  lRet = 0;
 		std::string strAppName = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{58af3989-b2ef-5277-b804-306f2873c8f7}";
 
-		//下面是打开注册表,只有打开后才能做其他操作
-		lRet = RegOpenKeyExA(HKEY_LOCAL_MACHINE,          //要打开的根键
-			strAppName.c_str(),                             //要打开的子子键
-			0,                                               //这个一定为0
-			KEY_QUERY_VALUE | KEY_WOW64_64KEY,               //指定打开方式,此为读,KEY_WOW64_64KEY是64位
-			&hKey);                                          //用来返回句柄
+		lRet = RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+			strAppName.c_str(),
+			0, 
+			KEY_QUERY_VALUE | KEY_WOW64_64KEY, 
+			&hKey); 
 
-		if (lRet != ERROR_SUCCESS)                        //判断是否打开成功
+		if (lRet != ERROR_SUCCESS)
 		{
 			MsgBox::ShowViaID(L"ERROR_TIP_NO_MODELVIEWERMMASTER", L"TITLE_ERROR");
 			return;
@@ -329,14 +328,14 @@ namespace application_utily
 		else
 		{
 			//下面开始查询
-			lRet = RegQueryValueExA(hKey,                 //打开注册表时返回的句柄
-				"UninstallString",                     //要查询的名称,查询的软件安装目录在这里
-				NULL,                                        //一定为NULL或者0
+			lRet = RegQueryValueExA(hKey,
+				"UninstallString",
 				NULL,
-				(LPBYTE)szProductType,                       //我们要的东西放在这里
+				NULL,
+				(LPBYTE)szProductType,
 				&dwBuflen);
 
-			if (lRet != ERROR_SUCCESS)                    //判断是否查询成功
+			if (lRet != ERROR_SUCCESS)
 			{
 				MsgBox::ShowViaID(L"ERROR_TIP_NO_MODELVIEWERMMASTER", L"TITLE_ERROR");
 				return;
