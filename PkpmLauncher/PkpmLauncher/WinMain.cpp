@@ -43,7 +43,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	//创建守护进程,避免cef残留
-	application_utily::GodBlessThisProcess();
+	//application_utily::GodBlessThisProcess();
 
 	// 创建主线程
 	MainThread thread;

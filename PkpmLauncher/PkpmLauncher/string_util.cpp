@@ -258,6 +258,8 @@ namespace application_utily
 		return false;
 	}
 
+	//Fix me
+	//写成exe，放到菜单里就可以和其他程序调用保持一致。
 	bool FindBimExe(std::wstring& bimPath)
 	{
 		bimPath = L"";
@@ -266,7 +268,6 @@ namespace application_utily
 		//@根表名称 @要打开的子表项;@固定值-0;@申请的权限;@返回句柄；
 		if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_LOCAL_MACHINE, cpp_data, 0, KEY_READ | KEY_WOW64_64KEY, &hKey))
 		{
-			ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
 			return false;
 		}
 		DWORD KeyCnt = 0;
@@ -304,6 +305,7 @@ namespace application_utily
 		return false;
 	}
 
+	//郑晓彬提供的代码
 	void OnOpenModelViewerMaster()
 	{
 		HKEY hKey;

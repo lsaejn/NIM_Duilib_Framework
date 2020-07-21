@@ -132,6 +132,7 @@ public:
 	SkinInfoLoader()
 	{
 		bool ok = Init();
+		UNREFERENCED_PARAMETER(ok);
 	}
 
 

@@ -132,7 +132,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 		if (count != 1)
 		{
-			MsgBox::Warning(GetHWND(), L"仅支持拖拽单个目录", L"意外的错误");
+			MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_DRAG_SINGLE_FOLDER", L"TITLE_ERROR");
 		}
 		else
 		{
@@ -150,7 +150,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				));
 			}
 			else
-				MsgBox::Warning(GetHWND(), L"仅支持拖拽目录", L"错误");
+				MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_DRAG_FOLDER_ONLY", L"TITLE_ERROR");
 		}
 		DragFinish(hDropInfo);
 	}
@@ -367,7 +367,7 @@ void CefForm::RegisterCppFuncs()
 			{
 				if (prjPaths_.empty())
 				{
-					MsgBox::Warning(GetHWND(), L"没有选择工程", L"错误");
+					MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_NO_WORKFOLDER", L"TITLE_ERROR");
 				}
 				std::string debugStr = R"({ "message": "invalid index." })";
 				callback(false, debugStr);
@@ -453,7 +453,7 @@ void CefForm::RegisterCppFuncs()
 			count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
 			if (count != 1)
 			{
-				MsgBox::Warning(GetHWND(), L"仅支持拖拽单个目录", L"错误");
+				MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_DRAG_SINGLE_FOLDER", L"TITLE_ERROR");
 				return;
 			}
 			else
@@ -844,7 +844,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
 	if (args.size() != 5 || !prjPaths_.size())
 	{
-		MsgBox::Warning(GetHWND(), L"工作目录或参数不存在", L"严重错误");
+		MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_PARAMETER_ERROR", L"TITLE_ERROR");
 		return;
 	}
 	std::string path(args[0]);
