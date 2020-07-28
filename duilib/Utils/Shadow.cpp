@@ -17,8 +17,8 @@ public:
 };
 
 Shadow::Shadow() :
-	m_rcCurShadowCorner(14, 14, 14, 14),
-	m_rcDefaultShadowCorner(14, 14, 14, 14),
+	m_rcCurShadowCorner(8, 8, 8, 8),
+	m_rcDefaultShadowCorner(8, 8, 8, 8),
 	m_bShadowAttached(true),
 	m_bUseDefaultImage(true),
 	m_strImage(L"file='../public/bk/bk_shadow.png' corner='30,30,30,30'"),
