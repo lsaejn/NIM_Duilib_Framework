@@ -445,44 +445,6 @@ void CefForm::RegisterCppFuncs()
 			})
 	);
 
-	cef_control_->RegisterCppFunc(L"ONDROPFILES",
-		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
-			HDROP hDropInfo=NULL;
-			UINT count;
-			CHAR filePath[260] = { 0 };
-			count = DragQueryFile(hDropInfo, 0xFFFFFFFF, NULL, 0);
-			if (count != 1)
-			{
-				MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_DRAG_SINGLE_FOLDER", L"TITLE_ERROR");
-				return;
-			}
-			else
-			{
-				DragQueryFileA(hDropInfo, 0, filePath, sizeof(filePath));
-				if (PathFileExistsA(filePath) && PathIsDirectoryA(filePath))
-				{
-					filePath[strlen(filePath)] = '\\';
-					if (AddWorkPaths(filePath, nbase::UnicodeToAnsi(FullPathOfPkpmIni())))
-					{
-						std::string debugStr = R"({ "call ONNEWPROJECT": "Success." })";
-						callback(true, nbase::AnsiToUtf8(debugStr));
-					}
-					else
-					{
-						std::string debugStr = R"({ "call ONNEWPROJECT": "fail." })";
-						callback(false, nbase::AnsiToUtf8(debugStr));
-					}
-				}
-				else
-				{
-					MsgBox::Warning(GetHWND(), L"仅支持拖拽目录", L"错误");
-					return;
-				}
-			}
-			DragFinish(hDropInfo);
-			})
-	);
-
 	cef_control_->RegisterCppFunc(L"ONCTRLV",
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			std::string filePath;
@@ -1210,22 +1172,25 @@ nim_comp::CefControlBase* CefForm::GetCef()
 
 void CefForm::OpenBimExe()
 {
-	nim_comp::CircleBox* bx=nim_comp::ShowCircleBox(GetHWND(), NULL, L"正在尝试打开BIM程序");
+	nim_comp::CircleBox* bx=nim_comp::ShowCircleBox(GetHWND(), NULL, ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM"));
 	std::wstring bimPath;
 	bool res=application_utily::FindBimExe(bimPath);
 	if (res)
 		res=application_utily::OpenBimExe(bimPath);
-	if (!res)
+	else
 	{
+		std::wstring bimWebUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69";
 		if (!bx)
 		{
-			ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
+			//fix me
+			ShellExecute(NULL, _T("open"), bimWebUrl.c_str(), NULL, NULL, SW_SHOW);
 		}
 		else
 		{
 			nbase::ThreadManager::PostTask([bx]() {
-				bx->SetTitle(L"未安装BIM软件，正在跳转到网站");
+				bx->SetTitle(ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM_WEB"));
 				nbase::ThreadManager::PostDelayedTask([]() {
+					//fix me. 资源文件无法处理多个等于号，导致了这里硬编码
 					ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
 					}, nbase::TimeDelta::FromSeconds(1));
 				});

@@ -285,7 +285,8 @@ namespace application_utily
 				wchar_t* szValueName = new wchar_t[NameSize];
 				LPBYTE szValueDate = (LPBYTE)malloc(DateSize);
 				RegEnumValue(hKey, dwIndex, szValueName, &NameSize, NULL, &Type, szValueDate, &DateSize);
-				if (std::wstring(szValueName) == L"PATH")
+				//Fix me, need Alime::Equal(... , ignoreCase)
+				if (std::wstring(szValueName) == L"PATH" || std::wstring(szValueName) == L"Path")
 				{
 					bimPath = (wchar_t*)(szValueDate);
 					delete szValueName;
