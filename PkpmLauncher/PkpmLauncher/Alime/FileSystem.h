@@ -123,9 +123,10 @@ namespace Alime
 			return PathNameDetail(arg.GetFilePath(), SensitivePath);
 		}
 
-		//fix me, 2020/03/30 最后一级目录很长的话，没办法处理
-		//criticalLength不包括盘符
-		static std::wstring GetAbbreviatedPath(const std::wstring& _path, size_t criticalLength= 60)
+		//fix me, label长度是自适应的，却能把右边的占位符给挤掉....
+		//如果算字符像素，还不如在xml里写个width属性，所以这里统计字符个数比较省事。
+		//如果确实希望计算像素，可以复制我pgcell里的代码
+		static std::wstring GetAbbreviatedPath(const std::wstring& _path, size_t criticalLength= 50)
 		{
 			std::wstring result;
 			auto path = _path;
@@ -136,9 +137,9 @@ namespace Alime
 			if (lastFolder.length() > criticalLength)
 			{		
 				result = components.front() + FileSystem::FilePath::Delimiter;
+				result += L"...\\";
+				result += lastFolder.substr(lastFolder.length() - criticalLength);
 				result += L"...";
-				lastFolder = lastFolder.substr(lastFolder.length() - criticalLength);
-				result += lastFolder;
 				return result;
 			}
 			else

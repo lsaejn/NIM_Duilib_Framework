@@ -3,7 +3,9 @@
 Alime
 Developer: lsaejn
 Date:2020/04/17
-我实在受不了windows的各种转换函数了，必须封装了
+
+功能被放入processIterator和windowIterator。
+Fix me,等待发盘后删除此文件。
 ********************************************************/
 #pragma once
 #include <windows.h>

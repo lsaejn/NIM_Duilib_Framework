@@ -227,7 +227,7 @@ namespace Alime
 			return filePath;
 		}
 
-		bool File::ReadAllTextWithEncodingTesting(String& text, Encoding& encoding, bool& containsBom)
+		bool File::ReadAllTextWithEncodingTesting(String& /*text*/, Encoding& /*encoding*/, bool& /*containsBom*/)
 		{
 			return true;
 		}
@@ -238,22 +238,22 @@ namespace Alime
 			return text;
 		}
 
-		bool File::ReadAllTextByBom(String& text)const
+		bool File::ReadAllTextByBom(String& /*text*/)const
 		{
 			return true;
 		}
 
-		bool File::ReadAllLinesByBom(std::vector<String>& lines)const
+		bool File::ReadAllLinesByBom(std::vector<String>& /*lines*/)const
 		{
 			return true;
 		}
 
-		bool File::WriteAllText(const String& text, bool bom, Encoding encoding)
+		bool File::WriteAllText(const String& /*text*/, bool /*bom*/, Encoding /*encoding*/)
 		{
 			return true;
 		}
 
-		bool File::WriteAllLines(std::vector<String>& lines, bool bom, Encoding encoding)
+		bool File::WriteAllLines(std::vector<String>& /*lines*/, bool /*bom*/, Encoding /*encoding*/)
 		{
 			return true;
 		}

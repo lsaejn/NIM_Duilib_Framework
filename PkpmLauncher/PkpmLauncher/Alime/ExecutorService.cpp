@@ -28,7 +28,7 @@ namespace Alime
         threads_.reserve(numThreads);
         for (int i = 0; i < numThreads; ++i)
         {
-            char id[32];
+            char id[32] = { 0 };
             snprintf(id, sizeof id, "%d", i + 1);
             threads_.emplace_back(new std::thread(
                 std::bind(&ExecutorService::RunInThread, this), name_ + id));

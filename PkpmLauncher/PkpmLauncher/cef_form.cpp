@@ -8,10 +8,10 @@
 #include "RapidjsonForward.h"
 #include "SpdlogForward.h"
 #include "nlohmann/json.hpp"
-#include "Alime/ProcessInfo.h"
 #include "Alime/HttpUtil.h"
 #include "Alime/FileSystem.h"
 #include "Alime/Console.h"
+#include "Alime/IteratorHelper.h"
 
 #include "cef_form.h"
 #include "string_util.h"
@@ -121,7 +121,7 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
-/// windowImpBase里有大部分的处理函数，窗口级的处理最好放到函数里
+//Fix me, windowImpBase里有大部分的处理函数，窗口级的处理最好放到函数里
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_DROPFILES)
@@ -199,11 +199,11 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if(uMsg == WM_QUERYENDSESSION ||uMsg == WM_ENDSESSION)
 	{
-		auto pid = ProcessInspector::GetCurrentPid();
-		auto pidOfChildren = ProcessInspector::GetPidsOfChildProcess(pid);
+		auto pid = ProcessHelper::GetCurrentPid();
+		auto pidOfChildren = ProcessIterator::GetPidsOfChildProcess(pid);
 		for (auto elem : pidOfChildren)
 		{
-			ProcessInspector::KillProcess(elem);
+			ProcessHelper::KillProcess(elem);
 		}
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);

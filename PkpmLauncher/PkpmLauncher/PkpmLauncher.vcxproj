@@ -226,9 +226,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Alime\CountDownLatch.h" />
+    <ClInclude Include="Alime\IteratorHelper.h" />
     <ClInclude Include="Alime\Mutex.h" />
     <ClInclude Include="Alime\ExecutorService.h" />
     <ClInclude Include="Alime\ProcessInfo.h" />
+    <ClInclude Include="Alime\processIterator.h" />
+    <ClInclude Include="Alime\windowIterator.h" />
     <ClInclude Include="AppDllAdaptor.h" />
     <ClInclude Include="Article.h" />
     <ClInclude Include="BoundedQueue.h" />
@@ -355,6 +358,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Alime\ExecutorService.cpp" />
+    <ClCompile Include="Alime\IteratorHelper.cpp" />
     <ClCompile Include="Alime\ProcessInfo.cpp" />
     <ClCompile Include="AppDllAdaptor.cpp" />
     <ClCompile Include="Article.cpp" />
