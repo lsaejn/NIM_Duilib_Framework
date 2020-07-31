@@ -3,26 +3,6 @@
 #include <tlhelp32.h>
 #include <Psapi.h>
 
-
-class Win32HandleGuard
-{
-public:
-	Win32HandleGuard(HANDLE h)
-		:h_(h)
-	{
-	}
-
-	~Win32HandleGuard()
-	{
-		if (INVALID_HANDLE_VALUE != h_)
-			::CloseHandle(h_);
-	}
-private:
-	HANDLE h_;
-};
-
-
-
 namespace ProcessHelper
 {
 	Pid GetCurrentPid()
@@ -51,16 +31,20 @@ namespace ProcessHelper
 		{
 			return NULL;
 		}
-		Win32HandleGuard guard(hProcessSnap);
 		PROCESSENTRY32 pe;
 		pe.dwSize = sizeof(pe);
 		BOOL bProcess = Process32First(hProcessSnap, &pe);
 		while (bProcess)
 		{
 			if (GetHandleFromPid(pe.th32ProcessID) == handle)
+			{
+				::CloseHandle(hProcessSnap);
 				return pe.th32ProcessID;
+			}
+				
 			bProcess = Process32Next(hProcessSnap, &pe);
 		}
+		::CloseHandle(hProcessSnap);
 		return NULL;
 	}
 
