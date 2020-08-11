@@ -19,6 +19,7 @@
 #include "ConfigFileManager.h"
 #include "VersionCmpStrategy.h"
 #include "FileDialog.h"
+#include "Macros.h"
 #include "DuiDialog/circleDialog.h"
 
 using namespace Alime::HttpUtility;
@@ -121,6 +122,8 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
+
+
 //Fix me, windowImpBase里有大部分的处理函数，窗口级的处理最好放到函数里
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -204,6 +207,37 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		for (auto elem : pidOfChildren)
 		{
 			ProcessHelper::KillProcess(elem);
+		}
+	}
+	else if (uMsg == WM_TRAY)
+	{
+		if (lParam == WM_LBUTTONDOWN)
+		{
+			ShowWindow(true);
+		}
+		else if (lParam == WM_RBUTTONDOWN)
+		{
+			if (0)
+			{
+				ui::CPoint point;
+				GetCursorPos(&point);
+				point.x = point.x + 10;
+				point.y = point.y - 100;
+
+				pMenu_ = new nim_comp::CMenuWnd(NULL);
+				ui::STRINGorID xml(L"settings_menu.xml");
+				pMenu_->Init(xml, _T("xml"), point);
+				pMenu_->Show();
+				ui::ListBox* pVbox = dynamic_cast<ui::ListBox*>(pMenu_->FindControl(L"themeWindow"));
+				if (!pVbox)
+					return false;
+				pVbox->AttachSelect([this](ui::EventArgs* args) {
+					auto themeType = args->pSender->GetName();
+					PostMessage(WM_THEME_SELECTED, args->wParam, args->lParam);//lParam should always -1
+					return true;
+					}
+				);
+			}
 		}
 	}
 	return ui::WindowImplBase::HandleMessage(uMsg, wParam, lParam);
@@ -429,7 +463,7 @@ void CefForm::RegisterCppFuncs()
 				std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));//废弃
 				std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
 				std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
-				if (secMenu == "BIM软件" || secMenu == "BIM软件系列")
+				if (secMenu == "BIM软件" || secMenu == "BIM软件系列" || secMenu=="装配式")
 				{
 					OpenBimExe();
 					return;
@@ -1005,6 +1039,7 @@ std::string CefForm::TellMeAdvertisement()
 		return ConfigManager::GetInstance().GetDefaultAdvertise();
 	else
 	{
+		//fix me，不需要复制一份
 		auto pageInfo = webPageData_.data_.lock()->pageInfo_;
 		if (!pageInfo.empty())
 			return WebPageDownLoader::ParseWebPage(pageInfo);
@@ -1107,6 +1142,7 @@ void CefForm::InitUiVariable()
 	this_window_ = dynamic_cast<ui::Window*>(FindControl(L"main_wnd"));
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
+	tray_.Init(GetHWND(), 128, WM_TRAY);
 }
 
 void CefForm::AttachFunctionToShortCut()

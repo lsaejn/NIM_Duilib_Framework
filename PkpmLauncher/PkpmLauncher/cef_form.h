@@ -7,17 +7,14 @@
 #include "DpiAdaptor.h"
 #include "Task.h"
 #include "Article.h"
+#include "AppTray.h"
 
 #include "Alime/countDownLatch.h"
 #include "Alime/ExecutorService.h"
 #include <atomic>
 #include <mutex>
 
-#define WM_THEME_SELECTED (WM_USER + 2)
-#define WM_SHOWMAINWINDOW (WM_USER + 3)
-#define WM_SETADVERTISEINJS (WM_USER + 4)
-#define WM_ClOSENOW (WM_USER + 5)
-#define WM_SHOWAUTHORIZE (WM_USER + 5)
+
 
 const bool kEnableOffsetRender = true;
 
@@ -51,7 +48,6 @@ private:
 	void InitUiVariable();
 	void AttachFunctionToShortCut();
 	void AppendThreadTask();
-
 	/// <summary>前端读取工程列表,旧代码,见注释</summary>
 	///<param name="iniFileName">配置文件里的文件路径</param>
 	///<return>工程列表的json，名称+创建时间+略缩图路径</return>
@@ -199,5 +195,7 @@ private:
 	Alime::ExecutorService pool_;
 	WebPageDownLoader webPageData_;
 	WebArticleReader webArticleReader_;
+	AppTray tray_;
+	nim_comp::CMenuWnd* pMenu_;
 };
 

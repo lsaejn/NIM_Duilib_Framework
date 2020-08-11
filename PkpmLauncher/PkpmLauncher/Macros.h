@@ -1,0 +1,8 @@
+#pragma once
+
+#define WM_THEME_SELECTED (WM_USER + 2)
+#define WM_SHOWMAINWINDOW (WM_USER + 3)
+#define WM_SETADVERTISEINJS (WM_USER + 4)
+//#define WM_ClOSENOW (WM_USER + 5)
+#define WM_SHOWAUTHORIZE (WM_USER + 5)
+#define WM_TRAY (WM_USER + 6)

@@ -233,6 +233,7 @@
     <ClInclude Include="Alime\processIterator.h" />
     <ClInclude Include="Alime\windowIterator.h" />
     <ClInclude Include="AppDllAdaptor.h" />
+    <ClInclude Include="AppTray.h" />
     <ClInclude Include="Article.h" />
     <ClInclude Include="BoundedQueue.h" />
     <ClInclude Include="CDirSelectThread.h" />
@@ -246,6 +247,7 @@
     <ClInclude Include="DuiDialog\circleDialog.h" />
     <ClInclude Include="FileDialog.h" />
     <ClInclude Include="Lock_util.h" />
+    <ClInclude Include="Macros.h" />
     <ClInclude Include="MsgDialog.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="Alime\NonCopyable.h" />
