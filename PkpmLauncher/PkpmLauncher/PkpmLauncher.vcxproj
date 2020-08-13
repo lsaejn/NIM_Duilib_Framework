@@ -231,6 +231,7 @@
     <ClInclude Include="Alime\ExecutorService.h" />
     <ClInclude Include="Alime\ProcessInfo.h" />
     <ClInclude Include="Alime\processIterator.h" />
+    <ClInclude Include="Alime\thread.h" />
     <ClInclude Include="Alime\windowIterator.h" />
     <ClInclude Include="AppDllAdaptor.h" />
     <ClInclude Include="AppTray.h" />
@@ -362,6 +363,7 @@
     <ClCompile Include="Alime\ExecutorService.cpp" />
     <ClCompile Include="Alime\IteratorHelper.cpp" />
     <ClCompile Include="Alime\ProcessInfo.cpp" />
+    <ClCompile Include="Alime\thread.cpp" />
     <ClCompile Include="AppDllAdaptor.cpp" />
     <ClCompile Include="Article.cpp" />
     <ClCompile Include="CDirSelectThread.cpp" />
