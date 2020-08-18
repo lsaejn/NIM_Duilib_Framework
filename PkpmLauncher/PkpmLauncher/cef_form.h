@@ -172,6 +172,8 @@ private:
 	void InitSpdLog();
 
 	void OpenBimExe();
+
+
 public:
 	void AcceptDpiAdaptor(IAdaptor* acc);
 	ui::Label* GetCaptionLabel();

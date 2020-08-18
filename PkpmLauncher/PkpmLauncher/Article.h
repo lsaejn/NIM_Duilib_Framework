@@ -6,6 +6,7 @@
 #include "Alime/NonCopyable.h"
 #include "Task.h"
 
+//备用
 struct Article
 {
 	std::wstring title_;
@@ -15,9 +16,17 @@ struct Article
 	int priority = 0;
 };
 
+
+
 class IArticleReader;
 using ReadPtr = std::shared_ptr<IArticleReader>;
 
+
+/*
+最初的设计是，两篇本地文档(Native Articles)+两篇推送文档(Web Articles)。
+网页调用两个单独接口获取这两种文章。
+两篇推送文档没有下载完成，则从本地读取(NativeWebArticles)。
+*/
 class IArticleReader
 {
 public:
@@ -61,6 +70,7 @@ protected:
 	std::string fileContent_;
 };
 
+
 /// <summary>
 /// 这个类简直就是垃圾，垃圾, 你需要先执行线程，然后init,然后GetRawString
 /// </summary>
@@ -71,10 +81,16 @@ public:
 	virtual std::vector<Article> Parse() const override;
 	virtual void Init() override;
 	void Run(Functor after) override;
+	std::string GetNativeArticles();
+	std::string GetWebArticles();
 private:
 	virtual bool Read() override;
 	ArticleDownLoader download_;
+	std::string nativeCtn_;//对应左侧两篇垃圾
+	std::string webCtn_;//对应右边两个滚动的垃圾
 };
+
+
 
 /// <summary>
 /// 从本地读取文章信息，这些文章/图片通常随版本更新而更新
@@ -93,8 +109,10 @@ protected:
 	/// </summary>
 	virtual void SpecificInit();
 private:
-	void RelativeToReadPath();
+	void RelativeToFullPath();
 };
+
+
 
 /// <summary>
 /// 从本地读取网络文章条目。网络不佳/断开时，程序只能从本地读取文章信息

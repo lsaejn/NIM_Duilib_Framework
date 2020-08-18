@@ -123,8 +123,6 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
-
-
 //Fix me, windowImpBase里有大部分的处理函数，窗口级的处理最好放到函数里
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -251,8 +249,7 @@ bool CefForm::SwicthThemeTo(int index)
 		spdlog::critical("bad theme index: {0:d}", index);
 		return false;
 	}
-	//fix me
-	if(1)
+	if(1)//fix me。皮肤管理这块主动权应该放在我这，或者网页提供换肤接口
 	{
 		auto wrapedCap=SkinFatctory().GetWrappedCaption(this, index);
 		if (!wrapedCap)
@@ -586,7 +583,7 @@ void CefForm::RegisterCppFuncs()
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
 			if (webArticleReader_.is_good())
 			{
-				auto content = webArticleReader_.RawString();
+				auto content = webArticleReader_.GetWebArticles();
 				callback(true, content);
 			}
 			else
@@ -610,16 +607,28 @@ void CefForm::RegisterCppFuncs()
 
 	cef_control_->RegisterCppFunc(L"GETNATIVEARTICLES",
 		ToWeakCallback([this](const std::string& /*params*/, nim_comp::ReportResultFunction callback) {
-			std::string content;
-			auto ptr = IArticleReader::GetArticleReader(IArticleReader::ArticleType::NATIVE);
-			ptr->Init();
-			if (ptr->is_good())
+			if (webArticleReader_.is_good())
 			{
-				content = ptr->RawString();
+				auto content = webArticleReader_.GetNativeArticles();
 				callback(true, content);
+				return;
 			}
-			else 
-				callback(false, R"({ "message": "GETNATIVEARTICLES failed, this should not happen" })");
+			else
+			{
+				std::string content;
+				auto ptr = IArticleReader::GetArticleReader(IArticleReader::ArticleType::NATIVE);
+				ptr->Init();
+				if (ptr->is_good())
+				{
+					content = ptr->RawString();
+					callback(true, content);
+				}
+				else
+				{
+					MsgBox::Warning(GetHWND(), L"读取内容出错", L"GETNATIVEARTICLES");
+					callback(false, R"({ "message": "GETNATIVEARTICLES failed, this should not happen" })");
+				}	
+			}
 			})
 	);
 
@@ -1143,7 +1152,7 @@ void CefForm::InitUiVariable()
 	this_window_ = dynamic_cast<ui::Window*>(FindControl(L"main_wnd"));
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
-	tray_.Init(GetHWND(), 128, WM_TRAY);
+	//tray_.Init(GetHWND(), 128, WM_TRAY);
 }
 
 void CefForm::AttachFunctionToShortCut()

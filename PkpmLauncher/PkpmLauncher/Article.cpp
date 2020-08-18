@@ -57,7 +57,7 @@ void NativeArticleReader::Init()
 }
 void NativeArticleReader::SpecificInit()
 {
-	RelativeToReadPath();
+	RelativeToFullPath();
 }
 
 bool NativeArticleReader::Read()
@@ -65,7 +65,7 @@ bool NativeArticleReader::Read()
 	return nbase::ReadFileToString(path_, fileContent_);
 }
 
-void NativeArticleReader::RelativeToReadPath()
+void NativeArticleReader::RelativeToFullPath()
 {
 	if (!state_)
 		return;
@@ -119,8 +119,36 @@ bool WebArticleReader::Read()
 {
 	bool ret= download_.data_.lock()->isWebPageCooked_;
 	if (ret)
-		fileContent_ = download_.data_.lock()->pageInfo_;
+	{
+		try {
+			fileContent_ = download_.data_.lock()->pageInfo_;// raw string
+			nlohmann::json json = nlohmann::json::parse(fileContent_);
+
+			nlohmann::json nativeArticlesJson;
+			nativeArticlesJson["nativeArticles"] = json["nativeArticles"];
+			nativeCtn_ = nativeArticlesJson.dump();
+
+			nlohmann::json webArticlesJson;
+			webArticlesJson["webArticles"] = json["webArticles"];
+			webCtn_ = webArticlesJson.dump();
+		}
+		catch (...) {
+			MsgBox::Show(L"Fail to Call WebArticleReader::Read", true);
+			ret = false;
+		}
+
+	}
 	return ret;
+}
+
+std::string WebArticleReader::GetNativeArticles()
+{
+	return nativeCtn_;
+}
+
+std::string WebArticleReader::GetWebArticles()
+{
+	return webCtn_;
 }
 
 ///////////////////NativeWebArticleReader
