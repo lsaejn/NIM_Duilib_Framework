@@ -46,6 +46,7 @@ public:
 	virtual bool Download() = 0;
 };
 
+//旧广告推送页面，包含了版本号和早期推送
 class WebPageDownLoader: public FileDownLoader
 {
 private:

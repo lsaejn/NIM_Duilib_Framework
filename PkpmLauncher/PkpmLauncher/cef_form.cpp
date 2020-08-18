@@ -26,6 +26,7 @@ using namespace Alime::HttpUtility;
 using namespace application_utily;
 
 const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
+const wchar_t* bimWebUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69";
 const std::wstring CefForm::kClassName= ConfigManager::GetInstance().GetCefFormClassName();
 
 CefForm::CefForm()
@@ -1161,6 +1162,7 @@ void CefForm::AttachFunctionToShortCut()
 
 void CefForm::InitSpdLog()
 {	
+	//fix me, create file here may raise some exception
 	auto logFolderW = nbase::win32::GetCurrentModuleDirectory() + L"resources\\Logs\\";
 	auto logFileNameW = logFolderW + L"log.txt";
 	std::string LogsFile = nbase::UnicodeToAnsi(logFileNameW);
@@ -1215,19 +1217,18 @@ void CefForm::OpenBimExe()
 		res=application_utily::OpenBimExe(bimPath);
 	else
 	{
-		std::wstring bimWebUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69";
 		if (!bx)
 		{
 			//fix me
-			ShellExecute(NULL, _T("open"), bimWebUrl.c_str(), NULL, NULL, SW_SHOW);
+			ShellExecute(NULL, _T("open"), bimWebUrl, NULL, NULL, SW_SHOW);
 		}
 		else
 		{
 			nbase::ThreadManager::PostTask([bx]() {
 				bx->SetTitle(ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM_WEB"));
 				nbase::ThreadManager::PostDelayedTask([]() {
-					//fix me. 资源文件无法处理多个等于号，导致了这里硬编码
-					ShellExecute(NULL, _T("open"), L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69", NULL, NULL, SW_SHOW);
+					//fix me. 资源文件无法处理多个等于号，导致了这里硬编码bimWebUrl
+					ShellExecute(NULL, _T("open"), bimWebUrl, NULL, NULL, SW_SHOW);
 					}, nbase::TimeDelta::FromSeconds(1));
 				});
 		}
