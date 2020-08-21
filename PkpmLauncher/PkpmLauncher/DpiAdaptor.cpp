@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "DpiAdaptor.h"
 #include "cef_form.h"
+#pragma warning (disable: 4702) 
 
 UINT IAdaptor::GetDpi()
 {

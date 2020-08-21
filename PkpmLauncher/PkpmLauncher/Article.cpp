@@ -120,7 +120,8 @@ bool WebArticleReader::Read()
 	bool ret= download_.data_.lock()->isWebPageCooked_;
 	if (ret)
 	{
-		try {
+		try
+		{
 			fileContent_ = download_.data_.lock()->pageInfo_;// raw string
 			nlohmann::json json = nlohmann::json::parse(fileContent_);
 
@@ -132,8 +133,10 @@ bool WebArticleReader::Read()
 			webArticlesJson["webArticles"] = json["webArticles"];
 			webCtn_ = webArticlesJson.dump();
 		}
-		catch (...) {
-			MsgBox::Show(L"Fail to Call WebArticleReader::Read", true);
+		catch (...)
+		{
+			MsgBox::Show(L"Parse error, Fail to Call WebArticleReader::Read", true);
+			MsgBox::Show(nbase::UTF8ToUTF16(download_.data_.lock()->pageInfo_).c_str(), true);
 			ret = false;
 		}
 

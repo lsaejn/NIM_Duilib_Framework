@@ -54,13 +54,11 @@ public:
 	/// <summary>
 	/// 下载到的原始字符串
 	/// </summary>
-	/// <returns></returns>
 	std::string RawString() const;
 
 	/// <summary>
 	/// 原始字符串里读取文章对象
 	/// </summary>
-	/// <returns></returns>
 	virtual std::vector<Article> Parse() const= 0;
 	
 protected:
@@ -72,9 +70,9 @@ protected:
 
 
 /// <summary>
-/// 这个类简直就是垃圾，垃圾, 你需要先执行线程，然后init,然后GetRawString
+/// 这个类简直就是垃圾。子类需要先pool.PostTask(&WebArticleReader::Run),成功后执行init
 /// </summary>
-class WebArticleReader: public  IArticleReader, QueryTask
+class WebArticleReader: public IArticleReader, QueryTask
 {
 public:
 	WebArticleReader();
@@ -115,7 +113,7 @@ private:
 
 
 /// <summary>
-/// 从本地读取网络文章条目。网络不佳/断开时，程序只能从本地读取文章信息
+/// 从本地读取网络文章条目。网络不佳/断开/网络文章解析失败时，程序只能从本地读取文章信息
 /// </summary>
 class NativeWebArticleReader : public NativeArticleReader
 {

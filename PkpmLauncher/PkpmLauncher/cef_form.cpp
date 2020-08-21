@@ -26,7 +26,6 @@ using namespace Alime::HttpUtility;
 using namespace application_utily;
 
 const char* toRead[] = { "navbarIndex", "parentIndex", "childrenIndex","projectIndex" };
-const wchar_t* bimWebUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69";
 const std::wstring CefForm::kClassName= ConfigManager::GetInstance().GetCefFormClassName();
 
 CefForm::CefForm()
@@ -1117,6 +1116,8 @@ void CefForm::EnableAcceptFiles()
 
 void CefForm::AttachClickCallbackToSkinButton()
 {
+	if (!skinSettings_)
+		return;
 	skinSettings_->AttachClick([this](ui::EventArgs* args) {
 		RECT rect = args->pSender->GetPos();
 		ui::CPoint point;
@@ -1175,7 +1176,8 @@ void CefForm::InitSpdLog()
 	auto logFolderW = nbase::win32::GetCurrentModuleDirectory() + L"resources\\Logs\\";
 	auto logFileNameW = logFolderW + L"log.txt";
 	std::string LogsFile = nbase::UnicodeToAnsi(logFileNameW);
-	if (PathFileExists(logFileNameW.c_str()) && !PathIsDirectory(logFileNameW.c_str()))//多余，存在就不可能是文件夹
+	//多余，存在就不可能是文件夹
+	if (PathFileExists(logFileNameW.c_str()) && !PathIsDirectory(logFileNameW.c_str()))
 	{
 		bool ret=DeleteFile(logFileNameW.c_str());
 		if (!ret)  return;
@@ -1219,25 +1221,23 @@ nim_comp::CefControlBase* CefForm::GetCef()
 
 void CefForm::OpenBimExe()
 {
-	nim_comp::CircleBox* bx=nim_comp::ShowCircleBox(GetHWND(), NULL, ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM"));
+	nim_comp::CircleBox* bx=nim_comp::ShowCircleBox(GetHWND(), 
+		NULL, ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM"));
 	std::wstring bimPath;
-	bool res=application_utily::FindBimExe(bimPath);
-	if (res)
-		res=application_utily::OpenBimExe(bimPath);
+	if (application_utily::FindBimExe(bimPath))
+		application_utily::OpenBimExe(bimPath);
 	else
 	{
 		if (!bx)
 		{
-			//fix me
-			ShellExecute(NULL, _T("open"), bimWebUrl, NULL, NULL, SW_SHOW);
+			ShellExecute(NULL, _T("open"), ConfigManager::GetInstance().GetBimDownLoadWeb().c_str(), NULL, NULL, SW_SHOW);
 		}
 		else
 		{
 			nbase::ThreadManager::PostTask([bx]() {
 				bx->SetTitle(ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM_WEB"));
 				nbase::ThreadManager::PostDelayedTask([]() {
-					//fix me. 资源文件无法处理多个等于号，导致了这里硬编码bimWebUrl
-					ShellExecute(NULL, _T("open"), bimWebUrl, NULL, NULL, SW_SHOW);
+					ShellExecute(NULL, _T("open"), ConfigManager::GetInstance().GetBimDownLoadWeb().c_str(), NULL, NULL, SW_SHOW);
 					}, nbase::TimeDelta::FromSeconds(1));
 				});
 		}

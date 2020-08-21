@@ -351,3 +351,4 @@ healthchecksdb
 /stats
 /examples/MFCApplication1/RCa29752
 /.github
+*.cd

@@ -5,6 +5,25 @@
 #include "Alime/NonCopyable.h"
 
 
+/*
+expamle: 
+ALIME_PROPERTY(std::string, defaultAdvertise_, DefaultAdvertise)
+*/
+#define ALIME_PROPERTY(varType, varName, prefix, funName) \
+private: varType varName##_; \
+public: varType prefix##funName() const; \
+
+#define CLASS_MEMBER_WSTRING(varName, MainDescribe) \
+ALIME_PROPERTY(std::wstring, varName, Get, MainDescribe)
+
+#define CLASS_MEMBER_STRING(varName, MainDescribe) \
+ALIME_PROPERTY(std::string, varName, Get, MainDescribe)
+
+#define CLASS_MEMBER_BOOL(varName) \
+private: bool is##varName##_; \
+public: bool Is##varName() const{ return is##varName##_;}; \
+
+
 
 //reader
 class ConfigManager : public noncopyable
@@ -15,7 +34,6 @@ public:
 		static ConfigManager instance;
 		return instance;
 	}
-
 	bool IsAdaptDpiOn() const;
 	bool IsModifyWindowOn() const;
 	bool IsSystemFolderDialogOn() const;
@@ -35,12 +53,14 @@ public:
 	int32_t GetFolderDialogType() const;
 	int32_t DaysLeftToNotify() const;
 	std::wstring GetLaunchDllName() const;
+	std::wstring GetBimDownLoadWeb() const;
 private:	
 	ConfigManager();
 
 	[[deprecated("why two dpi variable in this function?")]] 
 	void CheckAdaptDpi();
 	void LoadConfigFile();
+
 private:
 	bool isManualAdaptDpiOn_;
 	bool isAdaptDpiOn_;
@@ -59,6 +79,7 @@ private:
 	std::wstring nativeArticlesPath_;
 	std::wstring webArticlesPath_;
 	std::wstring styleName_;//只有前端用，应改为u8
+	std::wstring bimWebUrl_;
 	int32_t styleIndex_;
 	int32_t deadline_;
 	int32_t folderDialogType_;

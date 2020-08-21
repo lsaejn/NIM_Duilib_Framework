@@ -94,6 +94,7 @@ void ConfigManager::LoadConfigFile()
 		launchDllName_= nbase::UTF8ToUTF16(json["launchDllName"]);
 		deadline_ = json["deadline"];
 		deadline_ = deadline_ <= 0 ? 7 : deadline_;
+		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
 	}catch (...){
 		MsgBox::Show(L"Fatal error, fail to parse config file", (std::wstring)L"defaultConfig.json");
 		std::abort();
@@ -177,6 +178,11 @@ int32_t ConfigManager::DaysLeftToNotify() const
 std::wstring ConfigManager::GetLaunchDllName() const
 {
 	return launchDllName_;
+}
+
+std::wstring ConfigManager::GetBimDownLoadWeb() const
+{
+	return bimWebUrl_;
 }
 
 int32_t ConfigManager::GetFolderDialogType() const
