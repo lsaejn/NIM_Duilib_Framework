@@ -4,6 +4,8 @@
 
 #include <filesystem>
 #include <regex>
+#include <chrono>
+#include <memory>
 
 #include "RapidjsonForward.h"
 #include "SpdlogForward.h"
@@ -181,6 +183,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		auto appPath = nbase::win32::GetCurrentModuleDirectory();
 		SetCurrentDirectory(appPath.c_str());
+		spdlog::critical("Receive WM_SHOWMAINWINDOW");
 		ShowWindow();
 	}
 	else if (uMsg == WM_SHOWAUTHORIZE)
@@ -845,6 +848,9 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 	}
 }
 
+//fix me, pkpmmain退出时可能导致了线程异常,程序没有办法发送WM_SHOWMAINWINDOW
+//使用了RAII来确保消息发送。并且在以常理捕获里也发送了消息
+//测试通过后，可以去掉异常里的消息发送。而记录这个异常是有意义的。
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
 	if (args.size() != 5 || !prjPaths_.size())
@@ -872,8 +878,17 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		}
 		std::thread t([=]() {
 			SetCurrentDirectoryA(path.c_str());
-			run_cmd(args[3], args[4], "");
-			::PostMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+			ScopeGuard helper([=]() {
+				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+				});
+			try {
+				run_cmd(args[3], args[4], "");;
+			}
+			catch (...)
+			{
+				spdlog::critical("检测到PKPMMAIN.exe异常");
+				LRESULT succ = ::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+			}
 			});
 		t.detach();
 	}
@@ -1179,8 +1194,12 @@ void CefForm::InitSpdLog()
 	//多余，存在就不可能是文件夹
 	if (PathFileExists(logFileNameW.c_str()) && !PathIsDirectory(logFileNameW.c_str()))
 	{
-		bool ret=DeleteFile(logFileNameW.c_str());
-		if (!ret)  return;
+		if (nbase::GetFileSize(logFileNameW.c_str()) > 50 * 1024 * 1024)
+		{
+			bool ret = DeleteFile(logFileNameW.c_str());
+			if (!ret)
+				return;
+		}
 	}
 	Alime::FileSystem::Folder p(logFolderW);
 	if (!p.Exists())

@@ -34,3 +34,21 @@ namespace application_utily
 	bool OpenBimExe(const std::wstring& bimPath);
 	void OnOpenModelViewerMaster();//Í¼Ä£´óÊ¦PKPM_Model_Master
 }
+
+
+using ClosurePkg = std::function<void()>;
+class ScopeGuard
+{
+public:
+	ScopeGuard(ClosurePkg func)
+		:func_(std::move(func))
+	{
+
+	}
+
+	~ScopeGuard()
+	{
+		func_();
+	}
+	ClosurePkg func_;
+};
