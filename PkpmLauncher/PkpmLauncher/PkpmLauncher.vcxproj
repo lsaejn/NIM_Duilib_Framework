@@ -231,6 +231,7 @@
     <ClInclude Include="Alime\ExecutorService.h" />
     <ClInclude Include="Alime\ProcessInfo.h" />
     <ClInclude Include="Alime\processIterator.h" />
+    <ClInclude Include="Alime\ScopeGuard.h" />
     <ClInclude Include="Alime\thread.h" />
     <ClInclude Include="Alime\windowIterator.h" />
     <ClInclude Include="AppDllAdaptor.h" />
@@ -395,7 +396,6 @@
     <ResourceCompile Include="PkpmV5.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram.cd" />
     <None Include="ClassDiagram1.cd" />
     <None Include="rapidxml\manual.html" />
     <None Include="res\MFCApplication1.rc2" />

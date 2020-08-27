@@ -14,6 +14,7 @@
 #include "Alime/FileSystem.h"
 #include "Alime/Console.h"
 #include "Alime/IteratorHelper.h"
+#include "Alime/ScopeGuard.h"
 
 #include "cef_form.h"
 #include "string_util.h"
@@ -877,18 +878,11 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			}
 		}
 		std::thread t([=]() {
-			SetCurrentDirectoryA(path.c_str());
-			ScopeGuard helper([=]() {
+			ALIME_SCOPE_EXIT{
 				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
-				});
-			try {
-				run_cmd(args[3], args[4], "");;
-			}
-			catch (...)
-			{
-				spdlog::critical("检测到PKPMMAIN.exe异常");
-				LRESULT succ = ::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
-			}
+			};
+			SetCurrentDirectoryA(path.c_str());
+			catch_exception([=]() {run_cmd(args[3], args[4], ""); }, []() {spdlog::critical("检测到PKPMMAIN.exe异常"); });
 			});
 		t.detach();
 	}
