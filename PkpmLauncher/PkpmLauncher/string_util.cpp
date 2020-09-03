@@ -291,6 +291,11 @@ namespace application_utily
 					bimPath = (wchar_t*)(szValueDate);
 					bimPath += L"PBBim.exe";
 					delete szValueName;
+					if (!PathFileExists(bimPath.c_str()))
+					{
+						bimPath.clear();
+						return false;
+					}			
 					break;
 				}
 				delete szValueName;
