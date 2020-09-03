@@ -1238,7 +1238,9 @@ void CefForm::OpenBimExe()
 		NULL, ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM"));
 	std::wstring bimPath;
 	if (application_utily::FindBimExe(bimPath))
+	{
 		application_utily::OpenBimExe(bimPath);
+	}
 	else
 	{
 		if (!bx)

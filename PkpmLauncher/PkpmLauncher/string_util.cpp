@@ -289,6 +289,7 @@ namespace application_utily
 				if (std::wstring(szValueName) == L"PATH" || std::wstring(szValueName) == L"Path")
 				{
 					bimPath = (wchar_t*)(szValueDate);
+					bimPath += L"PBBim.exe";
 					delete szValueName;
 					break;
 				}
