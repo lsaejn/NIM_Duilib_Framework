@@ -47,6 +47,7 @@ CefForm::CefForm()
 
 void CefForm::AppendThreadTask()
 {
+	//复用线程比使用future效率要高一点
 	pool_.SetMaxQueueSize(4);
 	pool_.Start(2);
 	pool_.Run(std::bind(&WebPageDownLoader::Run, &webPageData_, std::function<void()>()));
@@ -879,10 +880,17 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		}
 		std::thread t([=]() {
 			ALIME_SCOPE_EXIT{
-				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+				bool ret=::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+				if(!ret)
+					spdlog::critical("sendmessage");
+				else
+					spdlog::critical("检测到PKPMMAIN.exe退出, sendmsg failed");
 			};
 			SetCurrentDirectoryA(path.c_str());
-			catch_exception([=]() {run_cmd(args[3], args[4], ""); }, []() {spdlog::critical("检测到PKPMMAIN.exe异常"); });
+			catch_exception([=]() {run_cmd(args[3], args[4], ""); }, [=]() {
+				spdlog::critical("检测到PKPMMAIN.exe异常, sendmsg"); 
+				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
+				});
 			});
 		t.detach();
 	}

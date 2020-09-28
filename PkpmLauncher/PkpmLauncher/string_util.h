@@ -27,6 +27,7 @@ namespace application_utily
 	void GodBlessThisProcess(wchar_t* god= L"ProcessGuard.exe");
 	int setenv(const char* name, const char* value, int overwrite);
 	char* realpath(const char* path, char* resolved_path);
+	//fix me √˚◊÷»°¥Ì¡À
 	std::wstring GetExePath();
 	bool GetClipBoardInfo(HWND wnd, std::string& filePath);
 	bool FindBimExe(std::wstring& resultPath);
