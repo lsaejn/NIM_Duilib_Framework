@@ -13,7 +13,7 @@
 #include <filesystem>
 #include <algorithm>
 
-//由于程序依赖注册表，所以以exe为根
+
 const std::wstring kRelativePathForPkpmAppMenu = L"CFG\\PKPMAPPMENU\\";
 const std::string kRelativePathForPkpmAppMenuAnsi = "CFG\\PKPMAPPMENU\\";
 
@@ -66,8 +66,12 @@ void WebDataReader::Load()
                 continue;
         }     
 		std::string content;
-        if (!nbase::ReadFileToString(filePath, content))
+        if (!nbase::ReadFileToString(filePath, content)&& content.empty())
+        {
+            //没有结束程序是因为在一个部队机器上，出现读到了内容，但返回false, 猜测是文件大小被加密软件修改
             MsgBox::ShowViaIDWithSpecifiedCtn(filePath, L"TITLE_FIND_FILE_ERROR");
+            continue;
+        }
         //这里需要改，不应该存完整路径,，而且还是u8的。
         //不改主要是懒，其次我忘了前端传递的文件名带了几层路径。
         std::string u8fileName = p.path().filename().generic_u8string();
