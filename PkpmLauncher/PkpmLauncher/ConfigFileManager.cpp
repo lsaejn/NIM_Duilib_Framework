@@ -36,7 +36,6 @@ public:
 
 };
 
-//////////////////////////////ConfigManager//////////////////////////////
 void ConfigManager::CheckAdaptDpi()
 {
 	{
@@ -196,7 +195,6 @@ std::pair<int, std::wstring> ConfigManager::GetGuiStyleInfo() const
 }
 
 //前端没有说明为什么需要两个变量来标识主题
-//windows不用u8的原因是....?
 void ConfigManager::SetGuiStyleInfo(const std::pair<int, std::wstring>& info)
 {
 	return PkpmConfigManager::SetGuiStyleInfo(info);

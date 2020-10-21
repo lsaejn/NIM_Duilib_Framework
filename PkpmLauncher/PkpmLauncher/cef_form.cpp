@@ -220,7 +220,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		else if (lParam == WM_RBUTTONDOWN)
 		{
-			if (0)
+			if (true)//test
 			{
 				ui::CPoint point;
 				GetCursorPos(&point);
