@@ -5,7 +5,7 @@
 
 #include "AppDllAdaptor.h"
 #include "ConfigFileManager.h"
-#include "string_util.h"
+#include "utility.h"
 
 
 AppDllAdaptor::AppDllAdaptor()
@@ -21,7 +21,7 @@ AppDllAdaptor::~AppDllAdaptor()
 
 bool AppDllAdaptor::InitPkpmAppFuncPtr()
 {
-	std::wstring dll_path = application_utily::GetExePath() + ConfigManager::GetInstance().GetLaunchDllName();
+	std::wstring dll_path = application_utily::GetExeFolderPath() + ConfigManager::GetInstance().GetLaunchDllName();
 	hd = LoadLibrary(dll_path.c_str());
 	if (hd == NULL)
 	{

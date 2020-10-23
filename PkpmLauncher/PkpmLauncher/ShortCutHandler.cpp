@@ -1,7 +1,11 @@
 #include "pch.h"
 #include "ShortCutHandler.h"
 #include "templates.h"
-#include "string_util.h"
+#include "utility.h"
+#include "Alime/FileSystem.h"
+#include "ConfigFileManager.h"
+#include "SpdlogForward.h"
+
 
 const wchar_t* separator = L"\\";
 const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112";
@@ -43,6 +47,7 @@ private:
 	CallBack DoBeforeCallFunc_;//调用前的函数,一般是隐藏主窗口
 	CallBack DoAfterCallFunc_;//显示主窗口
 	CallBack RefreshConfigFileFunc_;//给模型打包用的，它们需要读工程路径，而这个路径是从配置文件里去读。人才!
+	BooleanCallBack NewVersionChecker_;//查询是否存在新版本
 public:
 	ShortCutHandlerImpl()
 	{
@@ -63,6 +68,11 @@ public:
 	~ShortCutHandlerImpl()
 	{
 		//delete
+	}
+
+	void SetNewVersionChecker(BooleanCallBack f)
+	{
+		NewVersionChecker_ = std::move(f);
 	}
 
 	void SetFreshFunc(CallBack _f)
@@ -170,7 +180,34 @@ public:
 
 	void OnUpdateOnline()
 	{
-		ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
+		if(!NewVersionChecker_)
+			ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
+		else
+		{
+			if (NewVersionChecker_())
+			{
+				using Alime::FileSystem::FilePath;
+				using Alime::FileSystem::File;
+				auto exePath=ConfigManager::GetInstance().GetInstallerPath();
+				FilePath path{ application_utily::GetExeFolderPath() + exePath };
+				if (path.IsFile())
+				{
+					File file(path);
+					if (file.Exists())
+					{
+						bool ret=application_utily::CreateProcessWithCommand(file.GetFilePath().GetFullPath().c_str(), NULL, NULL);
+						if(!ret)
+							spdlog::critical("fail to open installer.exe.");
+						return;
+					}
+					else
+					{
+						spdlog::debug("fail to find installer.exe");
+					}
+				}
+			}
+			ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
+		}
 	}
 
 	//2020/07/13 新增图模大师
@@ -234,6 +271,11 @@ void ShortCutHandler::CallFunc(const std::string& cutName)
 bool ShortCutHandler::Contains(const std::string& cutName) const
 {
 	return funcMaps_.find(cutName) != funcMaps_.end();
+}
+
+void ShortCutHandler::SetNewVersionChecker(BooleanCallBack f)
+{
+	impl_->SetNewVersionChecker(f);
 }
 
 //copy一份然后move

@@ -48,6 +48,7 @@ public:
 	std::wstring GetSkinFolderPath() const;
 	std::wstring GetNativeArticlePath() const;
 	std::wstring GetWebArticlePath() const;
+	std::wstring GetInstallerPath() const;
 	std::pair<int, std::wstring> GetGuiStyleInfo() const;
 	void SetGuiStyleInfo(const std::pair<int, std::wstring>& info);
 	int32_t GetFolderDialogType() const;
@@ -80,6 +81,7 @@ private:
 	std::wstring webArticlesPath_;
 	std::wstring styleName_;//只有前端用，应改为u8
 	std::wstring bimWebUrl_;
+	std::wstring installerPath_;
 	int32_t styleIndex_;
 	int32_t deadline_;
 	int32_t folderDialogType_;

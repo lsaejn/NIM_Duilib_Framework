@@ -3,7 +3,7 @@
 #include "cef_form.h"
 #include "framework.h"
 #include "WinMain.h"
-#include "string_util.h"
+#include "utility.h"
 #include "templates.h"
 
 #ifdef _DEBUG

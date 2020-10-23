@@ -17,7 +17,7 @@
 #include "Alime/ScopeGuard.h"
 
 #include "cef_form.h"
-#include "string_util.h"
+#include "utility.h"
 #include "SkinSwitcher.h"
 #include "ConfigFileManager.h"
 #include "VersionCmpStrategy.h"
@@ -1184,6 +1184,7 @@ void CefForm::AttachFunctionToShortCut()
 			ToWeakCallback([this](const std::string& /*chosenData*/) {
 				}
 		));});
+	shortCutHandler_.SetNewVersionChecker(std::bind(&CefForm::TellMeNewVersionExistOrNot, this));
 	shortCutHandler_.Init();
 }
 

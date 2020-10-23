@@ -349,7 +349,7 @@
     <ClInclude Include="spdlog\spdlog.h" />
     <ClInclude Include="spdlog\tweakme.h" />
     <ClInclude Include="spdlog\version.h" />
-    <ClInclude Include="string_util.h" />
+    <ClInclude Include="utility.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="templates.h" />
     <ClInclude Include="VersionCmpStrategy.h" />
@@ -383,7 +383,7 @@
     <ClCompile Include="MsgDialog.cpp" />
     <ClCompile Include="RegKeyRW.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
-    <ClCompile Include="string_util.cpp" />
+    <ClCompile Include="utility.cpp" />
     <ClCompile Include="WebDataReader.cpp" />
     <ClCompile Include="MessageLoop.cpp" />
     <ClCompile Include="WinMain.cpp" />

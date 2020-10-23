@@ -5,7 +5,7 @@
 #include "Alime/FileSystem.h"
 
 #include "ConfigFileManager.h"
-#include "string_util.h"
+#include "utility.h"
 
 
 //换肤的结果会被pkpmmain使用，所以最后还是决定把结果丢到pkpm.ini里
@@ -91,6 +91,7 @@ void ConfigManager::LoadConfigFile()
 		nativeArticlesPath_ = nbase::UTF8ToUTF16(json["nativeArticles"]);
 		webArticlesPath_ = nbase::UTF8ToUTF16(json["webArticles"]);
 		launchDllName_= nbase::UTF8ToUTF16(json["launchDllName"]);
+		installerPath_= nbase::UTF8ToUTF16(json["installer"]);
 		deadline_ = json["deadline"];
 		deadline_ = deadline_ <= 0 ? 7 : deadline_;
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
@@ -157,6 +158,11 @@ std::wstring ConfigManager::GetNativeArticlePath() const
 std::wstring ConfigManager::GetWebArticlePath() const
 {
 	return webArticlesPath_;
+}
+
+std::wstring ConfigManager::GetInstallerPath() const
+{
+	return installerPath_;
 }
 
 bool ConfigManager::IsAdaptDpiOn() const

@@ -4,7 +4,7 @@
 
 #include "RapidjsonForward.h"
 
-#include "string_util.h"
+#include "utility.h"
 #include "templates.h"
 #include "RegKeyRW.h"
 
@@ -221,7 +221,7 @@ namespace application_utily
 		return _fullpath(resolved_path, path, _MAX_PATH);
 	}
 
-	std::wstring GetExePath()
+	std::wstring GetExeFolderPath()
 	{
 		wchar_t buffer[65536];
 		GetModuleFileName(NULL, buffer, sizeof(buffer) / sizeof(*buffer));

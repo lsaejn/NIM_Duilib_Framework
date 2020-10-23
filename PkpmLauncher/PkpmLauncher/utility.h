@@ -27,8 +27,8 @@ namespace application_utily
 	void GodBlessThisProcess(wchar_t* god= L"ProcessGuard.exe");
 	int setenv(const char* name, const char* value, int overwrite);
 	char* realpath(const char* path, char* resolved_path);
-	//fix me 名字取错了
-	std::wstring GetExePath();
+
+	std::wstring GetExeFolderPath();
 	bool GetClipBoardInfo(HWND wnd, std::string& filePath);
 	bool FindBimExe(std::wstring& resultPath);
 	//打开Bim软件没有放到exe里，这是因为该软件的启动并不打算双击启动(尽管我支持了这样做)

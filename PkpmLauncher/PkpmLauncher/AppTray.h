@@ -3,6 +3,11 @@
 #include "Alime/NonCopyable.h"
 #include "windows.h"
 
+/*
+出现很难重现的现象——启动界面显示不出来的情况，
+可能是消息无法入队？
+增加托盘可以避免一些尴尬。
+*/
 class AppTray: noncopyable
 {
 public:
