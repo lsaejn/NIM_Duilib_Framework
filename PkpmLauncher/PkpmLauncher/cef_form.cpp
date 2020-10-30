@@ -91,7 +91,9 @@ void CefForm::InitWindow()
 	SetIcon(128);
 	SetWindowText(GetHWND(), ConfigManager::GetInstance().GetCefFormWindowText().c_str());
 	InitUiVariable();
-	cef_control_->LoadURL(nbase::win32::GetCurrentModuleDirectory() + ConfigManager::GetInstance().GetRelativePathForHtmlRes());
+	cef_control_->LoadURL(CorrectCefUrl(
+		nbase::win32::GetCurrentModuleDirectory() + ConfigManager::GetInstance().GetRelativePathForHtmlRes()
+	));
 	EnableAcceptFiles();
 	SetCfgPmEnv();
 	appDll_.InitPkpmAppFuncPtr();

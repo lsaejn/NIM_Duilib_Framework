@@ -34,6 +34,7 @@ namespace application_utily
 	//打开Bim软件没有放到exe里，这是因为该软件的启动并不打算双击启动(尽管我支持了这样做)
 	bool OpenBimExe(const std::wstring& bimPath);
 	void OnOpenModelViewerMaster();//图模大师PKPM_Model_Master
+	std::wstring CorrectCefUrl(const std::wstring&);
 }
 
 

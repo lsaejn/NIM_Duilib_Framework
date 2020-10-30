@@ -81,7 +81,7 @@ void ConfigManager::LoadConfigFile()
 		systemFolderSelection_ = json[u8"systemFolderSelection"];
 		defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
 		folderDialogType_ = json["folderDialogType"];
-		advertisementServer_ = nbase::UTF8ToUTF16(json["server"]);
+		server_ = nbase::UTF8ToUTF16(json["server"]);
 		advertisementQuery_ = nbase::UTF8ToUTF16(json["query"]);
 		cefFormWindowText_ = nbase::UTF8ToUTF16(json["windowText"]);
 		cefFormClassName_ = nbase::UTF8ToUTF16(json["className"]);
@@ -118,7 +118,7 @@ std::string ConfigManager::GetDefaultAdvertise() const
 
 std::wstring ConfigManager::GetAdvertisementServer() const
 {
-	return advertisementServer_;
+	return server_;
 }
 
 std::wstring ConfigManager::GetAdvertisementQuery() const

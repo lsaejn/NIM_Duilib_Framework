@@ -69,7 +69,7 @@ private:
 	bool isWebPageRefreshOn_;
 	std::string defaultAdvertise_;
 	std::wstring launchDllName_;
-	std::wstring advertisementServer_;
+	std::wstring server_;
 	std::wstring advertisementQuery_;
 	std::wstring cefFormWindowText_;
 	std::wstring cefFormClassName_;

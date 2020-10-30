@@ -134,7 +134,7 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V52.exe D:\PKPMV52\PKPM2010V52.exe</Command>
+      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V52.exe D:\PKPMV52#\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <Manifest>
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
@@ -250,6 +250,7 @@
     <ClInclude Include="Alime\HttpUtil.h" />
     <ClInclude Include="DuiDialog\circleDialog.h" />
     <ClInclude Include="FileDialog.h" />
+    <ClInclude Include="InstallerUpdate.h" />
     <ClInclude Include="Lock_util.h" />
     <ClInclude Include="Macros.h" />
     <ClInclude Include="MsgDialog.h" />
@@ -349,6 +350,7 @@
     <ClInclude Include="spdlog\spdlog.h" />
     <ClInclude Include="spdlog\tweakme.h" />
     <ClInclude Include="spdlog\version.h" />
+    <ClInclude Include="ThirdParty\md5\md5.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="templates.h" />
@@ -383,6 +385,7 @@
     <ClCompile Include="MsgDialog.cpp" />
     <ClCompile Include="RegKeyRW.cpp" />
     <ClCompile Include="ShortCutHandler.cpp" />
+    <ClCompile Include="ThirdParty\md5\md5.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="WebDataReader.cpp" />
     <ClCompile Include="MessageLoop.cpp" />

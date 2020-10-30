@@ -365,5 +365,13 @@ namespace application_utily
 		WinExec(CPara, 0);
 	}
 
+	//cef内部处理了转义，唯独没有处理#这个字符
+	std::wstring CorrectCefUrl(const std::wstring& from)
+	{
+		auto copy = from;
+		nbase::StringReplaceAll(L"#", L"%23", copy);
+		return copy;
+	}
+
 }
 

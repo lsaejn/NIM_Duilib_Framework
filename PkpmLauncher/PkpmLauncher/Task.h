@@ -17,6 +17,7 @@
 using namespace Alime::HttpUtility;
 typedef std::function<void()> Functor;
 
+//ËÉ½Ó¿Ú
 class QueryTask: public noncopyable
 {
 public:
@@ -66,7 +67,7 @@ private:
 		if (200 != res.statusCode)
 			return false;
 		auto result = res.GetBodyUtf8();
-		auto astring = nbase::UnicodeToAnsi(result.c_str());
+		auto astring = nbase::UnicodeToAnsi(result.c_str());//ÊÇ¿Ó
 		std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
 		if (_MSC_VER <= 1600)
 			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {
