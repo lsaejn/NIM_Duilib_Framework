@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "md5.h"
+#pragma warning(disable: 4244)
 
 #ifndef HAVE_OPENSSL
 

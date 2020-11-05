@@ -214,6 +214,10 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ProcessHelper::KillProcess(elem);
 		}
 	}
+	else if (uMsg == WM_APPCLOSE)
+	{
+		Close();
+	}
 	else if (uMsg == WM_TRAY)
 	{
 		if (lParam == WM_LBUTTONDOWN)

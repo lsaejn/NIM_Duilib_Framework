@@ -24,7 +24,7 @@ public:
 	{
 	}
 
-	~Component()
+	virtual ~Component()
 	{
 	}
 

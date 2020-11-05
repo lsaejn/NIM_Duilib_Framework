@@ -6,3 +6,4 @@
 //#define WM_ClOSENOW (WM_USER + 5)
 #define WM_SHOWAUTHORIZE (WM_USER + 5)
 #define WM_TRAY (WM_USER + 6)
+#define WM_APPCLOSE (WM_USER + 7)

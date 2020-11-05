@@ -180,33 +180,28 @@ public:
 
 	void OnUpdateOnline()
 	{
-		if(!NewVersionChecker_)
-			ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
-		else
+		if (true || NewVersionChecker_())//一个不确定需求的改动
 		{
-			if (NewVersionChecker_())
+			using Alime::FileSystem::FilePath;
+			using Alime::FileSystem::File;
+			auto exePath=ConfigManager::GetInstance().GetInstallerPath();
+			FilePath path{ application_utily::GetExeFolderPath() + exePath };
+			if (path.IsFile())
 			{
-				using Alime::FileSystem::FilePath;
-				using Alime::FileSystem::File;
-				auto exePath=ConfigManager::GetInstance().GetInstallerPath();
-				FilePath path{ application_utily::GetExeFolderPath() + exePath };
-				if (path.IsFile())
+				File file(path);
+				if (file.Exists())
 				{
-					File file(path);
-					if (file.Exists())
-					{
-						bool ret=application_utily::CreateProcessWithCommand(file.GetFilePath().GetFullPath().c_str(), NULL, NULL);
-						if(!ret)
-							spdlog::critical("fail to open installer.exe.");
-						return;
-					}
-					else
-					{
-						spdlog::debug("fail to find installer.exe");
-					}
+					bool ret=application_utily::CreateProcessWithCommand(file.GetFilePath().GetFullPath().c_str(), NULL, NULL);
+					if(!ret)
+						spdlog::critical("fail to open installer.exe.");
+					return;
+				}
+				else
+				{
+					spdlog::debug("fail to find installer.exe");
+					ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
 				}
 			}
-			ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
 		}
 	}
 
