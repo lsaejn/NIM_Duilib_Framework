@@ -26,6 +26,7 @@ using ReadPtr = std::shared_ptr<IArticleReader>;
 最初的设计是，两篇本地文档(Native Articles)+两篇推送文档(Web Articles)。
 网页调用两个单独接口获取这两种文章。
 两篇推送文档没有下载完成，则从本地读取(NativeWebArticles)。
+但是需求大改，我也记不住。
 */
 class IArticleReader
 {
@@ -34,8 +35,9 @@ public:
 	{
 		WEB,
 		NATIVE,
-		NATIVE_WEB
+		NATIVE_WEB//从本地读取代替的网络文章。
 	};
+
 	static ReadPtr GetArticleReader(ArticleType t);
 	
 	IArticleReader();

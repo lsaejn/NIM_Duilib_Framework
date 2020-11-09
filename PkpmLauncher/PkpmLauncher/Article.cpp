@@ -8,8 +8,8 @@
 using namespace nlohmann;
 
 template<class K, class V, class dummy_compare, class A>
-using my_workaround_fifo_map = fifo_map<K, V, fifo_map_compare<K>, A>;
-using my_json = basic_json<my_workaround_fifo_map>;
+using fifo_map = fifo_map<K, V, fifo_map_compare<K>, A>;
+using fifo_json = basic_json<fifo_map>;
 
 //////////////////////  IArticleReader
 ReadPtr IArticleReader::GetArticleReader(ArticleType t)
@@ -125,10 +125,11 @@ bool WebArticleReader::Read()
 			fileContent_ = download_.data_.lock()->pageInfo_;// raw string
 			nlohmann::json json = nlohmann::json::parse(fileContent_);
 
+			//debug
 			nlohmann::json nativeArticlesJson;
 			nativeArticlesJson["nativeArticles"] = json["nativeArticles"];
 			nativeCtn_ = nativeArticlesJson.dump();
-
+			// debug
 			nlohmann::json webArticlesJson;
 			webArticlesJson["webArticles"] = json["webArticles"];
 			webCtn_ = webArticlesJson.dump();
