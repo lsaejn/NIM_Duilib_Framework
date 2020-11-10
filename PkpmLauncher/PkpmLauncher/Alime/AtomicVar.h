@@ -1,12 +1,14 @@
 #pragma once
 
 #include <intrin.h>
+#include <stdint.h>//for int32_t, int64_t
 
 #include "NonCopyable.h"
 
 /*
 还是在离职前写完Alime吧,。
-我们将会在原子变量基础上完成spinlock
+我将会在原子变量基础上完成spinlock-mutex-rwlock-circleBuffer
+然后开始写网络库
 */
 
 namespace Alime::base
@@ -84,8 +86,12 @@ namespace Alime::base
 
         T getAndSet(T newValue)
         {
-            // in gcc >= 4.7: __atomic_exchange_n(&value, newValue, __ATOMIC_SEQ_CST)
+            // in gcc >= 4.7: __atomic_exchange_n(&value, newValue, __ATOMIC_SEQ_CST)       
+#ifndef _MSC_VER
             return __sync_lock_test_and_set(&value_, newValue);
+#else
+            return InterlockedExchangeAdd(&value_, T);
+#endif // #ifndef _MSC_VER
         }
 
     private:

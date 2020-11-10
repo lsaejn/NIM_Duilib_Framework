@@ -8,8 +8,8 @@
 using namespace nlohmann;
 
 template<class K, class V, class dummy_compare, class A>
-using fifo_map = fifo_map<K, V, fifo_map_compare<K>, A>;
-using fifo_json = basic_json<fifo_map>;
+using fifo_map_ = nlohmann::fifo_map<K, V, fifo_map_compare<K>, A>;
+using fifo_json = basic_json<fifo_map_>;
 
 //////////////////////  IArticleReader
 ReadPtr IArticleReader::GetArticleReader(ArticleType t)
