@@ -38,6 +38,7 @@ public:
 	bool IsModifyWindowOn() const;
 	bool IsSystemFolderDialogOn() const;
 	bool IsWebPageRefreshOn() const;
+	bool isStartPkpmmainDirect() const;
 	std::string GetDefaultAdvertise() const;
 	std::wstring GetAdvertisementServer() const;
 	std::wstring GetAdvertisementQuery() const;
@@ -67,6 +68,7 @@ private:
 	bool isAdaptDpiOn_;
 	bool systemFolderSelection_;
 	bool isWebPageRefreshOn_;
+	bool isStartPkpmmainDirect_;
 	std::string defaultAdvertise_;
 	std::wstring launchDllName_;
 	std::wstring server_;

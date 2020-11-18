@@ -55,6 +55,7 @@ ConfigManager::ConfigManager()
 	deadline_(INT32_MAX),
 	styleIndex_(0),
 	folderDialogType_(0),
+	isStartPkpmmainDirect_(false),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -95,6 +96,7 @@ void ConfigManager::LoadConfigFile()
 		deadline_ = json["deadline"];
 		deadline_ = deadline_ <= 0 ? 7 : deadline_;
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
+		isStartPkpmmainDirect_= json[u8"lauchDirectly"];
 	}catch (...){
 		MsgBox::Show(L"Fatal error, fail to parse config file", (std::wstring)L"defaultConfig.json");
 		std::abort();
@@ -109,6 +111,11 @@ bool ConfigManager::IsSystemFolderDialogOn() const
 bool ConfigManager::IsWebPageRefreshOn() const
 {
 	return isWebPageRefreshOn_;
+}
+
+bool ConfigManager::isStartPkpmmainDirect() const
+{
+	return isStartPkpmmainDirect_;
 }
 
 std::string ConfigManager::GetDefaultAdvertise() const

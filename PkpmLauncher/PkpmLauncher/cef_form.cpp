@@ -47,9 +47,8 @@ CefForm::CefForm()
 
 void CefForm::AppendThreadTask()
 {
-	//复用线程比使用future效率要高一点
 	pool_.SetMaxQueueSize(4);
-	pool_.Start(2);
+	pool_.Start(2);//一共就3个线程任务，两短一长
 	pool_.Run(std::bind(&WebPageDownLoader::Run, &webPageData_, std::function<void()>()));
 	pool_.Run(std::bind(&WebArticleReader::Run, &webArticleReader_, [this]() {webArticleReader_.Init();}));
 }
@@ -856,9 +855,6 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 	}
 }
 
-//fix me, pkpmmain退出时可能导致了线程异常,程序没有办法发送WM_SHOWMAINWINDOW
-//使用了RAII来确保消息发送。并且在以常理捕获里也发送了消息
-//测试通过后，可以去掉异常里的消息发送。而记录这个异常是有意义的。
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
 	if (args.size() != 5 || !prjPaths_.size())
@@ -885,37 +881,38 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			}
 		}
 		std::string rawCmdLine = args[2];
+		bool launchDirectly = ConfigManager::GetInstance().isStartPkpmmainDirect();
 		std::thread t([=]() {
 			ALIME_SCOPE_EXIT{
-				bool ret=::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
-				if(!ret)
+				if(!::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0))
 					spdlog::critical("sendmessage finished");
 				else
 					spdlog::critical("检测到PKPMMAIN.exe退出, sendmsg failed");
 			};
 			SetCurrentDirectoryA(path.c_str());
 			catch_exception([=]() {
-				if (rawCmdLine.find("PKPMMAIN") == std::string::npos)
+				if (!launchDirectly)
 				{
 					run_cmd(args[3], args[4], "");
 				}
 				else
 				{
-					std::wstring pkpmAppPath=(nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
-					std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
-					HANDLE h;
-					application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
-					if (h)
+					if (rawCmdLine.find("PKPMMAIN") == std::string::npos)
+						run_cmd(args[3], args[4], "");
+					else
 					{
-						//or ==WAIT_FAILED
-						if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0)
+						std::wstring pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
+						std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
+						HANDLE h;
+						application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
+						if (h)
 						{
-							spdlog::critical("WaitForSingleObject failed");
+							if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0)//or ==WAIT_FAILED
+								spdlog::critical("WaitForSingleObject failed");
+							CloseHandle(h);
 						}
-						CloseHandle(h);
 					}
-				}
-				}, [=]() {
+				}}, [=]() {
 				spdlog::critical("检测到PKPMMAIN.exe异常, sendmsg"); 
 				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
 				});
@@ -1011,7 +1008,7 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 		auto indexSelection = s.GetInt();
 		WritePrivateProfileStringA("Html", toRead[i], std::to_string(indexSelection).c_str(), nbase::UnicodeToAnsi(FullPathOfPkpmIni()).c_str());
 	}
-	//数据结构是前端定的，所以我其实没有选择, 工程索引对我来说没有什么意义，但我还是要管收\发\存。
+	//数据结构是前端定的，工程索引没有意义。
 	rapidjson::Value& s = d[toRead[i]];
 	int indexSelection = s.GetInt();
 	if (!prjPaths_.size() || !indexSelection)
@@ -1020,6 +1017,7 @@ void CefForm::OnSetDefaultMenuSelection(const std::string& json_str)
 	SaveWorkPaths(prjPaths_, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
 }
 
+//旧接口
 void CefForm::run_cmd(const std::string& moduleName, const std::string& appName1, const std::string& appName2)
 {
 	std::string cmdStr;
@@ -1074,10 +1072,10 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		auto vec = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");
 		if (!vec.empty())
 		{
-			AscendingOrder stradegy;//fix me
+			AscendingOrder stradegy;//fix me,fix AscendingOrder
 			std::sort(vec.begin(), vec.end(), stradegy);
 			const auto& LatestVersionOnLocal = vec.back();
-			if (document.HasMember("VersionString"))//fix me
+			if (document.HasMember("VersionString"))//fix me, 
 			{
 				std::string versionString = document["VersionString"].GetString();
 				return stradegy(LatestVersionOnLocal, versionString);
