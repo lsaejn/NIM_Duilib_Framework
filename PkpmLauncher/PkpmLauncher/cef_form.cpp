@@ -884,16 +884,38 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 				break;
 			}
 		}
+		std::string rawCmdLine = args[2];
 		std::thread t([=]() {
 			ALIME_SCOPE_EXIT{
 				bool ret=::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
 				if(!ret)
-					spdlog::critical("sendmessage");
+					spdlog::critical("sendmessage finished");
 				else
 					spdlog::critical("检测到PKPMMAIN.exe退出, sendmsg failed");
 			};
 			SetCurrentDirectoryA(path.c_str());
-			catch_exception([=]() {run_cmd(args[3], args[4], ""); }, [=]() {
+			catch_exception([=]() {
+				if (rawCmdLine.find("PKPMMAIN") == std::string::npos)
+				{
+					run_cmd(args[3], args[4], "");
+				}
+				else
+				{
+					std::wstring pkpmAppPath=(nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
+					std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
+					HANDLE h;
+					application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
+					if (h)
+					{
+						//or ==WAIT_FAILED
+						if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0)
+						{
+							spdlog::critical("WaitForSingleObject failed");
+						}
+						CloseHandle(h);
+					}
+				}
+				}, [=]() {
 				spdlog::critical("检测到PKPMMAIN.exe异常, sendmsg"); 
 				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
 				});
