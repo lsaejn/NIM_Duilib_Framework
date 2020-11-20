@@ -36,10 +36,10 @@ public:
 	/// <summary>cefcontrol在xml是自定义类型,自己创建对象</summary>
 	virtual ui::Control* CreateControl(const std::wstring& pstrClass) override;
 	virtual void InitWindow() override;
-	virtual LRESULT OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
-	LRESULT OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	static const std::wstring	kClassName;
+	virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	virtual LRESULT OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) override;
+	virtual LRESULT OnNcLButtonDbClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) override;
+	
 private:
 
 	/// <summary>控件点击事件,xml里面的一些控件用来调试很方便</summary>
@@ -173,31 +173,36 @@ private:
 
 	void OpenBimExe();
 
-
 public:
 	void AcceptDpiAdaptor(IAdaptor* acc);
+	nim_comp::CefControlBase* GetCef();
 	ui::Label* GetCaptionLabel();
 	ui::HBox* GetCaptionBox();
-	nim_comp::CefControlBase* GetCef();
+
+public:
+	static const std::wstring	kClassName;
 
 private:
-	nim_comp::CefControlBase* cef_control_;
-	nim_comp::CefControlBase* cef_control_dev_;
-	ui::Button* skinSettings_;
 	ui::Label* label_;
+	ui::Button* skinSettings_;
 	ui::HBox* vistual_caption_;
 	ui::Window* this_window_;
+	
 	WebDataReader webDataReader_;
-	const int maxPrjNum_;
-	collection_utility::BoundedQueue<std::string> prjPaths_;
-	ShortCutHandler shortCutHandler_;
-	AppDllAdaptor appDll_;
-	std::wstring defaultCaption_;
-	int indexHeightLighted_;
-	Alime::ExecutorService pool_;
-	WebPageDownLoader webPageData_;
 	WebArticleReader webArticleReader_;
-	AppTray tray_;
+	WebPageDownLoader webPageData_;
+
 	nim_comp::CMenuWnd* pMenu_;
+	nim_comp::CefControlBase* cef_control_;
+	nim_comp::CefControlBase* cef_control_dev_;
+	
+	AppTray tray_;
+	const int maxPrjNum_;
+	AppDllAdaptor appDll_;
+	int indexHeightLighted_;
+	std::wstring defaultCaption_;
+	Alime::ExecutorService pool_;
+	ShortCutHandler shortCutHandler_;
+	collection_utility::BoundedQueue<std::string> prjPaths_;
 };
 

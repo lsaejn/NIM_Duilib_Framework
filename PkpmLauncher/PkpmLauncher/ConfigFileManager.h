@@ -3,6 +3,7 @@
 #include "nlohmann/json.hpp"
 
 #include "Alime/NonCopyable.h"
+#include <vector>
 
 
 /*
@@ -36,9 +37,10 @@ public:
 	}
 	bool IsAdaptDpiOn() const;
 	bool IsModifyWindowOn() const;
-	bool IsSystemFolderDialogOn() const;
+	bool IsSystemFolderDialogOn() const;//fix me, ·ÏÆú£¬µÈ´ýÉ¾³ý
 	bool IsWebPageRefreshOn() const;
 	bool isStartPkpmmainDirect() const;
+	bool CanReadEnvFromConfig() const;
 	std::string GetDefaultAdvertise() const;
 	std::wstring GetAdvertisementServer() const;
 	std::wstring GetAdvertisementQuery() const;
@@ -56,6 +58,7 @@ public:
 	int32_t DaysLeftToNotify() const;
 	std::wstring GetLaunchDllName() const;
 	std::wstring GetBimDownLoadWeb() const;
+	const std::vector<std::wstring>& GetEnvPaths() const;
 private:	
 	ConfigManager();
 
@@ -68,7 +71,8 @@ private:
 	bool isAdaptDpiOn_;
 	bool systemFolderSelection_;
 	bool isWebPageRefreshOn_;
-	bool isStartPkpmmainDirect_;
+	bool canStartPkpmmainDirect_;
+	bool canReadEnvFromConfig_;
 	std::string defaultAdvertise_;
 	std::wstring launchDllName_;
 	std::wstring server_;
@@ -87,5 +91,6 @@ private:
 	int32_t styleIndex_;
 	int32_t deadline_;
 	int32_t folderDialogType_;
+	std::vector<std::wstring> envs_;
 	nlohmann::json json_;
 };

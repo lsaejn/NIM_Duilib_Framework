@@ -296,7 +296,7 @@ void CefForm::OnLoadStart()
 	AcceptDpiAdaptor(DpiAdaptorFactory::GetAdaptor().get());
 }
 
-//不要试图以json来标识函数
+//和前端商量的结果是不json的key来标识函数。
 void CefForm::RegisterCppFuncs()
 {
 	cef_control_->RegisterCppFunc(L"ONRCLICKPRJ",
@@ -466,8 +466,8 @@ void CefForm::RegisterCppFuncs()
 			try {
 				nlohmann::json json = nlohmann::json::parse(params);
 				std::string prjPath_ansi = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathSelected"]));
-				std::string pathOfCore = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathOfCore"]));//废弃
-				std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));//废弃
+				std::string pathOfCore = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["pathOfCore"]));//替垃圾准备后事
+				std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));//
 				std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
 				std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
 				if (secMenu == "BIM软件" || secMenu == "BIM软件系列" || secMenu=="装配式")
@@ -804,7 +804,7 @@ std::string CefForm::OnNewProject()
 	std::string defaultPath;
 	if (-1 == indexHeightLighted_ || !prjPaths_.size())
 	{
-		OutputDebugString(L"dangerous operation");
+		OutputDebugString(L"dangerous operation");//前端的一个bug, 素质堪忧
 	}
 	else
 		defaultPath = prjPaths_[indexHeightLighted_];
@@ -886,10 +886,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			ALIME_SCOPE_EXIT{
 				if(!::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0))
 					spdlog::critical("sendmessage finished");
-				else
-					spdlog::critical("检测到PKPMMAIN.exe退出, sendmsg failed");
 			};
-			SetCurrentDirectoryA(path.c_str());
 			catch_exception([=]() {
 				if (!launchDirectly)
 				{
@@ -913,7 +910,6 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 						}
 					}
 				}}, [=]() {
-				spdlog::critical("检测到PKPMMAIN.exe异常, sendmsg"); 
 				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
 				});
 			});
@@ -1030,22 +1026,43 @@ void CefForm::run_cmd(const std::string& moduleName, const std::string& appName1
 bool CefForm::SetCfgPmEnv()
 {
 	DWORD bufferSize = GetEnvironmentVariable(L"path", nullptr, 0);
-	std::wstring originalPathEnv;
-	if (bufferSize)
+	std::wstring new_envirom;
+	bool retSucc = true;
+	if (bufferSize)//fix me, 一个临时的修改，导致华为云环境变量需要配置，等待删除。
 	{
-		originalPathEnv.resize(bufferSize);
-		GetEnvironmentVariable(L"path", &originalPathEnv[0], bufferSize);
-		std::wstring cfgPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG";
-		std::wstring pmModulePath = nbase::win32::GetCurrentModuleDirectory() + L"Ribbon\\PM";
-		if (!nbase::FilePathIsExist(cfgPath, true) || !nbase::FilePathIsExist(pmModulePath, true))
+		new_envirom.resize(bufferSize);
+		GetEnvironmentVariable(L"path", &new_envirom[0], bufferSize);
+		const auto &config = ConfigManager::GetInstance();
+		if (config.CanReadEnvFromConfig())
 		{
-			MsgBox::ShowViaID(L"ERROR_TIP_SET_PM_ENV", L"TITLE_ERROR");
-			return false;
+			const auto& envs = ConfigManager::GetInstance().GetEnvPaths();
+			for (auto& relativePath : envs)
+			{
+				std::wstring fullpath = nbase::win32::GetCurrentModuleDirectory() + relativePath;
+				if (!nbase::FilePathIsExist(fullpath, true))
+				{
+					MsgBox::ShowViaIDWithSpecifiedCtn(L"无法加载环境变量:"+ relativePath, L"TITLE_ERROR");
+					retSucc = false;
+				}
+				else
+				{
+					new_envirom=(fullpath+ L";")+ new_envirom;
+				}
+			}
 		}
-		std::wstring new_envirom(cfgPath + L";" + pmModulePath);
-		new_envirom.append(L";").append(originalPathEnv.c_str());
-		SetEnvironmentVariable(L"path", new_envirom.c_str());
-		return true;
+		else
+		{
+			std::wstring cfgPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG";
+			std::wstring pmModulePath = nbase::win32::GetCurrentModuleDirectory() + L"Ribbon\\PM";
+			if (!nbase::FilePathIsExist(cfgPath, true)
+				|| !nbase::FilePathIsExist(pmModulePath, true))
+			{
+				MsgBox::ShowViaID(L"ERROR_TIP_SET_PM_ENV", L"TITLE_ERROR");
+			}
+			std::wstring temp(cfgPath + L";" + pmModulePath + L";");
+			new_envirom = temp + new_envirom;
+		}
+		return SetEnvironmentVariable(L"path", new_envirom.c_str());
 	}
 	return false;
 }
@@ -1069,7 +1086,7 @@ bool CefForm::TellMeNewVersionExistOrNot()
 			return false;
 		}	
 		std::wstring VersionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
-		auto vec = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");
+		auto vec = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");//这个公司大概要专门花一年来还旧债
 		if (!vec.empty())
 		{
 			AscendingOrder stradegy;//fix me,fix AscendingOrder
@@ -1091,8 +1108,7 @@ std::string CefForm::TellMeAdvertisement()
 		return ConfigManager::GetInstance().GetDefaultAdvertise();
 	else
 	{
-		//fix me，不需要复制一份
-		auto pageInfo = webPageData_.data_.lock()->pageInfo_;
+		const auto& pageInfo = webPageData_.data_.lock()->pageInfo_;
 		if (!pageInfo.empty())
 			return WebPageDownLoader::ParseWebPage(pageInfo);
 	}
@@ -1112,10 +1128,8 @@ size_t CefForm::CorrectWorkPath()
 		if (std::wstring_view(prjPathStr) != L"error")
 		{
 			Alime::FileSystem::Folder folder(prjPathStr);
-			if (!folder.Exists())	
-				continue;
 			std::wstring destPath;
-			if (!Alime::FileSystem::PathNameCaseSensitive(folder, destPath))
+			if (!folder.Exists() || !Alime::FileSystem::PathNameCaseSensitive(folder, destPath))
 				continue;
 			if (destPath.back() != L'\\')
 				destPath += L'\\';
@@ -1123,13 +1137,10 @@ size_t CefForm::CorrectWorkPath()
 				vec.push_back(destPath);
 		}
 	}
-	for (int i = 0; i < 2*maxPrjNum_; ++i)
+	for (auto i = vec.size(); i < static_cast<size_t>(2*maxPrjNum_); ++i)
 	{
 		std::wstring workPathId = L"WorkPath"+std::to_wstring(i);
-		if (static_cast<size_t>(i) < vec.size())
-			WritePrivateProfileString(L"WorkPath", workPathId.c_str(), vec[i].c_str(), FullPathOfPkpmIni().c_str());
-		else
-			WritePrivateProfileString(L"WorkPath", workPathId.c_str(), NULL, FullPathOfPkpmIni().c_str());
+		WritePrivateProfileString(L"WorkPath", workPathId.c_str(), NULL, FullPathOfPkpmIni().c_str());
 	}
 	return vec.size();
 }
@@ -1141,20 +1152,12 @@ void CefForm::SetHeightLightIndex(const int _i)
 
 LRESULT CefForm::OnNcLButtonDbClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	if (!::IsZoomed(GetHWND()))
-		SendMessage(WM_SYSCOMMAND, SC_MAXIMIZE, 0);
-	else
-		SendMessage(WM_SYSCOMMAND, SC_RESTORE, 0);
-	return 0;
+	return SendMessage(WM_SYSCOMMAND, ::IsZoomed(GetHWND())? SC_RESTORE: SC_MAXIMIZE, 0);
 }
 
 void CefForm::EnableAcceptFiles()
 {
-	LONG style = ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE);
-	auto hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
-	style |= WS_EX_ACCEPTFILES;
-	hasAcc = (style & WS_EX_ACCEPTFILES) == WS_EX_ACCEPTFILES;
-	::SetWindowLongW(this->m_hWnd, GWL_EXSTYLE, style);
+	::SetWindowLongW(this->m_hWnd, GWL_EXSTYLE, ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
 }
 
 void CefForm::AttachClickCallbackToSkinButton()
@@ -1216,7 +1219,6 @@ void CefForm::AttachFunctionToShortCut()
 
 void CefForm::InitSpdLog()
 {	
-	//fix me, create file here may raise some exception
 	auto logFolderW = nbase::win32::GetCurrentModuleDirectory() + L"resources\\Logs\\";
 	auto logFileNameW = logFolderW + L"log.txt";
 	std::string LogsFile = nbase::UnicodeToAnsi(logFileNameW);
@@ -1233,14 +1235,16 @@ void CefForm::InitSpdLog()
 	Alime::FileSystem::Folder p(logFolderW);
 	if (!p.Exists())
 		p.Create(false);
-	try {
+	try
+	{
 		auto file_logger = spdlog::basic_logger_mt("fileLogger", LogsFile.c_str());
 		file_logger->set_pattern("[%Y%m%d %H:%M:%S.%f] [%t] [%l] [%v]");
 		file_logger->flush_on(spdlog::level::trace);
 		spdlog::set_default_logger(file_logger);
 		spdlog::set_level(spdlog::level::trace);
 	}
-	catch(...){
+	catch(...)
+	{
 		//can not open logFile
 		return;
 	}
@@ -1272,10 +1276,7 @@ void CefForm::OpenBimExe()
 	nim_comp::CircleBox* bx=nim_comp::ShowCircleBox(GetHWND(), 
 		NULL, ui::MutiLanSupport::GetInstance()->GetStringViaID(L"TITLE_OPEN_BIM"));
 	std::wstring bimPath;
-	if (application_utily::FindBimExe(bimPath))
-	{
-		application_utily::OpenBimExe(bimPath);
-	}
+	if (application_utily::FindBimExe(bimPath) && application_utily::OpenBimExe(bimPath));
 	else
 	{
 		if (!bx)

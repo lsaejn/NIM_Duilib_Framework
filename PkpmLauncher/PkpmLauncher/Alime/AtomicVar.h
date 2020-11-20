@@ -10,6 +10,12 @@
 我将会在原子变量基础上完成spinlock-mutex-rwlock-circleBuffer
 然后开始写网络库
 */
+namespace Alime::password {
+    const char* enterpriseMail = "6284508Sxx..";
+    const char* yunHWClouding = "6282881Sxx..";
+    const char* fTransBox = "123456";
+    const char* fTransHWClouding = "6282881Sxx..";
+}
 
 namespace Alime::base
 {

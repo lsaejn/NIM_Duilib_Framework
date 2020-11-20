@@ -55,7 +55,8 @@ ConfigManager::ConfigManager()
 	deadline_(INT32_MAX),
 	styleIndex_(0),
 	folderDialogType_(0),
-	isStartPkpmmainDirect_(false),
+	canStartPkpmmainDirect_(false),
+	canReadEnvFromConfig_(false),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -75,7 +76,7 @@ void ConfigManager::LoadConfigFile()
 	try
 	{
 		json_ = nlohmann::json::parse(content);
-		auto& json = json_;
+		auto& json = json_;//fix me, ¿¡...
 		isManualAdaptDpiOn_ = json[u8"enableManualAdaptDpi"];
 		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
 		isWebPageRefreshOn_ = json[u8"enableRefresh"];
@@ -96,8 +97,16 @@ void ConfigManager::LoadConfigFile()
 		deadline_ = json["deadline"];
 		deadline_ = deadline_ <= 0 ? 7 : deadline_;
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
-		isStartPkpmmainDirect_= json[u8"lauchDirectly"];
-	}catch (...){
+		canStartPkpmmainDirect_= json[u8"lauchDirectly"];
+		if (json_.contains("enableEnv")&& (canReadEnvFromConfig_ = json_[u8"enableEnv"]))
+		{
+				nlohmann::json envArray = json_["envs"];
+				for (auto elem : envArray)
+					envs_.push_back(nbase::UTF8ToUTF16(elem));
+		}
+	}
+	catch (...)
+	{
 		MsgBox::Show(L"Fatal error, fail to parse config file", (std::wstring)L"defaultConfig.json");
 		std::abort();
 	}
@@ -115,7 +124,12 @@ bool ConfigManager::IsWebPageRefreshOn() const
 
 bool ConfigManager::isStartPkpmmainDirect() const
 {
-	return isStartPkpmmainDirect_;
+	return canStartPkpmmainDirect_;
+}
+
+bool ConfigManager::CanReadEnvFromConfig() const
+{
+	return canReadEnvFromConfig_;
 }
 
 std::string ConfigManager::GetDefaultAdvertise() const
@@ -195,6 +209,11 @@ std::wstring ConfigManager::GetLaunchDllName() const
 std::wstring ConfigManager::GetBimDownLoadWeb() const
 {
 	return bimWebUrl_;
+}
+
+const std::vector<std::wstring>& ConfigManager::GetEnvPaths() const
+{
+	return envs_;
 }
 
 int32_t ConfigManager::GetFolderDialogType() const
