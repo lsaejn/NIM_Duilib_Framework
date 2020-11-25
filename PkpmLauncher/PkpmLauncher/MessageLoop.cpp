@@ -10,7 +10,13 @@ void MainThread::Init()
 	// 默认语言使用 resources\\lang\\zh_CN
 	// 如需修改请指定 Startup 最后两个参数
 	std::wstring theme_dir = nbase::win32::GetCurrentModuleDirectory();
-	ui::GlobalManager::Startup(theme_dir + L"resources\\", ui::CreateControlCallback(), isAdaptDpiOpen());
+	ui::GlobalManager::Startup(theme_dir + L"resources\\", 
+		ui::CreateControlCallback(),
+		isAdaptDpiOpen(),
+		L"themes\\default",
+		ConfigManager::GetInstance().GetLanguageFile()
+		//L"lang\\zh_CN"
+	);
 	SpecificInit();
 }
 

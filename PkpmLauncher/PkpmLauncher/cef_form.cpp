@@ -48,7 +48,7 @@ CefForm::CefForm()
 void CefForm::AppendThreadTask()
 {
 	pool_.SetMaxQueueSize(4);
-	pool_.Start(2);//一共就3个线程任务，两短一长
+	pool_.Start(3);
 	pool_.Run(std::bind(&WebPageDownLoader::Run, &webPageData_, std::function<void()>()));
 	pool_.Run(std::bind(&WebArticleReader::Run, &webArticleReader_, [this]() {webArticleReader_.Init();}));
 }
@@ -127,7 +127,6 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 	return true;
 }
 
-//Fix me, windowImpBase里有大部分的处理函数，窗口级的处理最好放到函数里
 LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_DROPFILES)
@@ -258,7 +257,6 @@ bool CefForm::SwicthThemeTo(int index)
 		spdlog::critical("bad theme index: {0:d}", index);
 		return false;
 	}
-	if(1)//fix me。皮肤管理这块主动权应该放在我这，或者网页提供换肤接口
 	{
 		auto wrapedCap=SkinFatctory().GetWrappedCaption(this, index);
 		if (!wrapedCap)
@@ -266,11 +264,11 @@ bool CefForm::SwicthThemeTo(int index)
 		wrapedCap->ReDraw();
 		return true;
 	}
-	auto sw = SkinSwitcherFatctory::Get(index);
-	if (!sw)
-		return false;
-	sw->Switch(vistual_caption_, label_);
-	return true;
+	//auto sw = SkinSwitcherFatctory::Get(index);
+	//if (!sw)
+	//	return false;
+	//sw->Switch(vistual_caption_, label_);
+	//return true;
 }
 
 void CefForm::SaveThemeIndex(int index, const std::wstring& name)
@@ -292,7 +290,6 @@ void CefForm::OnLoadEnd(int /*httpStatusCode*/)
 void CefForm::OnLoadStart()
 {
 	RegisterCppFuncs();
-	//fix me
 	AcceptDpiAdaptor(DpiAdaptorFactory::GetAdaptor().get());
 }
 
@@ -571,7 +568,7 @@ void CefForm::RegisterCppFuncs()
 			lastTick = now;
 			if (interval < 200)
 			{
-				MsgBox::Warning(GetHWND(), L"你的操作过于频繁", L"警告");
+				MsgBox::WarningViaID(GetHWND(),L"ERROR_TIP_OPERATION_FREQUENTLY", L"TITLE_WARNING");
 				return;
 			}			
 			nlohmann::json json = nlohmann::json::parse(params);
@@ -583,7 +580,7 @@ void CefForm::RegisterCppFuncs()
 			}
 			catch (...)
 			{
-				MsgBox::Warning(GetHWND(), L"无效的参数", L"无法打开网页");
+				MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_INCORRECT_PARAM", L"TITLE_ERROR");
 			}
 			})
 	);
@@ -634,7 +631,7 @@ void CefForm::RegisterCppFuncs()
 				}
 				else
 				{
-					MsgBox::Warning(GetHWND(), L"读取内容出错", L"GETNATIVEARTICLES");
+					MsgBox::Warning(GetHWND(), L"dirty data", L"GETNATIVEARTICLES");
 					callback(false, R"({ "message": "GETNATIVEARTICLES failed, this should not happen" })");
 				}	
 			}
@@ -946,7 +943,7 @@ void CefForm::SaveWorkPaths(collection_utility::BoundedQueue<std::string>& prjPa
 	}
 	if (!hasAdministratorsRights)
 	{
-		MsgBox::Warning(GetHWND(), L"无法保存工程信息，建议使用管理员权限打开本软件", L"权限错误");
+		MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_ADMINISTRATOR_ACCESS_NEED",L"TITLE_ACCESS_ERROR");
 	}	
 }
 
@@ -1028,7 +1025,7 @@ bool CefForm::SetCfgPmEnv()
 	DWORD bufferSize = GetEnvironmentVariable(L"path", nullptr, 0);
 	std::wstring new_envirom;
 	bool retSucc = true;
-	if (bufferSize)//fix me, 一个临时的修改，导致华为云环境变量需要配置，等待删除。
+	if (bufferSize)
 	{
 		new_envirom.resize(bufferSize);
 		GetEnvironmentVariable(L"path", &new_envirom[0], bufferSize);
@@ -1042,7 +1039,9 @@ bool CefForm::SetCfgPmEnv()
 				if (!nbase::FilePathIsExist(fullpath, true))
 				{
 #ifdef DEBUG
-					MsgBox::ShowViaIDWithSpecifiedCtn(L"无法加载环境变量:"+ relativePath, L"TITLE_ERROR");
+					MsgBox::ShowViaIDWithSpecifiedCtn(
+						ui::MutiLanSupport::GetInstance()->GetStringViaID(L"ERROR_TIP_SET_ENV_FAILED") + relativePath,
+						L"TITLE_WARNING");
 #endif // DEBUG
 					retSucc = false;
 				}
@@ -1093,7 +1092,7 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		auto vec = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");//这个公司大概要专门花一年来还旧债
 		if (!vec.empty())
 		{
-			AscendingOrder stradegy;//fix me,fix AscendingOrder
+			AscendingOrder stradegy;
 			std::sort(vec.begin(), vec.end(), stradegy);
 			const auto& LatestVersionOnLocal = vec.back();
 			if (document.HasMember("VersionString"))//fix me, 

@@ -17,8 +17,7 @@ namespace Alime
 		}
 		void countDown()
 		{
-			// fix me, use std::lock_guard
-			std::unique_lock<std::mutex> lg(lock_);
+			std::lock_guard<std::mutex> lg(lock_);
 			--count_;
 			if (0 == count_)
 				cv_.notify_one();

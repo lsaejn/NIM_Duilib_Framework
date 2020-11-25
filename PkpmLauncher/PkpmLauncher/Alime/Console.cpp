@@ -98,7 +98,6 @@ namespace Alime
 		return result;
 #elif defined COMPILER_GCC
 		wstring s;
-		//fix me
 		wcin >> s;
 		return s.c_str();
 #endif

@@ -40,7 +40,6 @@ namespace Alime
 			bool	IsRoot() const;
 			String GetName() const;
 			String GetFullPath() const;	
-			//fix me，不应该使用的函数
 			String GetFullPathWithSurfix() const;
 			String GetRelativePathFor(const FilePath& _filePath);
 		};
@@ -123,7 +122,6 @@ namespace Alime
 			return PathNameDetail(arg.GetFilePath(), SensitivePath);
 		}
 
-		//fix me, 2020/03/30 最后一级目录很长的话，没办法处理
 		//criticalLength不包括盘符
 		static std::wstring GetAbbreviatedPath(const std::wstring& _path, size_t criticalLength= 60)
 		{

@@ -24,7 +24,6 @@ std::wstring IAdaptor::SelectSkinFile()
 /*
 使用网易的dpi可以省掉很多工作量，我们只需要选择加载的图片即可。
 不过这还是太麻烦了。
-Fix me 。本函数暂时未启用。
 */
 void DefaultDpiAdaptor::AdaptCaption(CefForm* _window)
 {
@@ -75,11 +74,11 @@ void DefaultDpiAdaptor::AdaptCaption(CefForm* _window)
 		 return defaultFile;
 	 else if (scale >= 125 && scale <= 350)
 	 {
-		 return SkinFileAsDpi(defaultFile,L"2k");
+		 return SkinFileAsDpi(defaultFile, ui::MutiLanSupport::GetInstance()->GetStringViaID(L"STRID_CEF_DPI_2"));
 	 }		 
-	 else
+	 else//fix me, in danger
 	 {
-		 return SkinFileAsDpi(defaultFile, L"4k");
+		 return SkinFileAsDpi(defaultFile, ui::MutiLanSupport::GetInstance()->GetStringViaID(L"STRID_CEF_DPI_4"));
 	 }		 
  }
 

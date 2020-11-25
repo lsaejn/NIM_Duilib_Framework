@@ -37,7 +37,6 @@ public:
 	}
 	bool IsAdaptDpiOn() const;
 	bool IsModifyWindowOn() const;
-	//bool IsSystemFolderDialogOn() const;//fix me, ·ÏÆú£¬µÈ´ýÉ¾³ý
 	bool IsWebPageRefreshOn() const;
 	bool isStartPkpmmainDirect() const;
 	bool CanReadEnvFromConfig() const;
@@ -52,6 +51,7 @@ public:
 	std::wstring GetNativeArticlePath() const;
 	std::wstring GetWebArticlePath() const;
 	std::wstring GetInstallerPath() const;
+	std::wstring GetLanguageFile() const;
 	std::pair<int, std::wstring> GetGuiStyleInfo() const;
 	void SetGuiStyleInfo(const std::pair<int, std::wstring>& info);
 	int32_t GetFolderDialogType() const;
@@ -69,11 +69,11 @@ private:
 private:
 	bool isManualAdaptDpiOn_;
 	bool isAdaptDpiOn_;
-	//bool systemFolderSelection_;
 	bool isWebPageRefreshOn_;
 	bool canStartPkpmmainDirect_;
 	bool canReadEnvFromConfig_;
 	std::string defaultAdvertise_;
+	std::wstring languageFileName_;
 	std::wstring launchDllName_;
 	std::wstring server_;
 	std::wstring advertisementQuery_;

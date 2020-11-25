@@ -29,9 +29,13 @@ public:
 		auto path = application_utily::FullPathOfPkpmIni();
 		int ret = 0;
 		ret = WritePrivateProfileString(L"InterfaceStyle", L"index", std::to_wstring(info.first).c_str(), path.c_str());
+		//if(!ret)
 		ret = WritePrivateProfileString(L"InterfaceStyle", L"name", info.second.c_str(), path.c_str());
 		if (!ret)
-			MsgBox::Show(L"无法保存换肤信息", true);
+		{
+			MsgBox::Show(ui::MutiLanSupport::GetInstance()->GetStringViaID(L"ERROR_TIP_FAILED_TO_SAVE_STYLEINFO"), true);
+		}
+			
 	}
 
 };
@@ -76,11 +80,10 @@ void ConfigManager::LoadConfigFile()
 	try
 	{
 		json_ = nlohmann::json::parse(content);
-		auto& json = json_;//fix me, 懒...
+		auto& json = json_;
 		isManualAdaptDpiOn_ = json[u8"enableManualAdaptDpi"];
 		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
 		isWebPageRefreshOn_ = json[u8"enableRefresh"];
-		//systemFolderSelection_ = json[u8"systemFolderSelection"];
 		defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
 		folderDialogType_ = json["folderDialogType"];
 		server_ = nbase::UTF8ToUTF16(json["server"]);
@@ -98,6 +101,7 @@ void ConfigManager::LoadConfigFile()
 		deadline_ = deadline_ <= 0 ? 7 : deadline_;
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
 		canStartPkpmmainDirect_= json[u8"lauchDirectly"];
+		languageFileName_ = nbase::UTF8ToUTF16(json[u8"languageFile"]);
 		if (json_.contains("enableEnv")&& (canReadEnvFromConfig_ = json_[u8"enableEnv"]))
 		{
 				nlohmann::json envArray = json_["envs"];
@@ -184,6 +188,11 @@ std::wstring ConfigManager::GetWebArticlePath() const
 std::wstring ConfigManager::GetInstallerPath() const
 {
 	return installerPath_;
+}
+
+std::wstring ConfigManager::GetLanguageFile() const
+{
+	return languageFileName_;
 }
 
 bool ConfigManager::IsAdaptDpiOn() const

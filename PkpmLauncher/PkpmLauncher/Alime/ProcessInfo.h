@@ -3,9 +3,6 @@
 Alime
 Developer: lsaejn
 Date:2020/04/17
-
-功能被放入processIterator和windowIterator。
-Fix me,等待发盘后删除此文件。
 ********************************************************/
 #pragma once
 #include <windows.h>

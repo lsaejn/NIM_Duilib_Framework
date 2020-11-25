@@ -145,7 +145,6 @@ public:
 		func();
 	}
 
-	//fix me, 参数可以去掉了
 	void OnSwitchToNetVersion(HWND mainWnd)
 	{
 		if (!mainWnd)
@@ -242,6 +241,7 @@ ShortCutHandler::~ShortCutHandler()
 
 void ShortCutHandler::Init()
 {
+	//不改，按理说网页人员应该学会自己传递参数, 而不是让我利用配置文件反射
 	SHORTCUTFUNC(ShortCutHandlerImpl, "关于PKPM", OnAboutPkpm)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "关于", OnAboutPkpm)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "改进说明", OnImprovement)
@@ -262,8 +262,7 @@ void ShortCutHandler::CallFunc(const std::string& cutName)
 		(funcMaps_[cutName])();
 	else
 	{
-		//fix me, modify stringMap
-		MsgBox::Warning(mainWnd_, L"意外的界面菜单项", L"错误");
+		MsgBox::WarningViaID(mainWnd_, L"ERROR_TIP_UNEXCEPTED_MENU", L"TITLE_ERROR");
 	}
 }
 

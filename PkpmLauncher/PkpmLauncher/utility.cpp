@@ -258,8 +258,6 @@ namespace application_utily
 		return false;
 	}
 
-	//Fix me
-	//写成exe，放到菜单里就可以和其他程序调用保持一致。
 	bool FindBimExe(std::wstring& bimPath)
 	{
 		bimPath = L"";
@@ -285,7 +283,6 @@ namespace application_utily
 				wchar_t* szValueName = new wchar_t[NameSize];
 				LPBYTE szValueDate = (LPBYTE)malloc(DateSize);
 				RegEnumValue(hKey, dwIndex, szValueName, &NameSize, NULL, &Type, szValueDate, &DateSize);
-				//Fix me, need Alime::Equal(... , ignoreCase)
 				if (std::wstring(szValueName) == L"PATH" || std::wstring(szValueName) == L"Path")
 				{
 					bimPath = (wchar_t*)(szValueDate);

@@ -184,7 +184,6 @@ namespace Alime
 			String pathRemaining = path;
 			std::wstring delimiter;
 			delimiter+=FilePath::Delimiter;
-			//fix me, String->std::wstring when cross-platform
 			auto re=nbase::StringTokenize(path.c_str(), delimiter.c_str());
 			return { re.cbegin() ,re.cend() };
 		}

@@ -40,7 +40,6 @@ namespace Alime
 			bool	IsRoot() const;
 			String GetName() const;
 			String GetFullPath() const;	
-			//fix me，不应该使用的函数
 			String GetFullPathWithSurfix() const;
 			String GetRelativePathFor(const FilePath& _filePath);
 		};
@@ -123,9 +122,6 @@ namespace Alime
 			return PathNameDetail(arg.GetFilePath(), SensitivePath);
 		}
 
-		//fix me, label长度是自适应的，却能把右边的占位符给挤掉....
-		//如果算字符像素，还不如在xml里写个width属性，所以这里统计字符个数比较省事。
-		//如果确实希望计算像素，可以复制我pgcell里的代码
 		static std::wstring GetAbbreviatedPath(const std::wstring& _path, size_t criticalLength= 50)
 		{
 			std::wstring result;
