@@ -243,6 +243,7 @@ ShortCutHandler::~ShortCutHandler()
 void ShortCutHandler::Init()
 {
 	SHORTCUTFUNC(ShortCutHandlerImpl, "关于PKPM", OnAboutPkpm)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "关于", OnAboutPkpm)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "改进说明", OnImprovement)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "模型打包", OnModelPacking)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "注册控件", OnRegiser)
@@ -260,7 +261,10 @@ void ShortCutHandler::CallFunc(const std::string& cutName)
 	if (Contains(cutName))
 		(funcMaps_[cutName])();
 	else
-		throw std::invalid_argument("invalid event name");
+	{
+		//fix me, modify stringMap
+		MsgBox::Warning(mainWnd_, L"意外的界面菜单项", L"错误");
+	}
 }
 
 bool ShortCutHandler::Contains(const std::string& cutName) const

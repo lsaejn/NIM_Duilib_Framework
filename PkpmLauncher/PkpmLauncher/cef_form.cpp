@@ -1041,7 +1041,9 @@ bool CefForm::SetCfgPmEnv()
 				std::wstring fullpath = nbase::win32::GetCurrentModuleDirectory() + relativePath;
 				if (!nbase::FilePathIsExist(fullpath, true))
 				{
+#ifdef DEBUG
 					MsgBox::ShowViaIDWithSpecifiedCtn(L"无法加载环境变量:"+ relativePath, L"TITLE_ERROR");
+#endif // DEBUG
 					retSucc = false;
 				}
 				else
@@ -1057,7 +1059,9 @@ bool CefForm::SetCfgPmEnv()
 			if (!nbase::FilePathIsExist(cfgPath, true)
 				|| !nbase::FilePathIsExist(pmModulePath, true))
 			{
+#ifdef DEBUG
 				MsgBox::ShowViaID(L"ERROR_TIP_SET_PM_ENV", L"TITLE_ERROR");
+#endif // DEBUG
 			}
 			std::wstring temp(cfgPath + L";" + pmModulePath + L";");
 			new_envirom = temp + new_envirom;

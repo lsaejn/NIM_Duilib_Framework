@@ -37,7 +37,7 @@ public:
 	}
 	bool IsAdaptDpiOn() const;
 	bool IsModifyWindowOn() const;
-	bool IsSystemFolderDialogOn() const;//fix me, ·ÏÆú£¬µÈ´ýÉ¾³ý
+	//bool IsSystemFolderDialogOn() const;//fix me, ·ÏÆú£¬µÈ´ýÉ¾³ý
 	bool IsWebPageRefreshOn() const;
 	bool isStartPkpmmainDirect() const;
 	bool CanReadEnvFromConfig() const;
@@ -69,7 +69,7 @@ private:
 private:
 	bool isManualAdaptDpiOn_;
 	bool isAdaptDpiOn_;
-	bool systemFolderSelection_;
+	//bool systemFolderSelection_;
 	bool isWebPageRefreshOn_;
 	bool canStartPkpmmainDirect_;
 	bool canReadEnvFromConfig_;

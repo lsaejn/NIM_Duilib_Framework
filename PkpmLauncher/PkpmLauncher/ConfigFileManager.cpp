@@ -80,7 +80,7 @@ void ConfigManager::LoadConfigFile()
 		isManualAdaptDpiOn_ = json[u8"enableManualAdaptDpi"];
 		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
 		isWebPageRefreshOn_ = json[u8"enableRefresh"];
-		systemFolderSelection_ = json[u8"systemFolderSelection"];
+		//systemFolderSelection_ = json[u8"systemFolderSelection"];
 		defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
 		folderDialogType_ = json["folderDialogType"];
 		server_ = nbase::UTF8ToUTF16(json["server"]);
@@ -112,10 +112,10 @@ void ConfigManager::LoadConfigFile()
 	}
 }
 
-bool ConfigManager::IsSystemFolderDialogOn() const
-{
-	return systemFolderSelection_;
-}
+//bool ConfigManager::IsSystemFolderDialogOn() const
+//{
+//	return systemFolderSelection_;
+//}
 
 bool ConfigManager::IsWebPageRefreshOn() const
 {
