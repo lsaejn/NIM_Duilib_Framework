@@ -5,17 +5,12 @@
 void MainThread::Init()
 {
 	nbase::ThreadManager::RegisterThread(0);
-	// 获取资源路径，初始化全局参数
-	// 默认皮肤使用 resources\\themes\\default
-	// 默认语言使用 resources\\lang\\zh_CN
-	// 如需修改请指定 Startup 最后两个参数
 	std::wstring theme_dir = nbase::win32::GetCurrentModuleDirectory();
 	ui::GlobalManager::Startup(theme_dir + L"resources\\", 
 		ui::CreateControlCallback(),
 		isAdaptDpiOpen(),
 		L"themes\\default",
 		ConfigManager::GetInstance().GetLanguageFile()
-		//L"lang\\zh_CN"
 	);
 	SpecificInit();
 }
@@ -29,7 +24,6 @@ void MainThread::Cleanup()
 
 void MainThread::SpecificInit()
 {
-	//比如使用网络功能
 	f_();
 }
 

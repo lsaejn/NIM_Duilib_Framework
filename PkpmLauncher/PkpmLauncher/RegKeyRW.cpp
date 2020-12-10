@@ -117,7 +117,7 @@ std::string GetRegValue(int nKeyType, const std::string& strUrl, const std::stri
             //分配内存大小
             BYTE* lpValue = new BYTE[dwSize];
             //获取注册表中指定的键所对应的值
-            LONG lRet = ::RegQueryValueEx(hKeyResult, wstrKey.c_str(), 0, &dwDataType, lpValue, &dwSize);
+            /*LONG lRet = */::RegQueryValueEx(hKeyResult, wstrKey.c_str(), 0, &dwDataType, lpValue, &dwSize);
             delete[] lpValue;
             break;
         }
@@ -151,8 +151,8 @@ void SetRegValue(int nKeyType, const std::string& strUrl, const std::string& str
     HKEY rootKey = NULL;
     std::wstring wstrUrl = s2ws(strUrl);
     std::wstring wstrKey = s2ws(strKey);
-    DWORD state=0, dwtype=0;
-    char reBuff[buffSize] = { 0 };
+    DWORD state=0;
+    //char reBuff[buffSize] = { 0 };
     switch (nKeyType)
     {
     case 0:

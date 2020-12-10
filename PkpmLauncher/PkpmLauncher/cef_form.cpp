@@ -142,6 +142,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		else
 		{
 			DragQueryFile(hDropInfo, 0, filePath, sizeof(filePath));
+			//fix me, use Alime::Directory
 			if (PathFileExists(filePath) && PathIsDirectory(filePath))
 			{
 				std::string pathString = nbase::UnicodeToAnsi(filePath);
@@ -724,7 +725,6 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 	return nbase::AnsiToUtf8(result);
 }
 
-
 bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 	const char* /*surfix*/)
 {
@@ -883,6 +883,8 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			ALIME_SCOPE_EXIT{
 				if(!::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0))
 					spdlog::critical("sendmessage finished");
+				nbase::ThreadManager::PostTask(0, std::bind(&CefForm::ShowWindow, this, true, true));
+				CenterWindow();
 			};
 			catch_exception([=]() {
 				if (!launchDirectly)
@@ -894,6 +896,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 					if (rawCmdLine.find("PKPMMAIN") == std::string::npos)
 						run_cmd(args[3], args[4], "");
 					else
+					//fix me. 这个公司，没一个工程是可以信赖的
 					{
 						std::wstring pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
 						std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
@@ -1160,7 +1163,7 @@ LRESULT CefForm::OnNcLButtonDbClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 void CefForm::EnableAcceptFiles()
 {
-	::SetWindowLongW(this->m_hWnd, GWL_EXSTYLE, ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
+	::SetWindowLong(this->m_hWnd, GWL_EXSTYLE, ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
 }
 
 void CefForm::AttachClickCallbackToSkinButton()

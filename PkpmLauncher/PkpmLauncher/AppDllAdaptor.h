@@ -3,7 +3,7 @@
 #define  _APP_DLL_ADAPTOR_H_
 
 /// <summary>
-/// 现在，启动dll只需要提供两个接口即可。
+/// 现在，启动dll只需要提供两个接口即可, 恶心到极致的旧代码。
 /// </summary>
 typedef  const char* (*FP_INITPKPMAPP)();
 typedef  void  (*FP_RUNCOMMAND)(CHAR* strCmd);

@@ -137,8 +137,8 @@ namespace Alime
 		{
 		}
 
-		bool operator==(const BufferPair& pair) { return false; }
-		bool operator!=(const BufferPair& pair) { return true; }
+		bool operator==(const BufferPair& /*pair*/) { return false; }
+		bool operator!=(const BufferPair& /*pair*/) { return true; }
 	};
 
 	bool HttpQuery(const HttpRequest& request, HttpResponse& response)
@@ -159,7 +159,7 @@ namespace Alime
 		if (!internet) goto CLEANUP;
 
 		// connect
-		connectedInternet = WinHttpConnect(internet, request.server.data(), (int)request.port, 0);
+		connectedInternet = WinHttpConnect(internet, request.server.data(), (INTERNET_PORT)request.port, 0);
 		error = GetLastError();
 		if (!connectedInternet) goto CLEANUP;
 
@@ -180,11 +180,11 @@ namespace Alime
 		}
 		if (request.contentType != L"")
 		{
-			httpResult = WinHttpAddRequestHeaders(requestInternet, (L"Content-type:" + request.contentType).data(), -1, WINHTTP_ADDREQ_FLAG_REPLACE | WINHTTP_ADDREQ_FLAG_ADD);
+			httpResult = WinHttpAddRequestHeaders(requestInternet, (L"Content-type:" + request.contentType).data(), (DWORD)-1, WINHTTP_ADDREQ_FLAG_REPLACE | WINHTTP_ADDREQ_FLAG_ADD);
 		}
 		if (request.cookie != L"")
 		{
-			WinHttpAddRequestHeaders(requestInternet, (L"Cookie:" + request.cookie).data(), -1, WINHTTP_ADDREQ_FLAG_REPLACE | WINHTTP_ADDREQ_FLAG_ADD);
+			WinHttpAddRequestHeaders(requestInternet, (L"Cookie:" + request.cookie).data(), (DWORD)-1, WINHTTP_ADDREQ_FLAG_REPLACE | WINHTTP_ADDREQ_FLAG_ADD);
 		}
 
 		// extra headers
@@ -192,7 +192,7 @@ namespace Alime
 		{
 			String key = iter->first;
 			String value = iter->second;
-			WinHttpAddRequestHeaders(requestInternet, (key + L":" + value).data(), -1, WINHTTP_ADDREQ_FLAG_REPLACE | WINHTTP_ADDREQ_FLAG_ADD);
+			WinHttpAddRequestHeaders(requestInternet, (key + L":" + value).data(), (DWORD)-1, WINHTTP_ADDREQ_FLAG_REPLACE | WINHTTP_ADDREQ_FLAG_ADD);
 		}
 
 		if (request.body.size() > 0)
@@ -276,7 +276,7 @@ namespace Alime
 			int totalSize = 0;
 			//for(const BufferPair&p: availableBuffers)
 			//	totalSize += p.length;
-			for(int i=0;i!=availableBuffers.size();++i)
+			for(size_t i=0;i!=availableBuffers.size();++i)
 				totalSize += availableBuffers[i].length;
 			response.body.resize(totalSize);
 			if (totalSize > 0)
@@ -289,7 +289,7 @@ namespace Alime
 					//	memcpy(temp, p.buffer, p.length);
 					//	temp += p.length;
 					//}
-					for(int i=0;i!=availableBuffers.size();++i)
+					for(size_t i=0;i!=availableBuffers.size();++i)
 					{
 						memcpy(temp, availableBuffers[i].buffer, availableBuffers[i].length);
 						temp += availableBuffers[i].length;
@@ -298,10 +298,8 @@ namespace Alime
 				memcpy(&response.body[0], utf8, totalSize);
 				delete[] utf8;
 			}
-			//for (const BufferPair& p : availableBuffers)
-			for(int i=0;i!=availableBuffers.size();++i)
+			for(size_t i=0;i!=availableBuffers.size();++i)
 			{
-				//delete[] p.buffer;
 				delete[] availableBuffers[i].buffer;
 			}
 		}

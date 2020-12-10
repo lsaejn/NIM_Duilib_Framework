@@ -4,7 +4,7 @@
 #include "windows.h"
 
 /*
-增加托盘可以避免一些尴尬--启动界面显示不出来的情况。
+增加托盘可以避免一些尴尬--启动界面在后台显示不出来的情况。
 */
 class AppTray: noncopyable
 {

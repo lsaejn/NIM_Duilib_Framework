@@ -105,7 +105,7 @@ public:
 			}
 			rapidjson::Document doc;
 			rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
-			rapidjson::Value array(rapidjson::kArrayType);//< 创建一个数组对象
+			rapidjson::Value array(rapidjson::kArrayType);
 			for (size_t i = 0; i != data.size(); ++i)
 			{
 				rapidjson::Value obj(rapidjson::kObjectType);

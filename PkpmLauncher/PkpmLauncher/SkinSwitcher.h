@@ -15,7 +15,7 @@ using DpiMsgCallback = std::function<void (ui::Control*)>;
 DpiMsgCallback emptyFunc;
 
 //怎么简单怎么写了,你要相信启动界面上面的东西会越来越多
-//标题栏上要处理的东西也会越来越多
+//标题栏上要处理的东西也会越来越多, 换肤按钮多半会上来的
 class Component
 {
 public:
@@ -115,14 +115,13 @@ class SkinFatctory :public noncopyable
 public:
 	std::shared_ptr<WrappedUiElement> GetWrappedCaption(CefForm* form, int index)
 	{
-		std::shared_ptr<WrappedUiElement> smart_ptr;
+		std::shared_ptr<WrappedUiElement> sptr;
 		if (0==index)
-			smart_ptr.reset(new BlackWrappedCaption(form));
+			sptr.reset(new BlackWrappedCaption(form));
 		if (1==index)
-			smart_ptr.reset(new BlueWrappedCaption(form));
-		return smart_ptr;
+			sptr.reset(new BlueWrappedCaption(form));
+		return sptr;
 	}
-
 };
 
 //fix me, 没写完
@@ -134,7 +133,6 @@ public:
 		bool ok = Init();
 		UNREFERENCED_PARAMETER(ok);
 	}
-
 
 	bool Init()
 	{
