@@ -35,6 +35,7 @@ namespace application_utily
 	bool OpenBimExe(const std::wstring& bimPath);
 	void OnOpenModelViewerMaster();//Í¼Ä£´óÊ¦PKPM_Model_Master
 	std::wstring CorrectCefUrl(const std::wstring&);
+	bool IsOpenedWithAdminAccess(int pid=-1);
 }
 
 

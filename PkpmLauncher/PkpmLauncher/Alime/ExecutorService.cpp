@@ -149,6 +149,7 @@ namespace Alime
         }
     }
 
+    //or, use an atomic var instead
     size_t ExecutorService::QueueSize() const
     {
         std::lock_guard<std::mutex> lock(mutex_);

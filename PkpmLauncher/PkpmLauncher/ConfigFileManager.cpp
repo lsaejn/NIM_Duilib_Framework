@@ -6,10 +6,17 @@
 
 #include "ConfigFileManager.h"
 #include "utility.h"
+#include "SpdLogForward.h"
 
+#pragma warning(disable: 4706)
 
 //换肤的结果会被pkpmmain使用，所以最后还是决定把结果丢到pkpm.ini里
 //方案是前端定的。 0-black 1-blue。我也不知道为什么搞这么奇怪
+
+/*
+为了让配置文件向前兼容，新增的字段都设有默认值，不抛出异常
+*/
+
 class PkpmConfigManager
 {
 public:
@@ -48,19 +55,20 @@ void ConfigManager::CheckAdaptDpi()
 			return;
 		nlohmann::json json;
 		ifs >> json;
-		isManualAdaptDpiOn_ = json[u8"enableAutoModifyWindow"];
-		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
+		enableManualAdaptDpi_ = json[u8"enableAutoModifyWindow"];
+		enableAdaptDpi_ = json[u8"enableAdaptDpi"];
 	}
 }
 
 ConfigManager::ConfigManager()
-	:isManualAdaptDpiOn_(false),
-	isAdaptDpiOn_(false),
+	:enableManualAdaptDpi_(false),
+	enableAdaptDpi_(false),
 	deadline_(INT32_MAX),
 	styleIndex_(0),
 	folderDialogType_(0),
-	canStartPkpmmainDirect_(false),
-	canReadEnvFromConfig_(false),
+	enableStartPkpmmainDirect_(false),
+	enableReadEnvFromConfig_(false),
+	enableAcceptFileForAdmin_(false),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -70,6 +78,7 @@ ConfigManager::ConfigManager()
 
 void ConfigManager::LoadConfigFile()
 {
+	//MsgBox::Show(L"Fatal error, fail to find config file", (std::wstring)L"defaultConfig.json");
 	std::string content;
 	bool succ = nbase::ReadFileToString(filePath_, content);
 	if (!succ)
@@ -81,9 +90,9 @@ void ConfigManager::LoadConfigFile()
 	{
 		json_ = nlohmann::json::parse(content);
 		auto& json = json_;
-		isManualAdaptDpiOn_ = json[u8"enableManualAdaptDpi"];
-		isAdaptDpiOn_ = json[u8"enableAdaptDpi"];
-		isWebPageRefreshOn_ = json[u8"enableRefresh"];
+		enableManualAdaptDpi_ = json[u8"enableManualAdaptDpi"];
+		enableAdaptDpi_ = json[u8"enableAdaptDpi"];
+		enableWebPageRefresh_ = json[u8"enableRefresh"];
 		defaultAdvertise_ = json[u8"defaultAdvertise"].dump();
 		folderDialogType_ = json["folderDialogType"];
 		server_ = nbase::UTF8ToUTF16(json["server"]);
@@ -100,16 +109,21 @@ void ConfigManager::LoadConfigFile()
 		deadline_ = json["deadline"];
 		deadline_ = deadline_ <= 0 ? 7 : deadline_;
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
-		canStartPkpmmainDirect_= json[u8"lauchDirectly"];
+		enableStartPkpmmainDirect_= json[u8"lauchDirectly"];
 		languageFileName_ = nbase::UTF8ToUTF16(json[u8"languageFile"]);
-		if (json_.contains("enableEnv")&& (canReadEnvFromConfig_ = json_[u8"enableEnv"]))
+		
+		if (json_.contains("enableEnv")&& (enableReadEnvFromConfig_ = json_[u8"enableEnv"]))
 		{
 				nlohmann::json envArray = json_["envs"];
 				for (auto elem : envArray)
 					envs_.push_back(nbase::UTF8ToUTF16(elem));
 		}
+		if (json_.contains("acceptFileForAdmin"))
+		{
+			enableAcceptFileForAdmin_ = json[u8"acceptFileForAdmin"];
+		}
 	}
-	catch (...)
+	catch (std::exception& )//parse excetion
 	{
 		MsgBox::Show(L"Fatal error, fail to parse config file", (std::wstring)L"defaultConfig.json");
 		std::abort();
@@ -123,17 +137,22 @@ void ConfigManager::LoadConfigFile()
 
 bool ConfigManager::IsWebPageRefreshOn() const
 {
-	return isWebPageRefreshOn_;
+	return enableWebPageRefresh_;
 }
 
 bool ConfigManager::isStartPkpmmainDirect() const
 {
-	return canStartPkpmmainDirect_;
+	return enableStartPkpmmainDirect_;
 }
 
 bool ConfigManager::CanReadEnvFromConfig() const
 {
-	return canReadEnvFromConfig_;
+	return enableReadEnvFromConfig_;
+}
+
+bool ConfigManager::IsAcceptFileForAdminOn() const
+{
+	return enableAcceptFileForAdmin_;
 }
 
 std::string ConfigManager::GetDefaultAdvertise() const
@@ -197,12 +216,12 @@ std::wstring ConfigManager::GetLanguageFile() const
 
 bool ConfigManager::IsAdaptDpiOn() const
 {
-	return isAdaptDpiOn_;
+	return enableAdaptDpi_;
 }
 
 bool ConfigManager::IsModifyWindowOn() const
 {
-	return isManualAdaptDpiOn_;
+	return enableManualAdaptDpi_;
 }
 
 int32_t ConfigManager::DaysLeftToNotify() const

@@ -5,6 +5,7 @@
 #include "WinMain.h"
 #include "utility.h"
 #include "templates.h"
+#include "ConfigFileManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,19 +24,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNUSEDPARAMS(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 	INITCOMMONCONTROLSEX InitCtrls;
 	InitCtrls.dwSize = sizeof(InitCtrls);
-	// 将它设置为包括所有要在应用程序中使用的
-	// 公共控件类。
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
-	// 将 bin\\cef 目录添加到环境变量，这样可以将所有 CEF 相关文件放到该目录下，方便管理
-	// 在项目属性->连接器->输入，延迟加载 nim_libcef.dll
 	nim_comp::CefManager::GetInstance()->AddCefDllToPath();
 
 	HRESULT hr = ::OleInitialize(NULL);
 	if (FAILED(hr))
 		return 0;
 
-	// 初始化 CEF
+	/*
+		CEF子进程会阻塞
+	*/
+	ConfigManager::GetInstance().LoadConfigFile();
 	CefSettings settings;
 	if (!nim_comp::CefManager::GetInstance()->Initialize(nbase::win32::GetCurrentModuleDirectory() + L"resources\\", settings, kEnableOffsetRender))
 	{
@@ -45,9 +45,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//创建守护进程,避免cef残留
 	//application_utily::GodBlessThisProcess();
 	//_CrtSetBreakAlloc(626);
-	// 创建主线程
+	// 创建主线程..
 	MainThread thread;
-
+	//如果你实在有洁癖，可以在这里初始化全局变量
+	//但是这段代码不应该截获消息，否则子进程先于父进程初始化完成。
 	thread.setFunc([]()->auto {
 		CefForm* window = new CefForm();
 		window->Create(NULL, CefForm::kClassName.c_str(), WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 0, nim_comp::CefManager::GetInstance()->IsEnableOffsetRender());

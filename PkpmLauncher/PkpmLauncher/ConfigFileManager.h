@@ -40,6 +40,7 @@ public:
 	bool IsWebPageRefreshOn() const;
 	bool isStartPkpmmainDirect() const;
 	bool CanReadEnvFromConfig() const;
+	bool IsAcceptFileForAdminOn() const;
 	std::string GetDefaultAdvertise() const;
 	std::wstring GetAdvertisementServer() const;
 	std::wstring GetAdvertisementQuery() const;
@@ -59,19 +60,21 @@ public:
 	std::wstring GetLaunchDllName() const;
 	std::wstring GetBimDownLoadWeb() const;
 	const std::vector<std::wstring>& GetEnvPaths() const;
+	void LoadConfigFile();
 private:	
 	ConfigManager();
 
 	[[deprecated("why two dpi variable in this function?")]] 
 	void CheckAdaptDpi();
-	void LoadConfigFile();
+	
 
 private:
-	bool isManualAdaptDpiOn_;
-	bool isAdaptDpiOn_;
-	bool isWebPageRefreshOn_;
-	bool canStartPkpmmainDirect_;
-	bool canReadEnvFromConfig_;
+	bool enableManualAdaptDpi_;
+	bool enableAdaptDpi_;
+	bool enableWebPageRefresh_;
+	bool enableStartPkpmmainDirect_;
+	bool enableReadEnvFromConfig_;
+	bool enableAcceptFileForAdmin_;//"acceptFileForAdmin"
 	std::string defaultAdvertise_;
 	std::wstring languageFileName_;
 	std::wstring launchDllName_;

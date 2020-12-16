@@ -199,7 +199,7 @@
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\PkpmLauncher\Release\PKPM2010V52.exe D:\PKPMV521_1102\PKPM2010V52.exe</Command>
+      <Command>copy D:\works\NimDuilibFramework\PkpmLauncher\Release\PKPM2010V52.exe D:\PKPMV522_20201130\PKPM2010V52.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

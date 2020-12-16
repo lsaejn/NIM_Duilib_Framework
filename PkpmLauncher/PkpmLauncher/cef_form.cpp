@@ -1163,6 +1163,12 @@ LRESULT CefForm::OnNcLButtonDbClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 void CefForm::EnableAcceptFiles()
 {
+	if (ConfigManager::GetInstance().IsAcceptFileForAdminOn() && IsOpenedWithAdminAccess())
+	{
+		spdlog::debug("raise WM_DROPFILES for admin");
+		ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
+		ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
+	}
 	::SetWindowLong(this->m_hWnd, GWL_EXSTYLE, ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
 }
 
