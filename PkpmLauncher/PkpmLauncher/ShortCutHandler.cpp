@@ -25,6 +25,7 @@ std::wstring GetCfgPath_Inner()
 class ShortCutHandlerImpl
 {
 public:
+	friend class ShortCutHandler;
 	class DllScopeGuarder
 	{
 	public:
@@ -48,6 +49,7 @@ private:
 	CallBack DoAfterCallFunc_;//显示主窗口
 	CallBack RefreshConfigFileFunc_;//给模型打包用的，它们需要读工程路径，而这个路径是从配置文件里去读。人才!
 	BooleanCallBack NewVersionChecker_;//查询是否存在新版本
+	HWND mainWnd_;
 public:
 	ShortCutHandlerImpl()
 	{
@@ -190,7 +192,8 @@ public:
 				File file(path);
 				if (file.Exists())
 				{
-					bool ret=application_utily::CreateProcessWithCommand(file.GetFilePath().GetFullPath().c_str(), NULL, NULL);
+					auto param = L" "+std::to_wstring((int)mainWnd_);
+					bool ret=application_utily::CreateProcessWithCommand(file.GetFilePath().GetFullPath().c_str(), param.c_str(), NULL);
 					if(!ret)
 						spdlog::critical("fail to open installer.exe.");
 					return;
@@ -281,6 +284,7 @@ void ShortCutHandler::SetCallBacks(HWND wnd, CallBack _f)
 {
 	mainWnd_ = wnd;
 	//then
+	impl_->mainWnd_ = this->mainWnd_;
 	if (mainWnd_)
 	{
 		impl_->SetBeforeFunc([this]() {

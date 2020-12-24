@@ -32,9 +32,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (FAILED(hr))
 		return 0;
 
-	/*
-		CEF子进程会阻塞
-	*/
 	ConfigManager::GetInstance().LoadConfigFile();
 	CefSettings settings;
 	if (!nim_comp::CefManager::GetInstance()->Initialize(nbase::win32::GetCurrentModuleDirectory() + L"resources\\", settings, kEnableOffsetRender))
@@ -42,8 +39,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return 0;
 	}
 
-	//创建守护进程,避免cef残留
-	//application_utily::GodBlessThisProcess();
 	//_CrtSetBreakAlloc(626);
 	// 创建主线程..
 	MainThread thread;
@@ -56,10 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		window->ShowWindow();
 		return;
 	});
-	// 执行主线程循环
 	thread.RunOnCurrentThreadWithLoop(nbase::MessageLoop::kUIMessageLoop);
-
-	// 清理 CEF
 	nim_comp::CefManager::GetInstance()->UnInitialize();
 	::OleUninitialize();
 	return 0;

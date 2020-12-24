@@ -114,8 +114,10 @@ namespace Alime
 				return false;
 		}
 
-		template<typename T>
-		static bool PathNameCaseSensitive(const T& arg, String& SensitivePath)
+
+		template<typename T, typename Rt=bool>
+		static std::enable_if_t<std::is_same_v<T, Folder>, Rt>
+		PathNameCaseSensitive(const T& arg, String& SensitivePath)
 		{
 			if (!arg.Exists())
 				return false;

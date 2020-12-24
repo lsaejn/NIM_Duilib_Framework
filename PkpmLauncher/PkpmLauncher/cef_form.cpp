@@ -203,6 +203,7 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			));
 		}
 		delete ptr;
+		return WM_SHOWAUTHORIZE;
 	}
 	else if(uMsg == WM_QUERYENDSESSION ||uMsg == WM_ENDSESSION)
 	{
@@ -294,7 +295,7 @@ void CefForm::OnLoadStart()
 	AcceptDpiAdaptor(DpiAdaptorFactory::GetAdaptor().get());
 }
 
-//和前端商量的结果是不json的key来标识函数。
+//不以json的key来标识函数。
 void CefForm::RegisterCppFuncs()
 {
 	cef_control_->RegisterCppFunc(L"ONRCLICKPRJ",
@@ -881,10 +882,17 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		bool launchDirectly = ConfigManager::GetInstance().isStartPkpmmainDirect();
 		std::thread t([=]() {
 			ALIME_SCOPE_EXIT{
-				if(!::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0))
-					spdlog::critical("sendmessage finished");
-				nbase::ThreadManager::PostTask(0, std::bind(&CefForm::ShowWindow, this, true, true));
-				CenterWindow();
+				//if(!::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0))
+				spdlog::critical("ShowWindow in ALIME_SCOPE_EXIT");
+				int count = 0;
+				const int maxCountTry = 20;
+				while (!IsWindowVisible(CefForm::GetHWND())&&count++< maxCountTry)
+				{
+					nbase::ThreadManager::PostTask(0, std::bind(&CefForm::ShowWindow, this, true, true));
+					std::this_thread::sleep_for(std::chrono::milliseconds(500));
+				}
+				if (count >= maxCountTry)
+					spdlog::critical("ShowWindowFailed after try several times");
 			};
 			catch_exception([=]() {
 				if (!launchDirectly)
@@ -894,13 +902,12 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 				else
 				{
 					if (rawCmdLine.find("PKPMMAIN") == std::string::npos)
-						run_cmd(args[3], args[4], "");
-					else
-					//fix me. 这个公司，没一个工程是可以信赖的
 					{
-						std::wstring pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
-						std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
-						HANDLE h;
+						//分开是因为要进行单独测试
+						std::wstring pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\"+
+							nbase::UTF8ToUTF16(rawCmdLine.substr(0, rawCmdLine.find_first_of(' ')));
+						std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of(' ')));
+						HANDLE h=INVALID_HANDLE_VALUE;
 						application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
 						if (h)
 						{
@@ -909,9 +916,25 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 							CloseHandle(h);
 						}
 					}
-				}}, [=]() {
-				::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0);
-				});
+					else //fix me. 这个公司，没一个工程是可以信赖的
+					{
+						std::wstring pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
+						std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
+						HANDLE h = INVALID_HANDLE_VALUE;
+						application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
+						if (h)
+						{
+							if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0)//or ==WAIT_FAILED
+								spdlog::critical("WaitForSingleObject failed");
+							CloseHandle(h);
+						}
+					}
+				}
+				}, [=]() {
+					spdlog::critical("Catch exception in run_cmd");
+					//nbase::ThreadManager::PostTask(0, std::bind(&CefForm::ShowWindow, this, true, true));
+				}
+				);
 			});
 		t.detach();
 	}

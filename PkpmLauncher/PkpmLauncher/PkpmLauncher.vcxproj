@@ -134,7 +134,7 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V52.exe D:\PKPMV521_1102\PKPM2010V52.exe</Command>
+      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V52.exe D:\PKPMV522_20201130\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <Manifest>
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
@@ -182,7 +182,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>base.lib;duilib.lib;ui_components.lib;libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>nim_libcef.dll</DelayLoadDLLs>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
