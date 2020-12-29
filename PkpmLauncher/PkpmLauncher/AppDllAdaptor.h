@@ -36,4 +36,5 @@ private:
 	HMODULE hd = NULL;
 };
 
+
 #endif

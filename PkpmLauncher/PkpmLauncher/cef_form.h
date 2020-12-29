@@ -152,8 +152,8 @@ private:
 	///<param name="appName2">基本上没有</param >
 	void run_cmd(const std::string& moduleName, const std::string& appName1, const std::string& appName2);
 
-	/// <summary>老函数，设置PM环境变量</summary>
-	bool SetCfgPmEnv();
+	/// <summary>老函数，设置环境变量</summary>
+	bool SetEnv();
 
 	/// <summary>用户删掉工程文件夹，然后新建大小写错误的文件夹再打开程序。这就导致配置文件里的工程路径是一个非大小写敏感的路径</summary>
 	///<return>有效的工程数量</return>

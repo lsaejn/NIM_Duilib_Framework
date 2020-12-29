@@ -94,7 +94,7 @@ void CefForm::InitWindow()
 		nbase::win32::GetCurrentModuleDirectory() + ConfigManager::GetInstance().GetRelativePathForHtmlRes()
 	));
 	EnableAcceptFiles();
-	SetCfgPmEnv();
+	SetEnv();
 	appDll_.InitPkpmAppFuncPtr();
 	appDll_.Invoke_InitPkpmApp();
 	AttachFunctionToShortCut();
@@ -1046,7 +1046,7 @@ void CefForm::run_cmd(const std::string& moduleName, const std::string& appName1
 	appDll_.Invoke_RunCommand(cmdStr.data());
 }
 
-bool CefForm::SetCfgPmEnv()
+bool CefForm::SetEnv()
 {
 	DWORD bufferSize = GetEnvironmentVariable(L"path", nullptr, 0);
 	std::wstring new_envirom;

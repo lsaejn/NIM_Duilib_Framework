@@ -30,17 +30,14 @@ class WebDataReader: public IDataAcceptor
 public:
 	void Init();
 	const std::string ReadAll() const;
-	//不返回引用
 	const std::string ReadSpecific(const std::string& filePath) const override;
-
 	virtual void Accept(IWebDataVisitor* visitor) override;
 	//<fileName in u8,content in u8>
 	typedef std::unordered_map<std::string, std::string> XmlDataPair;
 
 	std::string LastQuery();
 private:
-	//一个遗留问题，前端不愿意处理菜单内容
-	//数据转换的菜单需要我来删除掉
+	//一个遗留功能，网页有一段时间不需要数据接口的菜单。这里可以根据TAG来决定是否显示一个PANEL
 	bool ModifyDataWithTag(const std::string& data, std::string& result);
 	void Load();
 	XmlDataPair xmlData_;
