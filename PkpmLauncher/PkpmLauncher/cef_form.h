@@ -169,8 +169,10 @@ private:
 	/// <summary>废弃,换肤按钮的事件</summary>
 	void AttachClickCallbackToSkinButton();
 
+	/// <summary>初始化日志库</summary>
 	void InitSpdLog();
 
+	/// <summary>打开并打爆装配式</summary>
 	void OpenBimExe();
 
 public:

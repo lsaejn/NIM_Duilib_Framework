@@ -69,6 +69,7 @@ ConfigManager::ConfigManager()
 	enableStartPkpmmainDirect_(false),
 	enableReadEnvFromConfig_(false),
 	enableAcceptFileForAdmin_(false),
+	enableShowMessageBox_(false),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -111,7 +112,6 @@ void ConfigManager::LoadConfigFile()
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
 		enableStartPkpmmainDirect_= json[u8"lauchDirectly"];
 		languageFileName_ = nbase::UTF8ToUTF16(json[u8"languageFile"]);
-		
 		if (json_.contains("enableEnv")&& (enableReadEnvFromConfig_ = json_[u8"enableEnv"]))
 		{
 				nlohmann::json envArray = json_["envs"];
@@ -121,6 +121,10 @@ void ConfigManager::LoadConfigFile()
 		if (json_.contains("acceptFileForAdmin"))
 		{
 			enableAcceptFileForAdmin_ = json[u8"acceptFileForAdmin"];
+		}
+		if (json_.contains("showMessageBox"))
+		{
+			enableShowMessageBox_ = json["showMessageBox"];
 		}
 	}
 	catch (std::exception& )//parse excetion
@@ -143,6 +147,11 @@ bool ConfigManager::IsWebPageRefreshOn() const
 bool ConfigManager::isStartPkpmmainDirect() const
 {
 	return enableStartPkpmmainDirect_;
+}
+
+bool ConfigManager::IsShowMessageBoxOn() const
+{
+	return enableShowMessageBox_;
 }
 
 bool ConfigManager::CanReadEnvFromConfig() const

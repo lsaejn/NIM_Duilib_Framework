@@ -1064,11 +1064,9 @@ bool CefForm::SetEnv()
 				std::wstring fullpath = nbase::win32::GetCurrentModuleDirectory() + relativePath;
 				if (!nbase::FilePathIsExist(fullpath, true))
 				{
-#ifdef DEBUG
 					MsgBox::ShowViaIDWithSpecifiedCtn(
 						ui::MutiLanSupport::GetInstance()->GetStringViaID(L"ERROR_TIP_SET_ENV_FAILED") + relativePath,
-						L"TITLE_WARNING");
-#endif // DEBUG
+						L"TITLE_WARNING", true);
 					retSucc = false;
 				}
 				else
@@ -1084,9 +1082,7 @@ bool CefForm::SetEnv()
 			if (!nbase::FilePathIsExist(cfgPath, true)
 				|| !nbase::FilePathIsExist(pmModulePath, true))
 			{
-#ifdef DEBUG
-				MsgBox::ShowViaID(L"ERROR_TIP_SET_PM_ENV", L"TITLE_ERROR");
-#endif // DEBUG
+				MsgBox::ShowViaID(L"ERROR_TIP_SET_PM_ENV", L"TITLE_ERROR", true);
 			}
 			std::wstring temp(cfgPath + L";" + pmModulePath + L";");
 			new_envirom = temp + new_envirom;
@@ -1184,13 +1180,30 @@ LRESULT CefForm::OnNcLButtonDbClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return SendMessage(WM_SYSCOMMAND, ::IsZoomed(GetHWND())? SC_RESTORE: SC_MAXIMIZE, 0);
 }
 
+#include "duilib/utils/versionHelpers.h"
 void CefForm::EnableAcceptFiles()
 {
 	if (ConfigManager::GetInstance().IsAcceptFileForAdminOn() && IsOpenedWithAdminAccess())
 	{
 		spdlog::debug("raise WM_DROPFILES for admin");
-		ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
-		ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
+		if (true)
+		{
+			typedef BOOL(WINAPI* MessageFilterFunc)(UINT message, DWORD dwFlag);
+
+			HMODULE user32 = NULL;
+			user32 = LoadLibrary(L"User32.dll");
+			if (!user32)
+				return;
+			MessageFilterFunc f = NULL;
+			f=(MessageFilterFunc)GetProcAddress(user32, "ChangeWindowMessageFilter");
+			if (f)
+			{
+				f(WM_DROPFILES, MSGFLT_ADD);
+				f(0x0049, MSGFLT_ADD);
+			}
+			//ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
+			//ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
+		}
 	}
 	::SetWindowLong(this->m_hWnd, GWL_EXSTYLE, ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
 }

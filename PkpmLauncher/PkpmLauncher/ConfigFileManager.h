@@ -38,9 +38,11 @@ public:
 	bool IsAdaptDpiOn() const;
 	bool IsModifyWindowOn() const;
 	bool IsWebPageRefreshOn() const;
+	bool IsShowMessageBoxOn() const;
 	bool isStartPkpmmainDirect() const;
 	bool CanReadEnvFromConfig() const;
 	bool IsAcceptFileForAdminOn() const;
+
 	std::string GetDefaultAdvertise() const;
 	std::wstring GetAdvertisementServer() const;
 	std::wstring GetAdvertisementQuery() const;
@@ -75,6 +77,7 @@ private:
 	bool enableStartPkpmmainDirect_;
 	bool enableReadEnvFromConfig_;
 	bool enableAcceptFileForAdmin_;//"acceptFileForAdmin"
+	bool enableShowMessageBox_;
 	std::string defaultAdvertise_;
 	std::wstring languageFileName_;
 	std::wstring launchDllName_;

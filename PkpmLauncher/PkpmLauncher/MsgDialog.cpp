@@ -3,11 +3,6 @@
 
 namespace MsgBox
 {
-	void SysWarning(HWND wnd, const std::wstring& content, const std::wstring& title)
-	{
-		MessageBox(wnd, content.c_str(), title.c_str(), MB_SYSTEMMODAL);
-	}
-
 	void Warning(HWND wnd, const std::wstring& content, const std::wstring& title)
 	{
 #ifdef USE_SYS_MESSAGEBOX
@@ -31,39 +26,43 @@ namespace MsgBox
 			AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
 		else
 		{
-#ifdef DEBUG
-			AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
-#endif // DEBUG
+			if(ConfigManager::GetInstance().IsShowMessageBoxOn())
+				AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
 		}
 	}
 
-	void Show(const std::wstring& content, const std::wstring& title)
+	void SysWarning(HWND wnd, const std::wstring& content, const std::wstring& title, bool debugNeeded=false)
 	{
-		SysWarning(NULL, content, title);
+		if (debugNeeded == false)
+			MessageBox(wnd, content.c_str(), title.c_str(), MB_SYSTEMMODAL);
+		else
+		{
+			if(ConfigManager::GetInstance().IsShowMessageBoxOn())
+				MessageBox(wnd, content.c_str(), title.c_str(), MB_SYSTEMMODAL);
+		}
 	}
 
-	void ShowViaID(const std::wstring& contentID)
+	void Show(const std::wstring& content, const std::wstring& title, bool debugNeeded)
 	{
-		std::wstring content=ui::MutiLanSupport::GetInstance()->GetStringViaID(contentID);
-		AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
+		SysWarning(NULL, content, title, debugNeeded);
 	}
 
-	void ShowViaID(const std::wstring& contentID, const std::wstring& titleID)
+	void ShowViaID(const std::wstring& contentID, const std::wstring& titleID, bool debugNeeded)
 	{
 		std::wstring content = ui::MutiLanSupport::GetInstance()->GetStringViaID(contentID);
 		std::wstring title = ui::MutiLanSupport::GetInstance()->GetStringViaID(titleID);
-		SysWarning(NULL, content, title);
+		SysWarning(NULL, content, title, debugNeeded);
 	}
 
-	void ShowViaIDWithSpecifiedTitle(const std::wstring& contentID, const std::wstring& title)
+	void ShowViaIDWithSpecifiedTitle(const std::wstring& contentID, const std::wstring& title, bool debugNeeded)
 	{
 		std::wstring content = ui::MutiLanSupport::GetInstance()->GetStringViaID(contentID);
-		SysWarning(NULL, content, title);
+		SysWarning(NULL, content, title, debugNeeded);
 	}
 
-	void ShowViaIDWithSpecifiedCtn(const std::wstring& content, const std::wstring& titleID)
+	void ShowViaIDWithSpecifiedCtn(const std::wstring& content, const std::wstring& titleID, bool debugNeeded)
 	{
 		std::wstring title = ui::MutiLanSupport::GetInstance()->GetStringViaID(titleID);
-		SysWarning(NULL, content, title);
+		SysWarning(NULL, content, title, debugNeeded);
 	}
 }

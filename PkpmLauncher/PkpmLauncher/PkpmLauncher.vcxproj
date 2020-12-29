@@ -117,7 +117,7 @@
       <AdditionalDependencies>base_d.lib;duilib_d.lib;ui_components_d.lib;libcef_dll_wrapper_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>nim_libcef.dll</DelayLoadDLLs>
       <AdditionalLibraryDirectories>../../libs;D:\works\vcpkg\installed\x86-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Midl>
@@ -361,6 +361,7 @@
     <ClInclude Include="WebDataReader.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MessageLoop.h" />
+    <ClInclude Include="win32_Utility.h" />
     <ClInclude Include="WinMain.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
