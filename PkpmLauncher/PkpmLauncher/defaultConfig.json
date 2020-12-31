@@ -1,0 +1,45 @@
+{
+  "acceptFileForAdmin": true,
+  "bimWebUrl": "https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69",
+  "className": "PKPM V5.2 启动界面",
+  "deadline": 15,
+  "defaultAdvertise": {
+    "data": [
+      {
+        "key": "官方网站: www.pkpm.cn",
+        "value": "www.pkpm.cn"
+      },
+      {
+        "key": "官方论坛: www.pkpm.cn/bbs",
+        "value": "www.pkpm.cn/bbs"
+      }
+    ]
+  },
+  "enableAdaptDpi": false,
+  "enableManualAdaptDpi": false,
+  "enableRefresh": false,
+  "enableEnv": true,
+  "envs": [ "CFG", "CFG\\x64", "Ribbon\\PM", "Ribbon\\PM\\x64", "Ribbon" ],
+  "folderDialogType": 0,
+  "installer": "installer\\installer.exe",
+  "InstallerInfo": "/PKPM2010/Info/pkpmSoft/installer/installer.json",
+  "kRelativePathForPkpmAppMenu": "CFG\\PKPMAPPMENU\\",
+  "languageFile": "lang\\zh_CN",
+  "menuSelection": {
+    "childIndex": 0,
+    "navbarIndex": 0,
+    "parentIndex": 0
+  },
+  "nativeArticles": "resources\\Articles\\Articles.json",
+  "launchDllName": "PKPMAPPV52.dll",
+  "query": "/PKPM2010/Info/index.html",
+  "relativePathForHtmlRes": "resources\\HtmlRes\\index.html",
+  "server": "update.pkpm.cn",
+  "debugMode": true,
+  "lauchDirectly": true,
+  "skinFile": "cef.xml",
+  "skinFolder": "cef",
+  "threadNum": 3,
+  "webArticles": "/PKPM2010/Info/ArticlesOnline.json",
+  "windowText": "PkpmV5.2"
+}

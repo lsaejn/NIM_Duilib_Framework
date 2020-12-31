@@ -95,6 +95,7 @@
     <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(LibraryPath)</LibraryPath>
     <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
+    <OutDir>..\..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -134,7 +135,7 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\bin\PKPM2010V52.exe D:\PKPMV522_20201130\PKPM2010V52.exe</Command>
+      <Command>copy ..\..\bin\PKPM2010V52.exe D:\PKPMV522_20201130\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <Manifest>
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
@@ -199,7 +200,7 @@
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <PostBuildEvent>
-      <Command>copy D:\works\NimDuilibFramework\PkpmLauncher\Release\PKPM2010V52.exe D:\PKPMV522_20201130\PKPM2010V52.exe</Command>
+      <Command>copy ..\..\bin\PKPM2010V52.exe D:\PKPMV522_20201130\PKPM2010V52.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -411,6 +412,7 @@
     <Image Include="res\bitmap1.bmp" />
     <Image Include="res\bitmap2.bmp" />
     <Image Include="res\MFCApplication1.ico" />
+    <Image Include="res\PkpmV51.ico" />
     <Image Include="res\PkpmV52.ico" />
     <Image Include="res\RegRunAs.bmp" />
     <Image Include="res\V5\RegRunAs.bmp" />
