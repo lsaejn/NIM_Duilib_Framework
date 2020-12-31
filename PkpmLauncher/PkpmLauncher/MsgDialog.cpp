@@ -26,7 +26,7 @@ namespace MsgBox
 			AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
 		else
 		{
-			if(ConfigManager::GetInstance().IsShowMessageBoxOn())
+			if(ConfigManager::GetInstance().IsDebugModeOn())
 				AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
 		}
 	}
@@ -37,7 +37,7 @@ namespace MsgBox
 			MessageBox(wnd, content.c_str(), title.c_str(), MB_SYSTEMMODAL);
 		else
 		{
-			if(ConfigManager::GetInstance().IsShowMessageBoxOn())
+			if(ConfigManager::GetInstance().IsDebugModeOn())
 				MessageBox(wnd, content.c_str(), title.c_str(), MB_SYSTEMMODAL);
 		}
 	}

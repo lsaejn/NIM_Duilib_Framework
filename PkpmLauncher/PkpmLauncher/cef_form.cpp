@@ -24,6 +24,7 @@
 #include "FileDialog.h"
 #include "Macros.h"
 #include "DuiDialog/circleDialog.h"
+#include "duilib/utils/versionHelpers.h"
 
 using namespace Alime::HttpUtility;
 using namespace application_utily;
@@ -295,7 +296,7 @@ void CefForm::OnLoadStart()
 	AcceptDpiAdaptor(DpiAdaptorFactory::GetAdaptor().get());
 }
 
-//不以json的key来标识函数。
+//不以json的key来标识函数,导致这个函数很长。
 void CefForm::RegisterCppFuncs()
 {
 	cef_control_->RegisterCppFunc(L"ONRCLICKPRJ",
@@ -683,7 +684,7 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 		auto nRead = GetPrivateProfileStringA("WorkPath", workPathId.c_str(), "error", buffer, ArraySize(buffer), fullpath.c_str());
 		if (!strcmp("error", buffer) || buffer[nRead - 1] != '\\')
 		{	
-			continue;//prjPathStr=="error"表明用户手动修改了配置文件!
+			continue;
 		}
 		std::string timeStamp;
 		auto ret = GetPrjInfo(buffer, timeStamp);
@@ -726,6 +727,7 @@ std::string CefForm::ReadWorkPathFromFile(const std::string& filename)
 	return nbase::AnsiToUtf8(result);
 }
 
+//fix me, 使用 Alime::Directory::GetCreateTime().toLongTimeString()
 bool CefForm::GetPrjInfo(const std::string& pathStr, std::string& timestamp,
 	const char* /*surfix*/)
 {
@@ -802,7 +804,7 @@ std::string CefForm::OnNewProject()
 	std::string defaultPath;
 	if (-1 == indexHeightLighted_ || !prjPaths_.size())
 	{
-		OutputDebugString(L"dangerous operation");//前端的一个bug, 素质堪忧
+		OutputDebugString(L"dangerous operation");//前端的一个bug,而且说了也不改
 	}
 	else
 		defaultPath = prjPaths_[indexHeightLighted_];
@@ -865,7 +867,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		ShowWindow(false);
 		auto ret = SetCurrentDirectoryA(path.c_str());
 		if (!ret)
-		{
+		{//fatal error, but....
 			MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_NO_DIR_ACCESS_OR_ELSE", L"TITLE_ACCESS_ERROR");
 			return;
 		}		
@@ -882,16 +884,15 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		bool launchDirectly = ConfigManager::GetInstance().isStartPkpmmainDirect();
 		std::thread t([=]() {
 			ALIME_SCOPE_EXIT{
-				//if(!::SendMessage(m_hWnd, WM_SHOWMAINWINDOW, 0, 0))
 				spdlog::critical("ShowWindow in ALIME_SCOPE_EXIT");
 				int count = 0;
-				const int maxCountTry = 20;
-				while (!IsWindowVisible(CefForm::GetHWND())&&count++< maxCountTry)
+				const int kMaxCountTry = 20;
+				while (!IsWindowVisible(CefForm::GetHWND())&&count++< kMaxCountTry)
 				{
 					nbase::ThreadManager::PostTask(0, std::bind(&CefForm::ShowWindow, this, true, true));
 					std::this_thread::sleep_for(std::chrono::milliseconds(500));
 				}
-				if (count >= maxCountTry)
+				if (count >= kMaxCountTry)
 					spdlog::critical("ShowWindowFailed after try several times");
 			};
 			catch_exception([=]() {
@@ -901,40 +902,35 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 				}
 				else
 				{
+					std::wstring pkpmAppPath;
+					std::wstring cmdrawCmdLine;
+					HANDLE h = INVALID_HANDLE_VALUE;
 					if (rawCmdLine.find("PKPMMAIN") == std::string::npos)
 					{
-						//分开是因为要进行单独测试
-						std::wstring pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\"+
+						pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\"+
 							nbase::UTF8ToUTF16(rawCmdLine.substr(0, rawCmdLine.find_first_of(' ')));
-						std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of(' ')));
-						HANDLE h=INVALID_HANDLE_VALUE;
-						application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
-						if (h)
-						{
-							if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0)//or ==WAIT_FAILED
-								spdlog::critical("WaitForSingleObject failed");
-							CloseHandle(h);
-						}
+						cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of(' ')));
 					}
-					else //fix me. 这个公司，没一个工程是可以信赖的
+					else //fix me. 没工程是可以信赖的
 					{
-						std::wstring pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
-						std::wstring cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
-						HANDLE h = INVALID_HANDLE_VALUE;
-						application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
-						if (h)
-						{
-							if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0)//or ==WAIT_FAILED
-								spdlog::critical("WaitForSingleObject failed");
-							CloseHandle(h);
-						}
+						pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
+						if(ConfigManager::GetInstance().IsDebugModeOn())
+							pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIND.exe";
+						cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
+					}
+					bool succ=application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
+					if (succ&&h!= INVALID_HANDLE_VALUE)
+					{
+						if (WaitForSingleObject(h, INFINITE) != WAIT_OBJECT_0)//or ==WAIT_FAILED
+							spdlog::critical("WaitForSingleObject failed");
+						CloseHandle(h);
+					}
+					else 
+					{
+						MsgBox::Show(errnoStr_(GetLastError())+L"\n"+ pkpmAppPath, L"error", true);
 					}
 				}
-				}, [=]() {
-					spdlog::critical("Catch exception in run_cmd");
-					//nbase::ThreadManager::PostTask(0, std::bind(&CefForm::ShowWindow, this, true, true));
-				}
-				);
+				}, [=]() {spdlog::critical("Catch exception in run_cmd");});
 			});
 		t.detach();
 	}
@@ -945,6 +941,7 @@ void CefForm::OnListMenu(const std::vector<std::string>& args)
 	OnDbClickProject(args);
 }
 
+//fix me, filename to unicode
 void CefForm::OnOpenDocument(const std::string& filename)
 {
 	std::string FullPath(nbase::UnicodeToAnsi(nbase::win32::GetCurrentModuleDirectory()) + "Ribbon\\");
@@ -1180,29 +1177,22 @@ LRESULT CefForm::OnNcLButtonDbClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return SendMessage(WM_SYSCOMMAND, ::IsZoomed(GetHWND())? SC_RESTORE: SC_MAXIMIZE, 0);
 }
 
-#include "duilib/utils/versionHelpers.h"
 void CefForm::EnableAcceptFiles()
 {
 	if (ConfigManager::GetInstance().IsAcceptFileForAdminOn() && IsOpenedWithAdminAccess())
 	{
 		spdlog::debug("raise WM_DROPFILES for admin");
-		if (true)
+		//vista or higher, winserver2008 or higher
+		if (ui::IsWindowsVistaOrGreater())
 		{
-			typedef BOOL(WINAPI* MessageFilterFunc)(UINT message, DWORD dwFlag);
-
-			HMODULE user32 = NULL;
-			user32 = LoadLibrary(L"User32.dll");
-			if (!user32)
+			USE_SYSTEM_API(User32.dll, ChangeWindowMessageFilter);
+			if (!proc_ChangeWindowMessageFilter)
 				return;
-			MessageFilterFunc f = NULL;
-			f=(MessageFilterFunc)GetProcAddress(user32, "ChangeWindowMessageFilter");
-			if (f)
+			else
 			{
-				f(WM_DROPFILES, MSGFLT_ADD);
-				f(0x0049, MSGFLT_ADD);
+				proc_ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
+				proc_ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
 			}
-			//ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
-			//ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
 		}
 	}
 	::SetWindowLong(this->m_hWnd, GWL_EXSTYLE, ::GetWindowLong(this->m_hWnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);

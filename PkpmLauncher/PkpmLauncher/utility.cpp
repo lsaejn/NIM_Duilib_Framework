@@ -400,5 +400,6 @@ namespace application_utily
 		CloseHandle(hToken);
 		return bElevated;
 	}
+
 }
 

@@ -38,7 +38,7 @@ public:
 	bool IsAdaptDpiOn() const;
 	bool IsModifyWindowOn() const;
 	bool IsWebPageRefreshOn() const;
-	bool IsShowMessageBoxOn() const;
+	bool IsDebugModeOn() const;
 	bool isStartPkpmmainDirect() const;
 	bool CanReadEnvFromConfig() const;
 	bool IsAcceptFileForAdminOn() const;
@@ -77,7 +77,7 @@ private:
 	bool enableStartPkpmmainDirect_;
 	bool enableReadEnvFromConfig_;
 	bool enableAcceptFileForAdmin_;//"acceptFileForAdmin"
-	bool enableShowMessageBox_;
+	bool enableDebugMode_;
 	std::string defaultAdvertise_;
 	std::wstring languageFileName_;
 	std::wstring launchDllName_;

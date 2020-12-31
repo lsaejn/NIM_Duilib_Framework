@@ -69,7 +69,7 @@ ConfigManager::ConfigManager()
 	enableStartPkpmmainDirect_(false),
 	enableReadEnvFromConfig_(false),
 	enableAcceptFileForAdmin_(false),
-	enableShowMessageBox_(false),
+	enableDebugMode_(false),
 	filePath_(nbase::win32::GetCurrentModuleDirectory()
 		+ L"resources\\themes\\default\\defaultConfig.json")
 {
@@ -122,9 +122,9 @@ void ConfigManager::LoadConfigFile()
 		{
 			enableAcceptFileForAdmin_ = json[u8"acceptFileForAdmin"];
 		}
-		if (json_.contains("showMessageBox"))
+		if ( json_.contains("debugMode"))
 		{
-			enableShowMessageBox_ = json["showMessageBox"];
+			enableDebugMode_ = json["debugMode"];
 		}
 	}
 	catch (std::exception& )//parse excetion
@@ -149,9 +149,9 @@ bool ConfigManager::isStartPkpmmainDirect() const
 	return enableStartPkpmmainDirect_;
 }
 
-bool ConfigManager::IsShowMessageBoxOn() const
+bool ConfigManager::IsDebugModeOn() const
 {
-	return enableShowMessageBox_;
+	return enableDebugMode_;
 }
 
 bool ConfigManager::CanReadEnvFromConfig() const
