@@ -83,7 +83,7 @@ private:
 	///<param name="args">同OnDbClickProject</param >
 	void OnListMenu(const std::vector<std::string>& args);
 
-	/// <summary>打开本地文件的接口</summary>
+	/// <summary>打开本地文件的接口, 给用户手册和更新说明</summary>
 	///<param name="filePath">文件名以ribbon为根目录，这是历史原因</param >
 	void OnOpenDocument(const std::string& filePath);
 

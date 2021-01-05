@@ -898,26 +898,20 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 			catch_exception([=]() {
 				if (!launchDirectly)
 				{
-					run_cmd(args[3], args[4], "");
+					run_cmd(args[3], args[4], "");//使用dll打开程序
 				}
 				else
 				{
 					std::wstring pkpmAppPath;
 					std::wstring cmdrawCmdLine;
 					HANDLE h = INVALID_HANDLE_VALUE;
-					if (rawCmdLine.find("PKPMMAIN") == std::string::npos)
-					{
-						pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\"+
+
+					pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + nbase::UTF8ToUTF16(args[1])+L"\\"+
 							nbase::UTF8ToUTF16(rawCmdLine.substr(0, rawCmdLine.find_first_of(' ')));
-						cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of(' ')));
-					}
-					else //fix me. 没工程是可以信赖的
-					{
-						pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIN.exe";
-						if(ConfigManager::GetInstance().IsDebugModeOn())
-							pkpmAppPath = (nbase::win32::GetCurrentModuleDirectory()) + L"Ribbon\\PKPMMAIND.exe";
-						cmdrawCmdLine = L" " + nbase::AnsiToUnicode(rawCmdLine.substr(rawCmdLine.find_first_of('-')));
-					}
+					auto index = rawCmdLine.find_first_of(' ');
+					if(index!= std::string::npos)
+						cmdrawCmdLine = L" " + nbase::UTF8ToUTF16(rawCmdLine.substr(index));
+
 					bool succ=application_utily::CreateProcessWithCommand(pkpmAppPath.c_str(), cmdrawCmdLine.c_str(), &h);
 					if (succ&&h!= INVALID_HANDLE_VALUE)
 					{
