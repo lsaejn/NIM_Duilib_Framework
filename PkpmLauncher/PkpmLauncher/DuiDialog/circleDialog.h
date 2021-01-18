@@ -1,11 +1,6 @@
 #pragma once
 #include "duilib/UIlib.h"
 
-/*
-一个显示进度的半模态对话框
-从msgbox修改而来。
-*/
-
 namespace nim_comp {
 
 	typedef std::function<void(MsgBoxRet)> MsgboxCallback;

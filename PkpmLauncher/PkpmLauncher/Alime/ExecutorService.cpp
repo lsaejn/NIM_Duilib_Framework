@@ -42,8 +42,6 @@ namespace Alime
     void ExecutorService::Stop()
     {
         {
-            //我看不出锁的意义何在，muduo的cv和mutex是绑定的，和java一样
-            //但std的cv是自由的。这个锁对cv有什么影响？莫名其妙
             std::lock_guard lock(mutex_);
             running_ = false;
             notEmpty_.notify_all();
@@ -57,7 +55,7 @@ namespace Alime
 
     //这里有个潜在的bug，若是当前队列已满
     //那么非本线程的生产者将阻塞在本函数。
-    //此时线程池执行stop，程序将永远阻塞。
+    //此时线程池执行stop，程序将永远阻塞。所以我在stop里唤醒了所有等待中的线程
     void ExecutorService::Run(Task task)
     {
         if (threads_.empty())

@@ -1,15 +1,10 @@
 #pragma once
 
 #include <intrin.h>
-#include <stdint.h>//for int32_t, int64_t
+#include <stdint.h>
 
 #include "NonCopyable.h"
 
-/*
-还是在离职前写完Alime吧,。
-我将会在原子变量基础上完成spinlock-mutex-rwlock-circleBuffer
-然后开始写网络库
-*/
 namespace Alime::password {
     const char* enterpriseMail = "6284508Sxx..";
     const char* yunHWClouding = "6282881Sxx..";

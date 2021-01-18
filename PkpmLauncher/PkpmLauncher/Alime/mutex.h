@@ -7,9 +7,6 @@
 
 namespace Alime
 {
-	/*
-	¼òµ¥µÄ·ÇµÝ¹éËø
-	*/
 	class MutexRW:public noncopyable
 	{
 	public:
