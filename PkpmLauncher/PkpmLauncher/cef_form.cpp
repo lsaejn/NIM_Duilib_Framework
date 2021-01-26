@@ -242,8 +242,12 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (!pVbox)
 					return false;
 				pVbox->AttachSelect([this](ui::EventArgs* args) {
-					auto themeType = args->pSender->GetName();
-					PostMessage(WM_THEME_SELECTED, args->wParam, args->lParam);//lParam should always -1
+					if (args->wParam == 0)
+						Close();
+					else if(args->wParam == 1)
+						ShowWindow();
+					//auto themeType = args->pSender->GetName();
+					//PostMessage(WM_THEME_SELECTED, args->wParam, args->lParam);//lParam should always -1
 					return true;
 					}
 				);
@@ -921,7 +925,7 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 					}
 					else 
 					{
-						MsgBox::Show(errnoStr_(GetLastError())+L"\n"+ pkpmAppPath, L"error", true);
+						MsgBox::Show(errnoStr_(GetLastError())+L"\n"+ pkpmAppPath, L"error", false);
 					}
 				}
 				}, [=]() {spdlog::critical("Catch exception in run_cmd");});
@@ -1231,7 +1235,7 @@ void CefForm::InitUiVariable()
 	this_window_ = dynamic_cast<ui::Window*>(FindControl(L"main_wnd"));
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
-	//tray_.Init(GetHWND(), 128, WM_TRAY);
+	tray_.Init(GetHWND(), 128, WM_TRAY);
 }
 
 void CefForm::AttachFunctionToShortCut()

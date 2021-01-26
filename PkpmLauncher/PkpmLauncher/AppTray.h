@@ -1,26 +1,30 @@
 #pragma once
 
 #include "Alime/NonCopyable.h"
+#include "templates.h"
 #include "windows.h"
 
 /*
 增加托盘可以避免一些尴尬--启动界面在后台显示不出来的情况。
+确保只被包含一次
 */
+
+
 class AppTray: noncopyable
 {
 public:
+	static AppTray* g_tray;
 	NOTIFYICONDATA notifyIcon_;
 
-	void Init(HWND hwnd, WORD ID, UINT msg)
-	{
-		notifyIcon_.cbSize = sizeof(NOTIFYICONDATA);
-		notifyIcon_.hIcon = (HICON)::LoadImage(::GetModuleHandle(NULL), MAKEINTRESOURCE(ID), IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR | LR_SHARED);
-		notifyIcon_.hWnd = hwnd;
+	void Init(HWND hwnd, WORD ID, UINT msg);
 
-		lstrcpy(notifyIcon_.szTip, L"PKPM启动程序");
-		notifyIcon_.uCallbackMessage = msg;
-		notifyIcon_.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-		Shell_NotifyIcon(NIM_ADD, &notifyIcon_);
+	//fix me, 不应该放在这里处理，需要一个delegate
+	static LONG WINAPI UnhandledExceptionForAppTray(PEXCEPTION_POINTERS pExInfo)
+	{
+		UNUSEDPARAMS(pExInfo);
+		Shell_NotifyIcon(NIM_DELETE, &g_tray->notifyIcon_);
+		AfxMessageBox(L"程序发生错误",MB_SYSTEMMODAL);
+		return 1;
 	}
 
 	~AppTray()
@@ -31,3 +35,4 @@ public:
 
 
 };
+
