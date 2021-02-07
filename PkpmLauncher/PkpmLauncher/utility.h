@@ -35,6 +35,7 @@ namespace application_utily
 
 	std::wstring GetExeFolderPath();
 	bool GetClipBoardInfo(HWND wnd, std::string& filePath);
+	bool OnOpenAutoTest();
 	bool FindBimExe(std::wstring& resultPath);
 	//打开Bim软件没有放到exe里，这是因为该软件的启动并不打算双击启动(尽管我支持了这样做)
 	bool OpenBimExe(const std::wstring& bimPath);

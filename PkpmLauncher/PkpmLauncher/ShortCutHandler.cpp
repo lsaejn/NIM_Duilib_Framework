@@ -154,7 +154,15 @@ public:
 			AfxMessageBox(L"Fatal error, can not find main window", MB_SYSTEMMODAL);
 			std::abort();
 		}
-		std::wstring exePathName = GetCfgPath_Inner() + _T("PKPMAuthorize.exe");
+
+	//	这种改动非常恶心，
+#ifdef DEBUG
+		std::wstring AuthorizeApp = L"PKPMAuthorizeD.exe";
+#else
+		std::wstring AuthorizeApp = L"PKPMAuthorize.exe";
+#endif // DEBUG
+
+		std::wstring exePathName = GetCfgPath_Inner() + AuthorizeApp;
 		if (-1 == _taccess(exePathName.c_str(), 0))
 		{
 			MsgBox::ShowViaIDWithSpecifiedCtn(exePathName, L"TITLE_FIND_FILE_ERROR");
@@ -257,6 +265,7 @@ void ShortCutHandler::Init()
 	SHORTCUTFUNC(ShortCutHandlerImpl, "用户手册", OnUserManual)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "在线更新", OnUpdateOnline)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "图模大师", OnOpenModelViewerMaster)
+	//SHORTCUTFUNC(ShortCutHandlerImpl, "自动测试", OnOpenAutoTest)
 }
 
 void ShortCutHandler::CallFunc(const std::string& cutName)

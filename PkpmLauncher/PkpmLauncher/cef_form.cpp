@@ -1062,6 +1062,7 @@ bool CefForm::SetEnv()
 					MsgBox::ShowViaIDWithSpecifiedCtn(
 						ui::MutiLanSupport::GetInstance()->GetStringViaID(L"ERROR_TIP_SET_ENV_FAILED") + relativePath,
 						L"TITLE_WARNING", true);
+					new_envirom = (fullpath + L";") + new_envirom;
 					retSucc = false;
 				}
 				else
@@ -1200,6 +1201,16 @@ void CefForm::AttachClickCallbackToSkinButton()
 {
 	if (!skinSettings_)
 		return;
+	else
+	{
+		skinSettings_->AttachClick([](ui::EventArgs* args) {
+
+			return OnOpenAutoTest();
+			//return true;
+			});
+		return;
+	}
+	//废弃代码，公司品味问题
 	skinSettings_->AttachClick([this](ui::EventArgs* args) {
 		RECT rect = args->pSender->GetPos();
 		ui::CPoint point;

@@ -7,6 +7,7 @@
 #include "utility.h"
 #include "templates.h"
 #include "RegKeyRW.h"
+#include "Alime/FileSystem.h"
 
 
 namespace string_utility
@@ -256,6 +257,15 @@ namespace application_utily
 			}	
 		}
 		return false;
+	}
+
+	bool OnOpenAutoTest()
+	{
+		using Alime::FileSystem::FilePath;
+		//using Alime::FileSystem::File;
+		FilePath path{ application_utily::GetExeFolderPath() + L"CFG\\pkpmauto.exe" };
+		bool ret = application_utily::CreateProcessWithCommand(path.GetFullPath().c_str(), NULL, NULL);
+		return ret;
 	}
 
 	bool FindBimExe(std::wstring& bimPath)

@@ -32,13 +32,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (FAILED(hr))
 		return 0;
 
-	ConfigManager::GetInstance().LoadConfigFile();
+	//ConfigManager::GetInstance().LoadConfigFile();
 	CefSettings settings;
 	if (!nim_comp::CefManager::GetInstance()->Initialize(nbase::win32::GetCurrentModuleDirectory() + L"resources\\", settings, kEnableOffsetRender))
 	{
 		return 0;
 	}
-
+	
 	//_CrtSetBreakAlloc(626);
 	// 创建主线程..
 	MainThread thread;
