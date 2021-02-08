@@ -7,7 +7,13 @@
 #include "Alime/HttpUtil.h"
 #include "Task.h"
 #include "ThirdParty/nlohmann/json.hpp"
-//后台更新installer.exe
+
+/// <summary>
+/// 后台更新installer.exe
+/// 但是客户需要自己建内网服务器，为了让用户只改ip即可工作
+/// 我放弃这个方案
+/// </summary>
+
 
 class InstallerUpdater: public QueryTask
 {

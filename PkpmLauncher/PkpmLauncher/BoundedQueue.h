@@ -23,9 +23,9 @@ public:
 #define CHECK_ERROR(CONDITION, MESSAGE_STRING) do{if(!(CONDITION))throw Error(MESSAGE_STRING);}while(0)
 namespace collection_utility
 {
-	/*
-		这群人太厉害了，活活把一个有限队列改成了vector
-	*/
+	/// <summary>
+	/// 启动界面的工程列表，是一个有限队列
+	/// </summary>
 	template<typename T, typename VecTy=std::deque<T>>
 	class BoundedQueue
 	{

@@ -3,11 +3,13 @@
 #include "ConfigFileManager.h"
 #include <memory>
 
-/*
-现在的情况很微妙。
-我没有想好怎么改。可能标题栏要还给网页,
-也可能要自己处理现在的标题栏。
-*/
+/// <summary>
+/// 两种适应dpi的方法。1是框架自带，但是需要自己处理图片
+/// 2是准备多个xml。我们使用的是后者。
+/// 这个方法都需要自己处理标题栏拖动高度和cef窗口放大系数
+/// DPI的适配比想象得容易，但是图片资源总是显示锯齿。
+/// </summary>
+
 class CefForm;
 
 class IAdaptor

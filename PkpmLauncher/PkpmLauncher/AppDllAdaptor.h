@@ -3,7 +3,10 @@
 #define  _APP_DLL_ADAPTOR_H_
 
 /// <summary>
-/// 现在，启动dll只需要提供两个接口即可, 恶心到极致的旧代码。
+/// 在华为云版程序发行之前，所有的exe都是从pkpmappv5x.dll启动。
+/// 这造成了大量的问题。不仅调试费劲，而且dll也没有复用的价值。
+/// 随着华为云程序的需要，启动界面对应的xml也进行了大改。pkpmappv5x.dll无法兼容新菜单。
+/// 如果你仍然打算以dll的方式启动，那么只需要提供私有变量对应的两个接口即可。
 /// </summary>
 typedef  const char* (*FP_INITPKPMAPP)();
 typedef  void  (*FP_RUNCOMMAND)(CHAR* strCmd);

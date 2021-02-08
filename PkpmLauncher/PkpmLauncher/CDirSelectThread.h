@@ -1,13 +1,13 @@
 #pragma once
 
 const int WM_TEST = WM_USER + 1;
-/*
-MFC对话框线程。在Git记录里有教你如何在
-线程里使用MFC对话框。
-*/
 
-class CDirSelectThread
-	:public CWinThread
+/// <summary>
+/// MFC对话框线程。在Git记录里有教你如何在线程里使用MFC对话框。
+/// 从资料来看，比我当初自己摸索着为PM写的要合理
+/// </summary>
+
+class CDirSelectThread : public CWinThread
 {
     DECLARE_DYNCREATE(CDirSelectThread)
 public:

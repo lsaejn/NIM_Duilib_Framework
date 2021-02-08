@@ -10,9 +10,11 @@
 using namespace Gdiplus;
 #pragma comment(lib,"gdiplus.lib")
 
-/*
-修正工程图片比例，该bug导致网页布局异常
-*/
+/// <summary>
+/// 修正工程图片比例，该bug导致网页布局异常
+/// </summary>
+
+
 class ProjectPicZoomer
 {
 public:

@@ -4,10 +4,10 @@
 #include "templates.h"
 #include "windows.h"
 
-/*
-增加托盘可以避免一些尴尬--启动界面在后台显示不出来的情况。
-确保只被包含一次
-*/
+/// <summary>
+/// 增加托盘可以避免一些尴尬--启动界面在后台显示不出来的情况。
+/// 确保只被包含一次
+/// </summary>
 
 
 class AppTray: noncopyable
@@ -32,7 +32,5 @@ public:
 		Shell_NotifyIcon(NIM_DELETE, &notifyIcon_);
 		//MessageBox(NULL, L"deleted", L"test", 1);
 	}
-
-
 };
 

@@ -9,6 +9,13 @@
 
 #define implements :public
 
+/// <summary>
+/// 文件对话框非常难看，有时候还会很卡
+/// 所以这里准备了多个选择。
+/// 原始版/com版/window标准文件对话框/Qt版(dll找不到了)
+/// 考虑到QT工程不好维护，最终决定提供一个wpf模态
+/// </summary>
+
 class IFolderDialog
 {
 public:

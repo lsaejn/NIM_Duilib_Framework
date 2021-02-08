@@ -6,10 +6,10 @@
 #include <vector>
 
 
-/*
-expamle: 
-ALIME_PROPERTY(std::string, defaultAdvertise_, DefaultAdvertise)
-*/
+/// <summary>
+/// 没有时间改
+/// </summary>
+
 #define ALIME_PROPERTY(varType, varName, prefix, funName) \
 private: varType varName##_; \
 public: varType prefix##funName() const; \
