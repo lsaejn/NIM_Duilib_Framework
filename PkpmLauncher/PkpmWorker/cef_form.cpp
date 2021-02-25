@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Resource.h"
 #include "shlwapi.h"
 #include "shellapi.h"
 
@@ -90,7 +91,7 @@ ui::Control* CefForm::CreateControl(const std::wstring& pstrClass)
 
 void CefForm::InitWindow()
 {
-	SetIcon(128);
+	SetIcon(IDI_PKPMWORKER);
 	SetWindowText(GetHWND(), ConfigManager::GetInstance().GetCefFormWindowText().c_str());
 	InitUiVariable();
 	cef_control_->LoadURL(CorrectCefUrl(

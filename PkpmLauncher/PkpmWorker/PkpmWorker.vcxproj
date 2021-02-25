@@ -318,6 +318,8 @@
     <ResourceCompile Include="PkpmWorker.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="icon1.ico" />
+    <Image Include="PkpmV51.ico" />
     <Image Include="PkpmWorker.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
