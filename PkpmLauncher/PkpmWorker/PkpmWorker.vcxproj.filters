@@ -507,13 +507,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="PkpmWorker.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="icon1.ico">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="PkpmV51.ico">
