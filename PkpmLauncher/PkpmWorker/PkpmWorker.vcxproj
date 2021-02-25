@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{cc6aec9b-8350-4c1e-a555-147b5cd7f6b8}</ProjectGuid>
+    <RootNamespace>PkpmWorker</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>..\..\libs\;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <OutDir>..\..\bin\</OutDir>
+    <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>base_d.lib;duilib_d.lib;ui_components_d.lib;libcef_dll_wrapper_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>nim_libcef.dll</DelayLoadDLLs>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy ..\..\bin\PkpmWorker.exe D:\PKPMV523-0222\PKPM2010V52.exe</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Alime\AtomicVar.h" />
+    <ClInclude Include="Alime\Console.h" />
+    <ClInclude Include="Alime\countDownLatch.h" />
+    <ClInclude Include="Alime\ExecutorService.h" />
+    <ClInclude Include="Alime\FileSystem.h" />
+    <ClInclude Include="Alime\HttpUtil.h" />
+    <ClInclude Include="Alime\IteratorHelper.h" />
+    <ClInclude Include="Alime\mutex.h" />
+    <ClInclude Include="Alime\NonCopyable.h" />
+    <ClInclude Include="Alime\ProcessInfo.h" />
+    <ClInclude Include="Alime\processIterator.h" />
+    <ClInclude Include="Alime\ScopeGuard.h" />
+    <ClInclude Include="Alime\thread.h" />
+    <ClInclude Include="Alime\windowIterator.h" />
+    <ClInclude Include="AppDllAdaptor.h" />
+    <ClInclude Include="AppTray.h" />
+    <ClInclude Include="Article.h" />
+    <ClInclude Include="BoundedQueue.h" />
+    <ClInclude Include="cef_form.h" />
+    <ClInclude Include="ConfigFileManager.h" />
+    <ClInclude Include="ConsoleDebugger.h" />
+    <ClInclude Include="DpiAdaptor.h" />
+    <ClInclude Include="DuiDialog\circleDialog.h" />
+    <ClInclude Include="FileDialog.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="InstallerUpdate.h" />
+    <ClInclude Include="Lock_util.h" />
+    <ClInclude Include="Macros.h" />
+    <ClInclude Include="MessageLoop.h" />
+    <ClInclude Include="MsgDialog.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="PicZoom.h" />
+    <ClInclude Include="RapidjsonForward.h" />
+    <ClInclude Include="RegKeyRW.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="ShortCutHandler.h" />
+    <ClInclude Include="SkinSwitcher.h" />
+    <ClInclude Include="SpdLogForward.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Task.h" />
+    <ClInclude Include="templates.h" />
+    <ClInclude Include="ThirdParty\md5\md5.h" />
+    <ClInclude Include="ThirdParty\nlohmann\fifo_map.hpp" />
+    <ClInclude Include="ThirdParty\nlohmann\json.hpp" />
+    <ClInclude Include="ThirdParty\rapidjson\allocators.h" />
+    <ClInclude Include="ThirdParty\rapidjson\document.h" />
+    <ClInclude Include="ThirdParty\rapidjson\encodedstream.h" />
+    <ClInclude Include="ThirdParty\rapidjson\encodings.h" />
+    <ClInclude Include="ThirdParty\rapidjson\error\en.h" />
+    <ClInclude Include="ThirdParty\rapidjson\error\error.h" />
+    <ClInclude Include="ThirdParty\rapidjson\filereadstream.h" />
+    <ClInclude Include="ThirdParty\rapidjson\filewritestream.h" />
+    <ClInclude Include="ThirdParty\rapidjson\fwd.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\itoa.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\meta.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\pow10.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\regex.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\stack.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\strtod.h" />
+    <ClInclude Include="ThirdParty\rapidjson\internal\swap.h" />
+    <ClInclude Include="ThirdParty\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="ThirdParty\rapidjson\memorybuffer.h" />
+    <ClInclude Include="ThirdParty\rapidjson\memorystream.h" />
+    <ClInclude Include="ThirdParty\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="ThirdParty\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="ThirdParty\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="ThirdParty\rapidjson\pointer.h" />
+    <ClInclude Include="ThirdParty\rapidjson\prettywriter.h" />
+    <ClInclude Include="ThirdParty\rapidjson\rapidjson.h" />
+    <ClInclude Include="ThirdParty\rapidjson\reader.h" />
+    <ClInclude Include="ThirdParty\rapidjson\schema.h" />
+    <ClInclude Include="ThirdParty\rapidjson\stream.h" />
+    <ClInclude Include="ThirdParty\rapidjson\stringbuffer.h" />
+    <ClInclude Include="ThirdParty\rapidjson\writer.h" />
+    <ClInclude Include="ThirdParty\rapidxml\rapidxml.hpp" />
+    <ClInclude Include="ThirdParty\rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="ThirdParty\rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="ThirdParty\rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="ThirdParty\spdlog\async.h" />
+    <ClInclude Include="ThirdParty\spdlog\async_logger.h" />
+    <ClInclude Include="ThirdParty\spdlog\common.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\async_logger_impl.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\circular_q.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\console_globals.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\file_helper.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\fmt_helper.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\logger_impl.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\log_msg.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\null_mutex.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\os.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\pattern_formatter.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\periodic_worker.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\registry.h" />
+    <ClInclude Include="ThirdParty\spdlog\details\thread_pool.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\colors.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\posix.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\bundled\time.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\fmt.h" />
+    <ClInclude Include="ThirdParty\spdlog\fmt\ostr.h" />
+    <ClInclude Include="ThirdParty\spdlog\formatter.h" />
+    <ClInclude Include="ThirdParty\spdlog\logger.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\android_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\base_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\null_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\spdlog.h" />
+    <ClInclude Include="ThirdParty\spdlog\tweakme.h" />
+    <ClInclude Include="ThirdParty\spdlog\version.h" />
+    <ClInclude Include="ThirdParty\xml2json.h" />
+    <ClInclude Include="utility.h" />
+    <ClInclude Include="VersionCmpStrategy.h" />
+    <ClInclude Include="WebDataReader.h" />
+    <ClInclude Include="WinMain.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Alime\Console.cpp" />
+    <ClCompile Include="Alime\ExecutorService.cpp" />
+    <ClCompile Include="Alime\FileSystem.cpp" />
+    <ClCompile Include="Alime\HttpUtil.cpp" />
+    <ClCompile Include="Alime\IteratorHelper.cpp" />
+    <ClCompile Include="Alime\ProcessInfo.cpp" />
+    <ClCompile Include="Alime\thread.cpp" />
+    <ClCompile Include="AppDllAdaptor.cpp" />
+    <ClCompile Include="AppTray.cpp" />
+    <ClCompile Include="Article.cpp" />
+    <ClCompile Include="cef_form.cpp" />
+    <ClCompile Include="ConfigFileManager.cpp" />
+    <ClCompile Include="ConsoleDebugger.cpp" />
+    <ClCompile Include="DpiAdaptor.cpp" />
+    <ClCompile Include="DuiDialog\circleDialog.cpp" />
+    <ClCompile Include="MessageLoop.cpp" />
+    <ClCompile Include="MsgDialog.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="RegKeyRW.cpp" />
+    <ClCompile Include="ShortCutHandler.cpp" />
+    <ClCompile Include="ThirdParty\md5\md5.cpp" />
+    <ClCompile Include="utility.cpp" />
+    <ClCompile Include="WebDataReader.cpp" />
+    <ClCompile Include="WinMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PkpmWorker.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="PkpmWorker.ico" />
+    <Image Include="small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="defaultConfig.json" />
+    <None Include="ThirdParty\rapidxml\manual.html" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

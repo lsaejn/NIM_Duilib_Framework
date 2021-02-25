@@ -404,6 +404,7 @@
     <ResourceCompile Include="PkpmV5.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\PkpmWorker\PkpmWorker.vcxproj" />
     <None Include="rapidxml\manual.html" />
     <None Include="res\MFCApplication1.rc2" />
   </ItemGroup>
