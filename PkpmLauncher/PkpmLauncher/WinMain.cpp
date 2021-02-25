@@ -7,9 +7,7 @@
 #include "templates.h"
 #include "ConfigFileManager.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+
 
 /*
 内存泄露是正常的，见LazyInstance的注释。通常就是两个loop指针。

@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "shlwapi.h"
+#include "shellapi.h"
 #include "ShortCutHandler.h"
 #include "templates.h"
 #include "utility.h"
@@ -130,11 +132,9 @@ public:
 	void OnIntegrityCheck()
 	{
 		std::wstring regcmd = GetCfgPath_Inner() + m_strNameOfIntegrity;
-		CFile fi;
-		if (fi.Open(regcmd.c_str(), CFile::readOnly, NULL, NULL))
+		if (PathFileExists(regcmd.c_str()))
 		{
-			fi.Close();
-			ShellExecute(NULL, _T("open"), regcmd.c_str(), NULL, NULL, SW_NORMAL);
+			::ShellExecute(NULL, _T("open"), regcmd.c_str(), NULL, NULL, SW_NORMAL);
 		}
 		else
 			MsgBox::ShowViaID(L"ERROR_TIP_FIND_APP_ERROR", L"TITLE_ERROR");
@@ -151,7 +151,7 @@ public:
 	{
 		if (!mainWnd)
 		{
-			AfxMessageBox(L"Fatal error, can not find main window", MB_SYSTEMMODAL);
+			MessageBox(NULL, L"Fatal error, can not find main window", L"error", MB_SYSTEMMODAL);
 			std::abort();
 		}
 

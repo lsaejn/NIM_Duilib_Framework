@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "shellapi.h"
+#include "shlwapi.h"
 
 #include <string>
 
@@ -8,6 +10,7 @@
 #include "templates.h"
 #include "RegKeyRW.h"
 #include "Alime/FileSystem.h"
+
 
 
 namespace string_utility

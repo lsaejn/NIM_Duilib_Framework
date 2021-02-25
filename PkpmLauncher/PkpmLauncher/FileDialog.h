@@ -3,8 +3,10 @@
 #include <string>
 #include "base/base.h"
 
-#include "afxdlgs.h"
+//#include "afxdlgs.h"
 #include "Shobjidl.h"
+#include "Shlobj.h"
+//#include "Shlobj_core.h"
 #include "windows.h"
 
 #define implements :public

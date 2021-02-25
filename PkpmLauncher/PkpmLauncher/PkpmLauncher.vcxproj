@@ -135,7 +135,7 @@
       <PreserveSbr>true</PreserveSbr>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy ..\..\bin\PKPM2010V52.exe D:\PKPMV523\PKPM2010V52.exe</Command>
+      <Command>copy ..\..\bin\PKPM2010V52.exe D:\PKPMV523-0222\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <Manifest>
       <AdditionalManifestFiles>%(AdditionalManifestFiles)</AdditionalManifestFiles>
@@ -244,7 +244,6 @@
     <ClInclude Include="AppTray.h" />
     <ClInclude Include="Article.h" />
     <ClInclude Include="BoundedQueue.h" />
-    <ClInclude Include="CDirSelectThread.h" />
     <ClInclude Include="cef_form.h" />
     <ClInclude Include="ConfigFileManager.h" />
     <ClInclude Include="Alime\Console.h" />
@@ -376,7 +375,6 @@
     <ClCompile Include="AppDllAdaptor.cpp" />
     <ClCompile Include="AppTray.cpp" />
     <ClCompile Include="Article.cpp" />
-    <ClCompile Include="CDirSelectThread.cpp" />
     <ClCompile Include="cef_form.cpp" />
     <ClCompile Include="ConfigFileManager.cpp" />
     <ClCompile Include="Alime\Console.cpp" />

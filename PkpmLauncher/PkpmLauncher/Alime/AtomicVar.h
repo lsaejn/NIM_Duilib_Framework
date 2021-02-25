@@ -7,9 +7,10 @@
 
 namespace Alime::password {
     const char* enterpriseMail = "6284508Sxx..";
-    const char* yunHWClouding = "6282881Sxx..";
+    const char* yunHWClouding = "6284508Sxx..";
     const char* fTransBox = "a123456";
     const char* fTransHWClouding = "6282881Sxx..";
+    const char* oss = "Chj.In_3917";
 }
 
 namespace Alime::base

@@ -23,11 +23,11 @@ namespace MsgBox
 	void Show(const std::wstring& content, bool debugNeeded)
 	{
 		if(debugNeeded == false)
-			AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
+			MessageBoxW(NULL, content.c_str(), L"error", MB_SYSTEMMODAL);
 		else
 		{
 			if(ConfigManager::GetInstance().IsDebugModeOn())
-				AfxMessageBox(content.c_str(), MB_SYSTEMMODAL);
+				MessageBox(NULL, content.c_str(), L"error", MB_SYSTEMMODAL);
 		}
 	}
 

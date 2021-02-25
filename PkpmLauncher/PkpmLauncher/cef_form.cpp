@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "shlwapi.h"
+#include "shellapi.h"
 
 #include<cmath>
 
