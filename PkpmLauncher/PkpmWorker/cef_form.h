@@ -106,7 +106,7 @@ private:
 	///<return>广告内容的u8json，见接口文档</return>
 	std::string TellMeAdvertisement();
 
-	/// <summary>告知前端是否存在新版本。</summary>
+	/// <summary>告知前端是否存在新版本或新补丁。</summary>
 	///<return>bool</return>
 	bool TellMeNewVersionExistOrNot();
 
@@ -174,6 +174,11 @@ private:
 
 	/// <summary>打开并打爆装配式</summary>
 	void OpenBimExe();
+
+private:
+	/// <summary></summary>
+	void CheckVersionInDocument(const rapidjson::Document& document,
+		bool& hasNewVersion, bool& hasNewPatch);
 
 public:
 	void AcceptDpiAdaptor(IAdaptor* acc);

@@ -24,7 +24,7 @@ public:
 			if (string_utility::startWith(fileinfo.name, prefix)/* && endWith(fileinfo.name, ".ini")*/)
 			{
 				std::string filename(fileinfo.name);
-				filename = filename.substr(1, filename.size() - 5);
+				filename = filename.substr(strlen(prefix), filename.size() - strlen(prefix)-strlen(suffix)-1);
 				if (IsValidVersionName(filename))
 					result.push_back(filename);
 			}
@@ -33,9 +33,11 @@ public:
 		return result;
 	}
 private:
+
+	//由数字和'.'组成不能出现'..'
 	static bool IsValidVersionName(const std::string& str)
 	{
-		if (!isdigit(str.front()))
+		if (!isdigit(str.front()) || str.find("..") != std::string::npos)
 			return false;
 		for (auto elem : str)
 		{
@@ -63,7 +65,7 @@ public:
 			return true;
 		return false;
 	}
-private:
+
 	//@return -1 when lhs<rhs , 0 when lhs==rhs, 1 when lhs>rhs
 	int Compare(const std::string& lhs, const std::string& rhs)
 	{
@@ -80,7 +82,7 @@ private:
 			return 0;
 		return lhsElems.size() < rhsElems.size() ? -1 : 1;
 	}
-
+private:
 	std::vector<int> StringsToIntegers(const std::vector<std::string>& strs)
 	{
 		std::vector<int> numCol;
@@ -91,8 +93,8 @@ private:
 
 	void TrimTailZeros(std::vector<int>& nums)
 	{
-		size_t  i = nums.size()-1;
-		for (; i >= 0; --i)
+		int i =static_cast<int> (nums.size()-1);
+		for(; i >= 0; --i)
 			if (nums[i] != 0)
 				break;
 		nums.resize(i + 1);

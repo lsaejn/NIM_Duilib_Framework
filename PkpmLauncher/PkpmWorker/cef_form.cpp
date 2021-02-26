@@ -1109,22 +1109,48 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		{
 			return false;
 		}	
-		std::wstring VersionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
-		auto vec = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(VersionPath).c_str(), "V", "ini");//这个公司大概要专门花一年来还旧债
-		if (!vec.empty())
-		{
-			AscendingOrder stradegy;
-			std::sort(vec.begin(), vec.end(), stradegy);
-			const auto& LatestVersionOnLocal = vec.back();
-			if (document.HasMember("VersionString"))//fix me, 
-			{
-				std::string versionString = document["VersionString"].GetString();
-				return stradegy(LatestVersionOnLocal, versionString);
-			}
-		}
+		bool hasNewVersion = false;
+		bool hasNewPatch = false;
+		CheckVersionInDocument(document, hasNewVersion, hasNewPatch);
+		bool ret= hasNewVersion || hasNewPatch;
+		return ret;
 	}
+
 	return false;
 }
+
+void CefForm::CheckVersionInDocument(const rapidjson::Document& document,
+	bool &hasNewVersion,
+	bool &hasNewPatch)
+{
+	//assert?
+	hasNewVersion = false;
+	hasNewPatch = false;
+	std::wstring versionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
+	auto versionFiles = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(versionPath).c_str(), "V", "ini");//这个公司大概要专门花一年来还旧债
+
+	AscendingOrder stradegy;
+	std::sort(versionFiles.begin(), versionFiles.end(), stradegy);
+	if (versionFiles.empty())
+		return;
+	const auto& LatestVersionOnLocal = versionFiles.back();
+	if (document.HasMember("VersionString"))//fix me, 
+	{
+		std::string versionString = document["VersionString"].GetString();
+		hasNewVersion= stradegy(LatestVersionOnLocal, versionString);
+	}
+
+	//你可能希望直接对比字符串，但公司的工作方式是很混乱的，版本数不确定
+	//比如5.2.3和5.2.3.0
+	auto patchFiles = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(versionPath).c_str(), "PatchV", "ini");//好吧,一年没有换完
+	auto iter = std::find_if(patchFiles.begin(), patchFiles.end(), [&stradegy, &LatestVersionOnLocal](const std::string&patch) {
+		auto ret=stradegy.Compare(patch, LatestVersionOnLocal);
+		return ret==0;
+		});
+	if (iter != patchFiles.cend())
+		hasNewPatch = true;
+}
+
 
 std::string CefForm::TellMeAdvertisement()
 {
@@ -1249,7 +1275,7 @@ void CefForm::InitUiVariable()
 	this_window_ = dynamic_cast<ui::Window*>(FindControl(L"main_wnd"));
 	cef_control_->AttachLoadStart(nbase::Bind(&CefForm::OnLoadStart, this));
 	cef_control_->AttachLoadEnd(nbase::Bind(&CefForm::OnLoadEnd, this, std::placeholders::_1));
-	tray_.Init(GetHWND(), 128, WM_TRAY);
+	tray_.Init(GetHWND(), IDI_PKPMWORKER, WM_TRAY);
 }
 
 void CefForm::AttachFunctionToShortCut()
