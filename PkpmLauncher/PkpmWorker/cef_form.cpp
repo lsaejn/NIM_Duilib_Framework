@@ -146,15 +146,12 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		else
 		{
 			DragQueryFile(hDropInfo, 0, filePath, sizeof(filePath));
-			//fix me, use Alime::Directory
-			if (PathFileExists(filePath) && PathIsDirectory(filePath))
+			Alime::FileSystem::FilePath fPath(filePath);
+			if (fPath.IsFolder())
 			{
-				std::string pathString = nbase::UnicodeToAnsi(filePath);
-				if (pathString.back() != '\\')
-					pathString += '\\';
-				AddWorkPaths(pathString, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
-				cef_control_->CallJSFunction(L"flush",
-					nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),
+				auto p = nbase::UnicodeToAnsi( fPath.GetFullPathWithSurfix());
+				AddWorkPaths(p, nbase::UnicodeToAnsi(FullPathOfPkpmIni()));
+				cef_control_->CallJSFunction(L"flush", L"{\"uselessMsg\":\"test\"}",
 					ToWeakCallback([this](const std::string& /*chosenData*/) {
 						}
 				));
@@ -249,8 +246,6 @@ LRESULT CefForm::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 						Close();
 					else if(args->wParam == 1)
 						ShowWindow();
-					//auto themeType = args->pSender->GetName();
-					//PostMessage(WM_THEME_SELECTED, args->wParam, args->lParam);//lParam should always -1
 					return true;
 					}
 				);
@@ -274,11 +269,6 @@ bool CefForm::SwicthThemeTo(int index)
 		wrapedCap->ReDraw();
 		return true;
 	}
-	//auto sw = SkinSwitcherFatctory::Get(index);
-	//if (!sw)
-	//	return false;
-	//sw->Switch(vistual_caption_, label_);
-	//return true;
 }
 
 void CefForm::SaveThemeIndex(int index, const std::wstring& name)
