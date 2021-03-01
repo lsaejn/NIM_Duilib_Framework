@@ -99,6 +99,11 @@ public:
 		::ShellExecute(NULL, L"open", urlAboutPkpm, NULL, NULL, SW_SHOWDEFAULT);
 	}
 
+	void OnShowTip()
+	{
+		MsgBox::Warning(mainWnd_, L"测试版暂不提供该功能", L"不支持的操作");
+	}
+
 	void OnImprovement()
 	{
 		auto updateFilePath = nbase::win32::GetCurrentModuleDirectory() + L"Help\\UpdateGuider";
@@ -256,15 +261,15 @@ void ShortCutHandler::Init()
 	SHORTCUTFUNC(ShortCutHandlerImpl, "关于PKPM", OnAboutPkpm)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "关于", OnAboutPkpm)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "改进说明", OnImprovement)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "模型打包", OnModelPacking)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "注册控件", OnRegiser)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "模型打包", OnShowTip)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "注册控件", OnShowTip)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "联系我们", OnContactUs)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "完整性检查", OnIntegrityCheck)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "完整性检查", OnShowTip)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "参数设置", OnParameterSettings)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
 	SHORTCUTFUNC(ShortCutHandlerImpl, "用户手册", OnUserManual)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "在线更新", OnUpdateOnline)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "图模大师", OnOpenModelViewerMaster)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "在线更新", OnShowTip)
+	SHORTCUTFUNC(ShortCutHandlerImpl, "图模大师", OnShowTip)
 	//SHORTCUTFUNC(ShortCutHandlerImpl, "自动测试", OnOpenAutoTest)
 }
 
