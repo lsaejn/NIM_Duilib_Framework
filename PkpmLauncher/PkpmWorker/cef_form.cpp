@@ -881,7 +881,6 @@ void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 		bool launchDirectly = ConfigManager::GetInstance().isStartPkpmmainDirect();
 		std::thread t([=]() {
 			ALIME_SCOPE_EXIT{
-				spdlog::critical("ShowWindow in ALIME_SCOPE_EXIT");
 				int count = 0;
 				const int kMaxCountTry = 20;
 				while (!IsWindowVisible(CefForm::GetHWND())&&count++< kMaxCountTry)
