@@ -17,7 +17,7 @@
 using namespace Alime::HttpUtility;
 typedef std::function<void()> Functor;
 
-//ки╫с©з
+
 class QueryTask: public noncopyable
 {
 public:
