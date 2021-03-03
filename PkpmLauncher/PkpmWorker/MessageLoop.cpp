@@ -2,6 +2,10 @@
 #include "MessageLoop.h"
 #include "ConfigFileManager.h"
 
+
+/// <summary>
+/// release使用本地文件夹读取资源，因为配置起来方便
+/// </summary>
 void MainThread::Init()
 {
 	nbase::ThreadManager::RegisterThread(0);
