@@ -1,7 +1,8 @@
-{
+﻿{
   "acceptFileForAdmin": true,
   "bimWebUrl": "https://www.pkpm.cn/index.php?m=content&c=index&a=lists&catid=69",
-  "className": "PKPM V5.2 启动界面",
+  "structWebUrl": "https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112",
+  "className": "PKPM V5.3.2 启动界面",
   "deadline": 15,
   "defaultAdvertise": {
     "data": [
@@ -15,11 +16,29 @@
       }
     ]
   },
-  "enableAdaptDpi": false,
+  "enableAdaptDpi": true,
   "enableManualAdaptDpi": false,
   "enableRefresh": false,
   "enableEnv": true,
-  "envs": [ "CFG", "CFG\\x64", "Ribbon\\PM", "Ribbon\\PM\\x64", "Ribbon" ],
+  "envs": [ "CFG", "CFG\\x64", "Ribbon\\PM", "Ribbon\\PM\\x64" ],
+  "programPaths": [
+    {
+      "name": "integrityCheck",
+      "path": "CFG\\PkpmIntegrityCheck.exe"
+    },
+    {
+      "name": "pManager",
+      "path": "TDGL\\PMANAGER.exe"
+    },
+    {
+      "name": "regControl",
+      "path": "CFG\\RegPKPMCtrl.exe"
+    },
+    {
+      "name": "authorize",
+      "path": "CFG\\PKPMAuthorize.exe"
+    }
+  ],
   "folderDialogType": 0,
   "installer": "installer\\installer.exe",
   "InstallerInfo": "/PKPM2010/Info/pkpmSoft/installer/installer.json",
@@ -32,14 +51,14 @@
   },
   "nativeArticles": "resources\\Articles\\Articles.json",
   "launchDllName": "PKPMAPPV52.dll",
-  "query": "/PKPM2010/Info/index.html",
+  "query": "PKPM2010/Info/pkpmSoft/packsInfo.json",
   "relativePathForHtmlRes": "resources\\HtmlRes\\index.html",
   "server": "update.pkpm.cn",
-  "debugMode": true,
-  "lauchDirectly": true,
+  "lauchDirectly": false,
   "skinFile": "cef.xml",
   "skinFolder": "cef",
   "threadNum": 3,
+  "useLocalPackinfojson": false,
   "webArticles": "/PKPM2010/Info/ArticlesOnline.json",
   "windowText": "PkpmV5.2"
 }

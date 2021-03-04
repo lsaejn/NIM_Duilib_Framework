@@ -61,6 +61,8 @@ public:
 	int32_t DaysLeftToNotify() const;
 	std::wstring GetLaunchDllName() const;
 	std::wstring GetBimDownLoadWeb() const;
+	std::wstring GetStructDownLoadWeb() const;
+	std::wstring GetProgramPath(const std::wstring&) const;
 	const std::vector<std::wstring>& GetEnvPaths() const;
 	void LoadConfigFile();
 private:	
@@ -94,6 +96,8 @@ private:
 	std::wstring styleName_;//只有前端用，应改为u8
 	std::wstring bimWebUrl_;
 	std::wstring installerPath_;
+	std::wstring structWebUrl_;
+	std::map<std::wstring, std::wstring> programPaths_;
 	int32_t styleIndex_;
 	int32_t deadline_;
 	int32_t folderDialogType_;

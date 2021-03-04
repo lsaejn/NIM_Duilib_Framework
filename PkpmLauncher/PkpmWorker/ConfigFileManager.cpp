@@ -112,6 +112,8 @@ void ConfigManager::LoadConfigFile()
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
 		enableStartPkpmmainDirect_= json[u8"lauchDirectly"];
 		languageFileName_ = nbase::UTF8ToUTF16(json[u8"languageFile"]);
+		//以下为后续内容，为了保证exe兼容所有配置文件，暂时这么处理
+		//历史负担重的公司是这样的。
 		if (json_.contains("enableEnv")&& (enableReadEnvFromConfig_ = json_[u8"enableEnv"]))
 		{
 				nlohmann::json envArray = json_["envs"];
@@ -126,12 +128,48 @@ void ConfigManager::LoadConfigFile()
 		{
 			enableDebugMode_ = json["debugMode"];
 		}
+		/*
+			std::wstring structWebUrl_;
+	std::wstring integrityCheckExePath_;
+	std::wstring pManagerExePath_;
+	std::wstring regControlExePath_;
+	std::wstring authorizeExePath_;
+		*/
+		if (json_.contains("structWebUrl"))
+		{
+			structWebUrl_= nbase::UTF8ToUTF16(json["structWebUrl"]);
+		}
+		if (json_.contains("programPaths"))
+		{
+			auto& pathObj = json_["programPaths"];
+			for (const auto& e : pathObj)
+			{
+				programPaths_[nbase::UTF8ToUTF16(e["name"])] =
+					nbase::win32::GetCurrentModuleDirectory()+nbase::UTF8ToUTF16(e["path"]);
+			}
+		}
 	}
 	catch (std::exception& )//parse excetion
 	{
 		MsgBox::Show(L"Fatal error, fail to parse config file", (std::wstring)L"defaultConfig.json");
 		std::abort();
 	}
+}
+
+std::wstring ConfigManager::GetStructDownLoadWeb() const
+{
+	return structWebUrl_;
+}
+
+std::wstring ConfigManager::GetProgramPath(const std::wstring& key) const
+{
+	std::wstring ret;
+	const auto iter = programPaths_.find(key);
+	if(iter!= programPaths_.end())
+	{
+		ret =iter->second;
+	}
+	return ret;
 }
 
 //bool ConfigManager::IsSystemFolderDialogOn() const

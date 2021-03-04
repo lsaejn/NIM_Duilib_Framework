@@ -8,9 +8,6 @@
 #include "ConfigFileManager.h"
 #include "SpdlogForward.h"
 
-
-const wchar_t* separator = L"\\";
-const wchar_t* UpdateUrl = L"https://www.pkpm.cn/index.php?m=content&c=index&a=show&catid=70&id=112";
 const wchar_t* urlAboutPkpm = L"https://www.pkpm.cn";
 
 std::wstring GetCfgPath_Inner()
@@ -55,8 +52,11 @@ private:
 public:
 	ShortCutHandlerImpl()
 	{
-		m_strNameOfIntegrity = L"PkpmIntegrityCheck.exe";
-		m_strNameOfPManager = L"PMANAGER.exe";
+		//m_strNameOfIntegrity = L"PkpmIntegrityCheck.exe";
+		//m_strNameOfPManager = L"PMANAGER.exe";
+		
+		m_strNameOfIntegrity = ConfigManager::GetInstance().GetProgramPath(L"integrityCheck");
+		m_strNameOfPManager = ConfigManager::GetInstance().GetProgramPath(L"pManager");
 
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
 		path += L"PKPM2010V511.dll";
@@ -119,8 +119,9 @@ public:
 		auto ret=func();
 		if (ret != IDOK)
 			return;
-		std::wstring cfgpa = nbase::win32::GetCurrentModuleDirectory()+L"CFG\\"+ _T("RegPKPMCtrl.exe");
-		std::wstring cmdline = L"/n,/select," + cfgpa;
+		//std::wstring cfgpa = nbase::win32::GetCurrentModuleDirectory()+L"CFG\\"+ _T("RegPKPMCtrl.exe");
+		std::wstring regControl = ConfigManager::GetInstance().GetProgramPath(L"regControl");
+		std::wstring cmdline = L"/n,/select," + regControl;
 		::ShellExecute(NULL, L"open", L"explorer.exe", cmdline.c_str(), NULL, SW_SHOWNORMAL);
 	}
 
@@ -131,7 +132,7 @@ public:
 
 	void OnIntegrityCheck()
 	{
-		std::wstring regcmd = GetCfgPath_Inner() + m_strNameOfIntegrity;
+		const std::wstring &regcmd = m_strNameOfIntegrity;
 		if (PathFileExists(regcmd.c_str()))
 		{
 			::ShellExecute(NULL, _T("open"), regcmd.c_str(), NULL, NULL, SW_NORMAL);
@@ -154,15 +155,7 @@ public:
 			MessageBox(NULL, L"Fatal error, can not find main window", L"error", MB_SYSTEMMODAL);
 			std::abort();
 		}
-
-	//	这种改动非常恶心，
-#ifdef DEBUG
-		std::wstring AuthorizeApp = L"PKPMAuthorizeD.exe";
-#else
-		std::wstring AuthorizeApp = L"PKPMAuthorize.exe";
-#endif // DEBUG
-
-		std::wstring exePathName = GetCfgPath_Inner() + AuthorizeApp;
+		std::wstring exePathName = ConfigManager::GetInstance().GetProgramPath(L"authorize");
 		if (-1 == _taccess(exePathName.c_str(), 0))
 		{
 			MsgBox::ShowViaIDWithSpecifiedCtn(exePathName, L"TITLE_FIND_FILE_ERROR");
@@ -209,13 +202,14 @@ public:
 				else
 				{
 					spdlog::debug("fail to find installer.exe");
-					ShellExecute(NULL, _T("open"), UpdateUrl, NULL, NULL, SW_SHOW);
+					ShellExecute(NULL, _T("open"), 
+						ConfigManager::GetInstance().GetStructDownLoadWeb().c_str(),
+						NULL, NULL, SW_SHOW);
 				}
 			}
 		}
 	}
 
-	//2020/07/13 新增图模大师
 	void OnOpenModelViewerMaster()
 	{
 		application_utily::OnOpenModelViewerMaster();
@@ -223,7 +217,7 @@ public:
 
 	void OnBnClickedBtnFileMgr()
 	{	
-		std::wstring path = nbase::win32::GetCurrentModuleDirectory() + L"TDGL\\" + m_strNameOfPManager.c_str();
+		const std::wstring &path =  m_strNameOfPManager;
 		if (!PathFileExists(path.c_str()))
 		{
 			MsgBox::ShowViaIDWithSpecifiedCtn(path, L"TITLE_FIND_FILE_ERROR");
