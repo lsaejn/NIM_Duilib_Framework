@@ -1091,54 +1091,78 @@ bool CefForm::TellMeNewVersionExistOrNot()
 		try
 		{
 			document.Parse(webPageData_.data_.lock()->pageInfo_.c_str());
-			if (!document.HasMember("UpdateUrl") ||!document.HasMember("Advertise") ||
-				!document["Advertise"]["NationWide"].IsArray())
-				return false;
+			bool hasNewVersion = false;
+			bool hasNewPatch = false;
+			CheckVersionInDocument(document, hasNewVersion, hasNewPatch);
+			bool ret = hasNewVersion || hasNewPatch;
+			return ret;
 		}
 		catch (...)
 		{
 			return false;
 		}	
-		bool hasNewVersion = false;
-		bool hasNewPatch = false;
-		CheckVersionInDocument(document, hasNewVersion, hasNewPatch);
-		bool ret= hasNewVersion || hasNewPatch;
-		return ret;
+
 	}
 
 	return false;
 }
 
+//fix me
 void CefForm::CheckVersionInDocument(const rapidjson::Document& document,
 	bool &hasNewVersion,
 	bool &hasNewPatch)
 {
-	//assert?
 	hasNewVersion = false;
 	hasNewPatch = false;
-	std::wstring versionPath = nbase::win32::GetCurrentModuleDirectory() + L"CFG\\";
-	auto versionFiles = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(versionPath).c_str(), "V", "ini");//这个公司大概要专门花一年来还旧债
 
+	std::wstring versionPath = nbase::win32::GetCurrentModuleDirectory()
+		+ L"CFG\\";
+	auto versionFiles = FindSpecificFiles::FindFiles(
+		nbase::UnicodeToAnsi(versionPath).c_str(), "V", "ini");
 	AscendingOrder stradegy;
 	std::sort(versionFiles.begin(), versionFiles.end(), stradegy);
 	if (versionFiles.empty())
 		return;
 	const auto& LatestVersionOnLocal = versionFiles.back();
-	if (document.HasMember("VersionString"))//fix me, 
+
+	if (document.HasMember("LatestVersion"))//fix me, 
 	{
-		std::string versionString = document["VersionString"].GetString();
-		hasNewVersion= stradegy(LatestVersionOnLocal, versionString);
+		std::string versionString = document["LatestVersion"].GetString();
+		if (versionString.size() > 0)
+		{
+			if (versionString[0] = 'v' || versionString[0] == 'V')
+				versionString = versionString.substr(1);
+			hasNewVersion = stradegy(LatestVersionOnLocal, versionString);
+		}
 	}
 
-	//你可能希望直接对比字符串，但公司的工作方式是很混乱的，版本数不确定
-	//比如5.2.3和5.2.3.0
-	auto patchFiles = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(versionPath).c_str(), "PatchV", "ini");//好吧,一年没有换完
-	auto iter = std::find_if(patchFiles.begin(), patchFiles.end(), [&stradegy, &LatestVersionOnLocal](const std::string&patch) {
-		auto ret=stradegy.Compare(patch, LatestVersionOnLocal);
-		return ret==0;
-		});
-	if (iter != patchFiles.cend())
-		hasNewPatch = true;
+	if (document.HasMember("FixPacks"))//we need accurate res
+	{
+		auto& fixObj=document["FixPacks"];
+		auto temp = "V" + LatestVersionOnLocal;
+		if (fixObj.HasMember(temp.c_str()))
+		{
+			std::string toFind = fixObj[temp.c_str()]["patchName"].GetString();
+			if(!string_utility::startWith(toFind.c_str(), "PatchV") ||
+				!string_utility::endWith(toFind.c_str(), ".ini"))
+			{
+				return;
+			}
+			else 
+			{
+				toFind = toFind.substr(strlen("PatchV"), toFind.size() - strlen("PatchV") - strlen(".ini"));
+			}
+			auto patchFiles = FindSpecificFiles::FindFiles(nbase::UnicodeToAnsi(
+				versionPath).c_str(), "PatchV", "ini");
+			auto iter = std::find_if(patchFiles.begin(), patchFiles.end(), 
+				[&stradegy, &toFind](const std::string& patch) {
+					auto ret = stradegy.Compare(patch, toFind);
+					return ret == 0;
+				});
+			if (iter != patchFiles.cend())
+				hasNewPatch = true;
+		}
+	}
 }
 
 

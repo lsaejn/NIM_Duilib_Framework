@@ -68,25 +68,27 @@ private:
 			return false;
 		auto result = res.GetBodyUtf8();
 		auto astring = nbase::UnicodeToAnsi(result.c_str());//是坑
-		std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
-		if (_MSC_VER <= 1600)
-			astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {
-			return c == '\n' || c == '\r' || c == ' '; }),
-				astring.end());
-		std::smatch match;
-		if (std::regex_search(astring, match, reg))
-		{
-			std::string page = match[3];
-			//考虑用户内网网页重定向的问题,简单处理即可
-			if (page.find("UpdateUrl") == std::string::npos ||page.find("Version") == std::string::npos)
-				return false;
-			else
-			{
-				data_.lock()->pageInfo_ = page;
-				return true;
-			}			
-		}
-		return false;
+		data_.lock()->pageInfo_ = astring;
+		return true;
+		//std::regex reg("(<(body)>)([\\s\\S]*)(</\\2>)");
+		//if (_MSC_VER <= 1600)
+		//	astring.erase(std::remove_if(astring.begin(), astring.end(), [](char c) {
+		//	return c == '\n' || c == '\r' || c == ' '; }),
+		//		astring.end());
+		//std::smatch match;
+		//if (std::regex_search(astring, match, reg))
+		//{
+		//	std::string page = match[3];
+		//	//考虑用户内网网页重定向的问题,简单处理即可
+		//	if (page.find("UpdateUrl") == std::string::npos ||page.find("Version") == std::string::npos)
+		//		return false;
+		//	else
+		//	{
+		//		data_.lock()->pageInfo_ = page;
+		//		return true;
+		//	}			
+		//}
+		//return false;
 	}
 public:
 	static std::string ParseWebPage(const std::string& pageInfo)

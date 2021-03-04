@@ -82,6 +82,7 @@ public:
 			return 0;
 		return lhsElems.size() < rhsElems.size() ? -1 : 1;
 	}
+
 private:
 	std::vector<int> StringsToIntegers(const std::vector<std::string>& strs)
 	{
