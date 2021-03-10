@@ -16,9 +16,7 @@ private:
 private:
 	ui::ListBox*	list_box_;
 
-	ui::Control*	control_img_;
+	ui::Label*		control_img_;
 	ui::Label*		label_title_;
-	ui::Progress*	progress_;
-	ui::Button*		btn_del_;
 };
 

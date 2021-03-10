@@ -106,7 +106,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -173,6 +173,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="PathEditPage.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="VersionEditPage.h" />
     <ClInclude Include="VersionItem.h" />
     <ClInclude Include="WinMain.h" />
     <ClInclude Include="PkpmVersionManager.h" />
@@ -181,7 +184,9 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="PathEditPage.cpp" />
     <ClCompile Include="PkpmVersionManager.cpp" />
+    <ClCompile Include="VersionEditPage.cpp" />
     <ClCompile Include="VersionItem.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="stdafx.cpp">

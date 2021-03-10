@@ -50,8 +50,8 @@ void MainThread::Init()
 #endif
 
 	// 创建一个默认带有阴影的居中窗口
-	BasicForm* window = new BasicForm();
-	window->Create(NULL, BasicForm::kClassName.c_str(), WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 0);
+	VersionManager* window = new VersionManager();
+	window->Create(NULL, VersionManager::kClassName.c_str(), WS_OVERLAPPEDWINDOW & ~WS_MAXIMIZEBOX, 0);
 	window->CenterWindow();
 	window->ShowWindow();
 }
