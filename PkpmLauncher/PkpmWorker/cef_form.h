@@ -106,7 +106,10 @@ private:
 	///<return>广告内容的u8json，见接口文档</return>
 	std::string TellMeAdvertisement();
 
-	/// <summary>告知前端是否存在新版本或新补丁。</summary>
+	/// <summary>
+	/// 告知前端是否存在新版本或新补丁，需求疑有误，
+	/// 有补丁必有更新包，那么根本没必要检测补丁。
+	/// </summary>
 	///<return>bool</return>
 	bool TellMeNewVersionExistOrNot();
 
