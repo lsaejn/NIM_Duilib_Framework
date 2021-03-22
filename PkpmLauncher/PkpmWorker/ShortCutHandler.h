@@ -20,13 +20,13 @@ public:
 	~ShortCutHandler();
 	void Init();
 	void SetCallBacks(HWND, CallBack);//设置调用exe前后隐藏窗口的函数
-	void CallFunc(const std::string &funcName);
-	bool Contains(const std::string& funcName) const;
+	void CallFunc(const std::wstring &funcName);
+	bool Contains(const std::wstring& funcName) const;
 	void SetNewVersionChecker(BooleanCallBack);
 
 private:
 	ShortCutHandlerImpl* impl_;
-	std::unordered_map<std::string, InnerFunction> funcMaps_;
+	std::unordered_map<std::wstring, InnerFunction> funcMaps_;
 	HWND mainWnd_;
 
 };

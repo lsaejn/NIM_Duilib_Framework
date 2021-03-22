@@ -139,7 +139,7 @@
       <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\bin\release\PkpmWorker.exe D:\PKPMV523-0222\PKPM2010V52.exe</Command>
+      <Command>copy ..\..\bin\release\PkpmWorker.exe D:\PKPMV523Develop\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>

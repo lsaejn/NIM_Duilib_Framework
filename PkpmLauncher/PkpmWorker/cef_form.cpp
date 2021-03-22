@@ -372,8 +372,7 @@ void CefForm::RegisterCppFuncs()
 			std::string debugStr = R"({ "message": "Function SHORTCUT called successfully." })";
 			callback(true, debugStr);
 #endif // DEBUG
-			shortcutName = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(shortcutName)).c_str();
-			OnShortCut(shortcutName.c_str());
+			OnShortCut(nbase::UTF8ToUTF16(shortcutName).c_str());
 			return;
 			}
 		)
@@ -791,7 +790,7 @@ std::string CefForm::OnGetDefaultMenuSelection()
 	return json_str;
 }
 
-void CefForm::OnShortCut(const char* cutName)
+void CefForm::OnShortCut(const std::wstring& cutName)
 {
 	shortCutHandler_.CallFunc(cutName);
 }
@@ -1083,14 +1082,23 @@ bool CefForm::SetEnv()
 
 bool CefForm::TellMeNewVersionExistOrNot()
 {
-	if (!webPageData_.data_.lock()->isWebPageCooked_)
+	if (!webPageData_.data_.lock()->isWebPageCooked_
+		&& !ConfigManager::GetInstance().UseLocalPackinfojson())
 		return false;
 	else
 	{
 		rapidjson::Document document;
 		try
 		{
-			document.Parse(webPageData_.data_.lock()->pageInfo_.c_str());
+			if (ConfigManager::GetInstance().UseLocalPackinfojson())
+			{
+				auto packInfoPath = ConfigManager::GetInstance().GetLocalPackinfoPath();
+				std::string u8content;
+				bool succ = nbase::ReadFileToString(packInfoPath, u8content);
+				document.Parse(u8content.c_str());
+			}
+			else
+				document.Parse(webPageData_.data_.lock()->pageInfo_.c_str());
 			bool hasNewVersion = false;
 			bool hasNewPatch = false;
 			CheckVersionInDocument(document, hasNewVersion, hasNewPatch);

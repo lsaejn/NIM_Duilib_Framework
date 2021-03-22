@@ -112,6 +112,8 @@ void ConfigManager::LoadConfigFile()
 		bimWebUrl_ = nbase::UTF8ToUTF16(json["bimWebUrl"]);
 		enableStartPkpmmainDirect_= json[u8"lauchDirectly"];
 		languageFileName_ = nbase::UTF8ToUTF16(json[u8"languageFile"]);
+		useLocalPackinfojson_ = json["useLocalPackinfojson"];
+		localPackInfoPath_= nbase::UTF8ToUTF16(json["localPackInfoPath"]);
 		//以下为后续内容，为了保证exe兼容所有配置文件，暂时这么处理
 		//历史负担重的公司是这样的。
 		if (json_.contains("enableEnv")&& (enableReadEnvFromConfig_ = json_[u8"enableEnv"]))
@@ -156,6 +158,11 @@ void ConfigManager::LoadConfigFile()
 	}
 }
 
+bool ConfigManager::UseLocalPackinfojson() const
+{
+	return useLocalPackinfojson_;
+}
+
 std::wstring ConfigManager::GetStructDownLoadWeb() const
 {
 	return structWebUrl_;
@@ -170,6 +177,11 @@ std::wstring ConfigManager::GetProgramPath(const std::wstring& key) const
 		ret =iter->second;
 	}
 	return ret;
+}
+
+std::wstring ConfigManager::GetLocalPackinfoPath() const
+{
+	return nbase::win32::GetCurrentModuleDirectory()+localPackInfoPath_;
 }
 
 //bool ConfigManager::IsSystemFolderDialogOn() const

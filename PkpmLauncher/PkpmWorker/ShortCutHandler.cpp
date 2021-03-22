@@ -40,8 +40,6 @@ public:
 		HMODULE dll_;
 	};
 private:
-	std::wstring m_strNameOfIntegrity;
-	std::wstring m_strNameOfPManager;
 	HMODULE dll_;
 	DllScopeGuarder guard_;
 	CallBack DoBeforeCallFunc_;//调用前的函数,一般是隐藏主窗口
@@ -52,12 +50,6 @@ private:
 public:
 	ShortCutHandlerImpl()
 	{
-		//m_strNameOfIntegrity = L"PkpmIntegrityCheck.exe";
-		//m_strNameOfPManager = L"PMANAGER.exe";
-		
-		m_strNameOfIntegrity = ConfigManager::GetInstance().GetProgramPath(L"integrityCheck");
-		m_strNameOfPManager = ConfigManager::GetInstance().GetProgramPath(L"pManager");
-
 		std::wstring path = nbase::win32::GetCurrentModuleDirectory();
 		path += L"PKPM2010V511.dll";
 		dll_ = LoadLibrary(path.c_str());// 加载DLL库文件，DLL名称和路径用自己的
@@ -125,21 +117,29 @@ public:
 		::ShellExecute(NULL, L"open", L"explorer.exe", cmdline.c_str(), NULL, SW_SHOWNORMAL);
 	}
 
-	void OnContactUs()
+	void CallFuncByName(const std::wstring& name)
 	{
-		/*ShellExecute(NULL, L"open", m_sOnlineAsk, NULL, NULL, SW_SHOWDEFAULT);*/
-	}
-
-	void OnIntegrityCheck()
-	{
-		const std::wstring &regcmd = m_strNameOfIntegrity;
-		if (PathFileExists(regcmd.c_str()))
+		auto path=ConfigManager::GetInstance().GetProgramPath(name);
+		if (path.empty() || !PathFileExists(path.c_str()))
 		{
-			::ShellExecute(NULL, _T("open"), regcmd.c_str(), NULL, NULL, SW_NORMAL);
+			MsgBox::ShowViaID(L"ERROR_TIP_FIND_APP_ERROR", L"TITLE_ERROR");
 		}
 		else
-			MsgBox::ShowViaID(L"ERROR_TIP_FIND_APP_ERROR", L"TITLE_ERROR");
+		{
+			::ShellExecute(NULL, _T("open"), path.c_str(), NULL, NULL, SW_NORMAL);
+		}
 	}
+
+	//void OnIntegrityCheck()
+	//{
+	//	const std::wstring &regcmd = m_strNameOfIntegrity;
+	//	if (PathFileExists(regcmd.c_str()))
+	//	{
+	//		::ShellExecute(NULL, _T("open"), regcmd.c_str(), NULL, NULL, SW_NORMAL);
+	//	}
+	//	else
+	//		MsgBox::ShowViaID(L"ERROR_TIP_FIND_APP_ERROR", L"TITLE_ERROR");
+	//}
 
 	void OnParameterSettings()
 	{
@@ -173,11 +173,6 @@ public:
 		DoAfterCallFunc_();	
 		CloseHandle(prinfo.hThread);
 		CloseHandle(prinfo.hProcess);
-	}
-
-	void OnUserManual()
-	{
-		//::ShellExecute(0, "open", "explorer.exe", helpPath, NULL, SW_SHOWNORMAL);
 	}
 
 	void OnUpdateOnline()
@@ -216,8 +211,8 @@ public:
 	}
 
 	void OnBnClickedBtnFileMgr()
-	{	
-		const std::wstring &path =  m_strNameOfPManager;
+	{
+		const std::wstring& path = ConfigManager::GetInstance().GetProgramPath(L"模型打包");
 		if (!PathFileExists(path.c_str()))
 		{
 			MsgBox::ShowViaIDWithSpecifiedCtn(path, L"TITLE_FIND_FILE_ERROR");
@@ -230,8 +225,11 @@ public:
 	}
 };
 
-#define SHORTCUTFUNC(className,JsName,InnerFuncs) \
+
+#define SHORTCUTFUNC(className, JsName, InnerFuncs) \
 	funcMaps_.insert(std::make_pair(##JsName,makeFunc<getCountOfPara(&className::InnerFuncs)+1>(&className::InnerFuncs,this->impl_,this->mainWnd_)));
+#define SHORTCUTFUNC1(className, JsName, InnerFuncs) \
+	funcMaps_.insert(std::make_pair(JsName, std::bind(&className::InnerFuncs, this->impl_, JsName)));
 
 
 ShortCutHandler::ShortCutHandler()
@@ -247,32 +245,36 @@ ShortCutHandler::~ShortCutHandler()
 void ShortCutHandler::Init()
 {
 	//不改，按理说网页人员应该学会自己传递参数, 而不是让我利用配置文件反射
-	SHORTCUTFUNC(ShortCutHandlerImpl, "关于PKPM", OnAboutPkpm)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "关于", OnAboutPkpm)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "改进说明", OnImprovement)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "模型打包", OnModelPacking)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "注册控件", OnRegiser)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "联系我们", OnContactUs)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "完整性检查", OnIntegrityCheck)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "参数设置", OnParameterSettings)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "锁码设置", OnSwitchToNetVersion)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "用户手册", OnUserManual)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "在线更新", OnUpdateOnline)
-	SHORTCUTFUNC(ShortCutHandlerImpl, "图模大师", OnOpenModelViewerMaster)
+	SHORTCUTFUNC1(ShortCutHandlerImpl, L"完整性检查", CallFuncByName)
+	SHORTCUTFUNC1(ShortCutHandlerImpl, L"注册控件", CallFuncByName)
+	SHORTCUTFUNC1(ShortCutHandlerImpl, L"锁码验证", CallFuncByName)
+
+	SHORTCUTFUNC(ShortCutHandlerImpl, L"模型打包", OnModelPacking)
+	SHORTCUTFUNC(ShortCutHandlerImpl, L"关于PKPM", OnAboutPkpm)
+	SHORTCUTFUNC(ShortCutHandlerImpl, L"关于", OnAboutPkpm)
+	SHORTCUTFUNC(ShortCutHandlerImpl, L"改进说明", OnImprovement)
+	//SHORTCUTFUNC(ShortCutHandlerImpl, L"联系我们", OnContactUs)
+	SHORTCUTFUNC(ShortCutHandlerImpl, L"参数设置", OnParameterSettings)
+	//SHORTCUTFUNC(ShortCutHandlerImpl, L"用户手册", OnUserManual)
+	SHORTCUTFUNC(ShortCutHandlerImpl, L"在线更新", OnUpdateOnline)
+	SHORTCUTFUNC(ShortCutHandlerImpl, L"图模大师", OnOpenModelViewerMaster)
 	//SHORTCUTFUNC(ShortCutHandlerImpl, "自动测试", OnOpenAutoTest)
+		
 }
 
-void ShortCutHandler::CallFunc(const std::string& cutName)
+void ShortCutHandler::CallFunc(const std::wstring& cutName)
 {
 	if (Contains(cutName))
 		(funcMaps_[cutName])();
 	else
 	{
 		MsgBox::WarningViaID(mainWnd_, L"ERROR_TIP_UNEXCEPTED_MENU", L"TITLE_ERROR");
+		//尽力而为的模式。为了让网页和配置文件发挥最大左右
+		this->impl_->CallFuncByName(cutName.c_str());
 	}
 }
 
-bool ShortCutHandler::Contains(const std::string& cutName) const
+bool ShortCutHandler::Contains(const std::wstring& cutName) const
 {
 	return funcMaps_.find(cutName) != funcMaps_.end();
 }

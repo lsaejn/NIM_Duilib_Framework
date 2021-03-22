@@ -42,6 +42,7 @@ public:
 	bool isStartPkpmmainDirect() const;
 	bool CanReadEnvFromConfig() const;
 	bool IsAcceptFileForAdminOn() const;
+	bool UseLocalPackinfojson() const;
 
 	std::string GetDefaultAdvertise() const;
 	std::wstring GetAdvertisementServer() const;
@@ -63,6 +64,7 @@ public:
 	std::wstring GetBimDownLoadWeb() const;
 	std::wstring GetStructDownLoadWeb() const;
 	std::wstring GetProgramPath(const std::wstring&) const;
+	std::wstring GetLocalPackinfoPath() const;
 	const std::vector<std::wstring>& GetEnvPaths() const;
 	void LoadConfigFile();
 private:	
@@ -73,6 +75,7 @@ private:
 	
 
 private:
+	bool useLocalPackinfojson_;
 	bool enableManualAdaptDpi_;
 	bool enableAdaptDpi_;
 	bool enableWebPageRefresh_;
@@ -97,6 +100,7 @@ private:
 	std::wstring bimWebUrl_;
 	std::wstring installerPath_;
 	std::wstring structWebUrl_;
+	std::wstring localPackInfoPath_;
 	std::map<std::wstring, std::wstring> programPaths_;
 	int32_t styleIndex_;
 	int32_t deadline_;

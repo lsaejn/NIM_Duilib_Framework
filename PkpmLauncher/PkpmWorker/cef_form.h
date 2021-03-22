@@ -63,7 +63,7 @@ private:
 	
 	/// <summary>网页快捷事件</summary>
 	///<param name="name">网页上快捷键的字符串</param >
-	void OnShortCut(const char* cutName);
+	void OnShortCut(const std::wstring& cutName);
 	
 	/// <summary>新建工程</summary>
 	///<return>用户选择的工程路径</return>
