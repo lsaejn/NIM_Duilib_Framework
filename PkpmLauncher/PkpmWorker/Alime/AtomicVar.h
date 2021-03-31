@@ -11,7 +11,7 @@ namespace Alime::password {
     const char* fTransBox = "a123456";
     const char* fTransHWClouding = "6282881Sxx..";
     const char* oss = "Chj.In_3917";
-    const char* jira = "gl=6282881";
+    const char* jira_confluence = "gl=6282881";
 }
 
 namespace Alime::base
