@@ -7,11 +7,12 @@
 
 namespace Alime::password {
     const char* enterpriseMail = "6284508Sxx..";
-    const char* yunHWClouding = "6284508Sxx..";
+    const char* yunHWClouding_tfs = "6284508Sxx..";
     const char* fTransBox = "a123456";
     const char* fTransHWClouding = "6282881Sxx..";
     const char* oss = "Chj.In_3917";
     const char* jira_confluence = "gl=6282881";
+    const char* intranetPc = "6282881";
 }
 
 namespace Alime::base

@@ -466,6 +466,7 @@ void CefForm::RegisterCppFuncs()
 				std::string coreWithPara = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["coreWithPara"]));//
 				std::string secMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["secMenu"]));
 				std::string trdMenu = nbase::UnicodeToAnsi(nbase::UTF8ToUTF16(json["trdMenu"]));
+				//这个实际都是该前端来改0.0
 				if (secMenu == "BIM软件" || secMenu == "BIM软件系列" || secMenu=="装配式")
 				{
 					OpenBimExe();
