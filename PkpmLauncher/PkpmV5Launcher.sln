@@ -31,7 +31,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PkpmWorker", "PkpmWorker\Pk
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PkpmVersionManager", "PkpmVersionManager\PkpmVersionManager.vcxproj", "{F1A9371F-9A34-45A0-98EB-83FF371F067F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenPbBims", "OpenPbBims\OpenPbBims.vcxproj", "{39EFD32B-ED46-4930-89B3-402A8AAECD1D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenBimWin32", "OpenBimWin32\OpenBimWin32.vcxproj", "{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,16 +133,16 @@ Global
 		{F1A9371F-9A34-45A0-98EB-83FF371F067F}.Release|Win32.Build.0 = Release|Win32
 		{F1A9371F-9A34-45A0-98EB-83FF371F067F}.Release|x64.ActiveCfg = Release|x64
 		{F1A9371F-9A34-45A0-98EB-83FF371F067F}.Release|x64.Build.0 = Release|x64
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Debug|Win32.Build.0 = Debug|Win32
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Debug|x64.ActiveCfg = Debug|x64
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Debug|x64.Build.0 = Debug|x64
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Release|Any CPU.ActiveCfg = Release|Win32
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Release|Win32.ActiveCfg = Release|Win32
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Release|Win32.Build.0 = Release|Win32
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Release|x64.ActiveCfg = Release|x64
-		{39EFD32B-ED46-4930-89B3-402A8AAECD1D}.Release|x64.Build.0 = Release|x64
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Debug|Win32.Build.0 = Debug|Win32
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Debug|x64.ActiveCfg = Debug|x64
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Debug|x64.Build.0 = Debug|x64
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Release|Any CPU.ActiveCfg = Release|Win32
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Release|Win32.ActiveCfg = Release|Win32
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Release|Win32.Build.0 = Release|Win32
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Release|x64.ActiveCfg = Release|x64
+		{2D3CF6AD-B392-4CA1-9A39-0195A4534E2E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
