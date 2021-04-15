@@ -854,11 +854,17 @@ void CefForm::DataFormatTransfer(const std::string& module, const std::string& a
 
 void CefForm::OnDbClickProject(const std::vector<std::string>& args)
 {
+	if (args[2] == "OpenPbBims.exe")
+	{
+		OpenBimExe();
+		return;
+	}
 	if (args.size() != 5 || !prjPaths_.size())
 	{
 		MsgBox::WarningViaID(GetHWND(), L"ERROR_TIP_PARAMETER_ERROR", L"TITLE_ERROR");
 		return;
 	}
+
 	std::string path(args[0]);
 	{
 		ShowWindow(false);

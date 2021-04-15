@@ -274,7 +274,7 @@ namespace application_utily
 	bool FindBimExe(std::wstring& bimPath)
 	{
 		bimPath = L"";
-		LPCTSTR cpp_data = L"SOFTWARE\\PKPM\\PKPM-BIM建筑协同设计系统";
+		LPCTSTR cpp_data = L"SOFTWARE\\PKPM\\PKPM-BIMS";
 		HKEY hKey = NULL;
 		//@根表名称 @要打开的子表项;@固定值-0;@申请的权限;@返回句柄；
 		if (ERROR_SUCCESS != RegOpenKeyExW(HKEY_LOCAL_MACHINE, cpp_data, 0, KEY_READ | KEY_WOW64_64KEY, &hKey))
