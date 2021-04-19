@@ -81,10 +81,11 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\..\bin\release</OutDir>
     <IntDir>$(ProjectDir)..\..\tmp\$(PlatformName)\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
+    <IncludePath>..\..\;..\..\third_party\cef_wrapper\;.\\;.\thirdParty;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
     <LibraryPath>..\..\libs\;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
-    <LibraryWPath>$(WindowsSDK_MetadataPath);</LibraryWPath>
-    <ExcludePath>$(CommonExcludePath);$(VC_ExecutablePath_x86);$(VC_LibraryPath_x86)</ExcludePath>
+    <LibraryWPath>
+    </LibraryWPath>
+    <ExcludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(VC_ExecutablePath_x86);$(WindowsSdk_71A_ExecutablePath);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(MSBuild_ExecutablePath);$(VC_LibraryPath_x86);$(SystemRoot)</ExcludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -109,7 +110,7 @@
       <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\bin\debug\PkpmWorker.exe D:\PKPMV523Develop\PKPM2010V52.exe</Command>
+      <Command>copy ..\..\bin\debug\PkpmWorker.exe D:\PkpmSoft\PKPMV523Develop\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -117,6 +118,9 @@
     <ResourceCompile>
       <Culture>0x0804</Culture>
     </ResourceCompile>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -139,7 +143,7 @@
       <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\bin\release\PkpmWorker.exe D:\PKPMV523Develop\PKPM2010V52.exe</Command>
+      <Command>copy ..\..\bin\release\PkpmWorker.exe D:\PkpmSoft\PKPMV523Develop\PKPM2010V52.exe</Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
