@@ -24,7 +24,8 @@ public:
 	~IFolderDialog()=default;
 	//virtual std::list<std::string> GetOpenFilePaths() {};
 	//virtual std::string GetOpenFilePath() {};
-	virtual std::string GetExistingDirectory(const char* caption=NULL,
+	virtual std::string GetExistingDirectory(HWND hwnd=NULL,
+		const char* caption=NULL,
 		const char* dir=NULL,
 		bool showDirsOnly=true
 		)=0;
@@ -35,7 +36,7 @@ typedef void (*func)(const char*, char*);
 class OldStyleFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* /*caption*/,
+	virtual std::string GetExistingDirectory(HWND hwnd, const char* /*caption*/,
 		const char* dir, bool /*showDirsOnly*/)
 	{
 		auto path=nbase::win32::GetCurrentModuleDirectory();	
@@ -56,7 +57,7 @@ public:
 class NativeFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* /*caption*/,
+	virtual std::string GetExistingDirectory(HWND hwnd, const char* /*caption*/,
 		const char* /*dir*/, bool /*showDirsOnly*/)
 	{
 		IFileDialog* pfd = NULL;
@@ -85,7 +86,7 @@ public:
 class QtFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* /*caption*/,
+	virtual std::string GetExistingDirectory(HWND hwnd, const char* /*caption*/,
 		const char* /*dir*/, bool /*showDirsOnly*/)
 	{
 		auto path = nbase::win32::GetCurrentModuleDirectory();
@@ -97,8 +98,16 @@ public:
 			typedef bool(*pShow)(HWND parent);
 			pShow fp1 = pShow(GetProcAddress(hDll, "showFolderDialog"));
 			if (fp1)
-				fp1(NULL);
-			FreeLibrary(hDll);
+			{
+				EnableWindow(hwnd, false);
+				//使用半模态时，浏览器事件循环无法工作
+				//所以对我们的项目只能使用QT模态对话框
+				fp1(hwnd);
+				::SetFocus(hwnd);
+				EnableWindow(hwnd, true);
+			}
+				
+			//FreeLibrary(hDll);
 		}
 		else
 		{
@@ -111,7 +120,7 @@ public:
 class ShBrowserFileDialog implements IFolderDialog
 {
 public:
-	virtual std::string GetExistingDirectory(const char* /*caption*/,
+	virtual std::string GetExistingDirectory(HWND hwnd, const char* /*caption*/,
 		const char* /*dir*/, bool /*showDirsOnly*/)
 	{
 		TCHAR  folderPath[MAX_PATH] = { 0 };
@@ -144,8 +153,8 @@ class FolderDialogFactory
 public:
 	enum class FdType
 	{
-		OLD_STYLE,
-		NATIVE,
+		OLD_STYLE,//旧风格
+		NATIVE,//
 		QT,
 		SHBROWSER
 	};

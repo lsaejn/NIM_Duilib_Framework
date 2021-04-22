@@ -807,7 +807,7 @@ std::string CefForm::OnNewProject()
 		defaultPath = prjPaths_[indexHeightLighted_];
 	auto type = FolderDialogFactory::GetFdType(ConfigManager::GetInstance().GetFolderDialogType());
 	auto dialog = FolderDialogFactory::GetFolderDialog(type);
-	auto folder=dialog->GetExistingDirectory(nullptr, defaultPath.c_str(), true);
+	auto folder=dialog->GetExistingDirectory(GetHWND(), nullptr, defaultPath.c_str(), true);
 	return folder;
 }
 
