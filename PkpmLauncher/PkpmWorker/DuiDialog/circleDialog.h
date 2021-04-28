@@ -8,6 +8,10 @@ namespace nim_comp {
 	class CircleBox;
 	CircleBox* ShowCircleBox(HWND hwnd, MsgboxCallback cb, const std::wstring& title, bool title_is_id = false);
 
+
+	/// <summary>
+	/// 一个异步进度条
+	/// </summary>
 	class CircleBox : public ui::WindowImplBase
 	{
 	public:

@@ -116,7 +116,8 @@ bool CefForm::OnClicked(ui::EventArgs* msg)
 {
 	if (msg->pSender->GetName() == L"closebtn")
 	{
-		//bug出现在Winxp的机器上，
+		//workaround a bug on WinXp，app closed before the user's selection be restored
+		//wo can update config file each time when selectionchanged
 		std::thread t([this]() {
 			cef_control_->CallJSFunction(L"currentChosenData",
 				nbase::UTF8ToUTF16("{\"uselessMsg\":\"test\"}"),

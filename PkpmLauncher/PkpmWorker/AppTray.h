@@ -24,6 +24,7 @@ public:
 	{
 		UNUSEDPARAMS(pExInfo);
 		Shell_NotifyIcon(NIM_DELETE, &g_tray->notifyIcon_);
+		//fix me, 字符串需要国际化
 		MessageBox(NULL,L"程序发生错误", L"错误", MB_SYSTEMMODAL);
 		return 1;
 	}
